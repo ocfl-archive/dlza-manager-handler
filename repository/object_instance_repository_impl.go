@@ -19,6 +19,7 @@ const (
 	GetObjectInstancesByObjectId
 	GetAllObjectInstances
 	UpdateObjectInstance
+	GetAmountOfErrorsByCollectionId
 )
 
 type objectInstanceRepositoryImpl struct {
@@ -36,6 +37,12 @@ func (o *objectInstanceRepositoryImpl) CreateObjectInstancePreparedStatements() 
 		DeleteObjectInstance:         fmt.Sprintf("DELETE FROM %s.OBJECT_INSTANCE  where id =$1", o.Schema),
 		GetObjectInstancesByObjectId: fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE where object_id = $1", o.Schema),
 		GetAllObjectInstances:        fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE", o.Schema),
+		GetAmountOfErrorsByCollectionId: strings.Replace("select count(oi.*) from %s.collection c,"+
+			" %s.object o, %s.object_instance oi"+
+			" where c.id = o.collection_id"+
+			" and o.id = oi.object_id"+
+			" and oi.status = 'error'"+
+			" and o.collection_id = $1", "%s", o.Schema, -1),
 	}
 	var err error
 	o.PreparedStatement = make(map[objectInstanceRepositoryStmt]*sql.Stmt)
@@ -46,6 +53,16 @@ func (o *objectInstanceRepositoryImpl) CreateObjectInstancePreparedStatements() 
 		}
 	}
 	return nil
+}
+
+func (o *objectInstanceRepositoryImpl) GetAmountOfErrorsByCollectionId(id string) (int, error) {
+	row := o.PreparedStatement[GetAmountOfErrorsByCollectionId].QueryRow(id)
+	var amount int
+	err := row.Scan(&amount)
+	if err != nil {
+		return amount, errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[GetAmountOfErrorsByCollectionId])
+	}
+	return amount, nil
 }
 
 func (o *objectInstanceRepositoryImpl) UpdateObjectInstance(objectInstance models.ObjectInstance) error {

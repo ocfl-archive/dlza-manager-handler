@@ -11,6 +11,7 @@ type ObjectInstanceRepository interface {
 	GetObjectInstancesByObjectIdPaginated(pagination models.Pagination) ([]models.ObjectInstance, int, error)
 	GetObjectInstancesByPartitionIdPaginated(pagination models.Pagination) ([]models.ObjectInstance, int, error)
 	GetAllObjectInstances() ([]models.ObjectInstance, error)
+	GetAmountOfErrorsByCollectionId(id string) (int, error)
 	CreateObjectInstancePreparedStatements() error
 	GetObjectInstancesByName(name string) ([]models.ObjectInstance, error)
 }
