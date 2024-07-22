@@ -1,0 +1,19 @@
+handler:
+  host : localhost
+  port : 12345
+  database:
+    host : "localhost"  #modify if needed
+    port  : "5000"  #modify if needed
+    user : "user"
+    password : ""  #modify if needed
+    db_name : "db_name"
+    sslmode : "require"
+    schema: "schema"
+storage-handler:
+  host : localhost
+  port : 12346
+clerk:
+  host : localhost
+  port : 123457
+
+#modify if needed the hosts/ports/addresses/password, note that you can set your Password with an environnement variable called DB_PASSWORD 
