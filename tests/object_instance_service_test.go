@@ -87,7 +87,7 @@ func TestGetStatusForObjectId1(t *testing.T) {
 
 	objectInstanceService := service.ObjectInstanceServiceImpl{ObjectInstanceRepository: repositoryMock}
 
-	status, _ := objectInstanceService.GetStatusForObjectIed("1")
+	status, _ := objectInstanceService.GetStatusForObjectId("1")
 
 	if status != 1 {
 		panic("TestGetStatusForObjectId1 failed")
@@ -101,7 +101,7 @@ func TestGetStatusForObjectId0(t *testing.T) {
 
 	objectInstanceService := service.ObjectInstanceServiceImpl{ObjectInstanceRepository: repositoryMock}
 
-	status, _ := objectInstanceService.GetStatusForObjectIed("0")
+	status, _ := objectInstanceService.GetStatusForObjectId("0")
 
 	if status != 0 {
 		panic("TestGetStatusForObjectId1 failed")
@@ -115,7 +115,7 @@ func TestGetStatusForObjectId2(t *testing.T) {
 
 	objectInstanceService := service.ObjectInstanceServiceImpl{ObjectInstanceRepository: repositoryMock}
 
-	status, _ := objectInstanceService.GetStatusForObjectIed("2")
+	status, _ := objectInstanceService.GetStatusForObjectId("2")
 
 	if status != 2 {
 		panic("TestGetStatusForObjectId1 failed")

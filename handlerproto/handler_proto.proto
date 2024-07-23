@@ -96,6 +96,8 @@ service ClerkHandlerService {
   rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
   rpc GetResultingQualityForObject(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetNeededQualityForObject(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetStatusForObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfErrorsByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
 }
 
 service DispatcherHandlerService {

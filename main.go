@@ -67,6 +67,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("couldn't create prepared statements for objectInstanceRepository err: %v", err)
 	}
+	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 	objectInstanceCheckRepository := repository.NewObjectInstanceCheckRepository(db, conf.Handler.Database.Schema)
 	err = objectInstanceCheckRepository.CreateObjectInstanceCheckPreparedStatements()
 	if err != nil {
@@ -106,7 +107,7 @@ func main() {
 		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
 	pb.RegisterClerkHandlerServiceServer(grpcServerHandler, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
 		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
-		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository})
+		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository, ObjectInstanceService: objectInstanceService})
 	pb.RegisterDispatcherHandlerServiceServer(grpcServerHandler, &server.DispatcherHandlerServer{DispatcherRepository: dispatcherRepository})
 	pb.RegisterUploaderHandlerServiceServer(grpcServerHandler, &server.UploaderHandlerServer{UploaderService: &uploadService, TransactionRepository: transactionRepository,
 		CollectionRepository: collectionRepository, StatusRepository: statusRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository})

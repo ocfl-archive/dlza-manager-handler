@@ -22,6 +22,7 @@ type ClerkHandlerServer struct {
 	FileRepository                repository.FileRepository
 	ObjectInstanceCheckRepository repository.ObjectInstanceCheckRepository
 	StatusRepository              repository.StatusRepository
+	ObjectInstanceService         service.ObjectInstanceService
 }
 
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
@@ -439,4 +440,24 @@ func (c *ClerkHandlerServer) GetObjectsByChecksum(ctx context.Context, checksum 
 		objectsPb = append(objectsPb, objectPb)
 	}
 	return &pb.Objects{Objects: objectsPb}, nil
+}
+
+func (c *ClerkHandlerServer) GetStatusForObjectId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
+	status, err := c.ObjectInstanceService.GetStatusForObjectId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetStatusForObjectId for object with id: '%s'", id.Id)
+	}
+	statusPb := pb.SizeAndId{Size: int64(status)}
+
+	return &statusPb, nil
+}
+
+func (c *ClerkHandlerServer) GetAmountOfErrorsByCollectionId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
+	status, err := c.ObjectInstanceRepository.GetAmountOfErrorsByCollectionId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+	}
+	statusPb := pb.SizeAndId{Size: int64(status)}
+
+	return &statusPb, nil
 }

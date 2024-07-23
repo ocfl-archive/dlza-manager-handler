@@ -1,5 +1,5 @@
 package service
 
 type ObjectInstanceService interface {
-	GetStatusForObjectIed(id string) (int, error)
+	GetStatusForObjectId(id string) (int, error)
 }

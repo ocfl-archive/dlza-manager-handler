@@ -13,7 +13,7 @@ type ObjectInstanceServiceImpl struct {
 	ObjectInstanceRepository repository.ObjectInstanceRepository
 }
 
-func (o ObjectInstanceServiceImpl) GetStatusForObjectIed(id string) (int, error) {
+func (o ObjectInstanceServiceImpl) GetStatusForObjectId(id string) (int, error) {
 	objectInstances, err := o.ObjectInstanceRepository.GetObjectInstancesByObjectId(id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "cannot get objectInstances by object id")

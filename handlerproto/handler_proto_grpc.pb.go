@@ -1215,6 +1215,8 @@ const (
 	ClerkHandlerService_AlterStatus_FullMethodName                                        = "/handlerproto.ClerkHandlerService/AlterStatus"
 	ClerkHandlerService_GetResultingQualityForObject_FullMethodName                       = "/handlerproto.ClerkHandlerService/GetResultingQualityForObject"
 	ClerkHandlerService_GetNeededQualityForObject_FullMethodName                          = "/handlerproto.ClerkHandlerService/GetNeededQualityForObject"
+	ClerkHandlerService_GetStatusForObjectId_FullMethodName                               = "/handlerproto.ClerkHandlerService/GetStatusForObjectId"
+	ClerkHandlerService_GetAmountOfErrorsByCollectionId_FullMethodName                    = "/handlerproto.ClerkHandlerService/GetAmountOfErrorsByCollectionId"
 )
 
 // ClerkHandlerServiceClient is the client API for ClerkHandlerService service.
@@ -1259,6 +1261,8 @@ type ClerkHandlerServiceClient interface {
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetResultingQualityForObject(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
 	GetNeededQualityForObject(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
+	GetStatusForObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfErrorsByCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
 }
 
 type clerkHandlerServiceClient struct {
@@ -1611,6 +1615,24 @@ func (c *clerkHandlerServiceClient) GetNeededQualityForObject(ctx context.Contex
 	return out, nil
 }
 
+func (c *clerkHandlerServiceClient) GetStatusForObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error) {
+	out := new(dlzamanagerproto.SizeAndId)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetStatusForObjectId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) GetAmountOfErrorsByCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error) {
+	out := new(dlzamanagerproto.SizeAndId)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetAmountOfErrorsByCollectionId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClerkHandlerServiceServer is the server API for ClerkHandlerService service.
 // All implementations must embed UnimplementedClerkHandlerServiceServer
 // for forward compatibility
@@ -1653,6 +1675,8 @@ type ClerkHandlerServiceServer interface {
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
 	GetResultingQualityForObject(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
 	GetNeededQualityForObject(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
+	GetStatusForObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfErrorsByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
 	mustEmbedUnimplementedClerkHandlerServiceServer()
 }
 
@@ -1773,6 +1797,12 @@ func (UnimplementedClerkHandlerServiceServer) GetResultingQualityForObject(conte
 }
 func (UnimplementedClerkHandlerServiceServer) GetNeededQualityForObject(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNeededQualityForObject not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetStatusForObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStatusForObjectId not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetAmountOfErrorsByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfErrorsByCollectionId not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) mustEmbedUnimplementedClerkHandlerServiceServer() {}
 
@@ -2471,6 +2501,42 @@ func _ClerkHandlerService_GetNeededQualityForObject_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClerkHandlerService_GetStatusForObjectId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetStatusForObjectId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetStatusForObjectId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetStatusForObjectId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_GetAmountOfErrorsByCollectionId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfErrorsByCollectionId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetAmountOfErrorsByCollectionId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfErrorsByCollectionId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClerkHandlerService_ServiceDesc is the grpc.ServiceDesc for ClerkHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2629,6 +2695,14 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNeededQualityForObject",
 			Handler:    _ClerkHandlerService_GetNeededQualityForObject_Handler,
+		},
+		{
+			MethodName: "GetStatusForObjectId",
+			Handler:    _ClerkHandlerService_GetStatusForObjectId_Handler,
+		},
+		{
+			MethodName: "GetAmountOfErrorsByCollectionId",
+			Handler:    _ClerkHandlerService_GetAmountOfErrorsByCollectionId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
