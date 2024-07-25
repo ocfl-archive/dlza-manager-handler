@@ -18,6 +18,8 @@ const (
 	GetStorageLocationById
 	GetStorageLocationByObjectInstanceId
 	GetStorageLocationsByObjectId
+	GetAmountOfErrorsForStorageLocationId
+	GetAmountOfObjectsForStorageLocationId
 )
 
 func (s *StorageLocationRepositoryImpl) CreateStorageLocPreparedStatements() error {
@@ -45,6 +47,15 @@ func (s *StorageLocationRepositoryImpl) CreateStorageLocPreparedStatements() err
 			" and o.id = oi.object_id"+
 			" and oi.storage_partition_id = sp.id"+
 			" and sp.storage_location_id = sl.id", "%s", s.Schema, -1),
+		GetAmountOfErrorsForStorageLocationId: strings.Replace("select count(*) from %s.object_instance oi, %s.storage_partition sp, %s.storage_location sl"+
+			" where oi.storage_partition_id = sp.id"+
+			" and sp.storage_location_id = sl.id"+
+			" and status = 'error'"+
+			" and sl.id = $1", "%s", s.Schema, -1),
+		GetAmountOfObjectsForStorageLocationId: strings.Replace("select count(*) from %s.object_instance oi, %s.storage_partition sp, %s.storage_location sl"+
+			" where oi.storage_partition_id = sp.id"+
+			" and sp.storage_location_id = sl.id"+
+			" and sl.id = $1", "%s", s.Schema, -1),
 	}
 	var err error
 	s.PreparedStatements = make(map[storageLocationPrepareStmt]*sql.Stmt)
@@ -80,6 +91,14 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantId(tenantId s
 		storageLocations = append(storageLocations, storageLocation)
 	}
 	return storageLocations, nil
+}
+
+func (s *StorageLocationRepositoryImpl) GetAmountOfErrorsForStorageLocationId(id string) (int, error) {
+	return s.getOneNumberParameterById(id, GetAmountOfErrorsForStorageLocationId)
+}
+
+func (s *StorageLocationRepositoryImpl) GetAmountOfObjectsForStorageLocationId(id string) (int, error) {
+	return s.getOneNumberParameterById(id, GetAmountOfObjectsForStorageLocationId)
 }
 
 func (s *StorageLocationRepositoryImpl) DeleteStorageLocationById(storageLocationId string) error {
@@ -214,4 +233,14 @@ func NewStorageLocationRepository(db *sql.DB, schema string) StorageLocationRepo
 func getLikeQueryForStorageLocation(searchKey string) string {
 	return strings.Replace("(sl.id::text like '_search_key_%' or lower(sl.alias) like '%_search_key_%' or lower(sl.security_compliency) like '%_search_key_%')",
 		"_search_key_", searchKey, -1)
+}
+
+func (s *StorageLocationRepositoryImpl) getOneNumberParameterById(id string, preparedStatement storageLocationPrepareStmt) (int, error) {
+	row := s.PreparedStatements[preparedStatement].QueryRow(id)
+	var amount int
+	err := row.Scan(&amount)
+	if err != nil {
+		return amount, errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatements[preparedStatement])
+	}
+	return amount, nil
 }

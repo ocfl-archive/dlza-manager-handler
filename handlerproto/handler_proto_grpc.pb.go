@@ -1217,6 +1217,9 @@ const (
 	ClerkHandlerService_GetNeededQualityForObject_FullMethodName                          = "/handlerproto.ClerkHandlerService/GetNeededQualityForObject"
 	ClerkHandlerService_GetStatusForObjectId_FullMethodName                               = "/handlerproto.ClerkHandlerService/GetStatusForObjectId"
 	ClerkHandlerService_GetAmountOfErrorsByCollectionId_FullMethodName                    = "/handlerproto.ClerkHandlerService/GetAmountOfErrorsByCollectionId"
+	ClerkHandlerService_GetAmountOfErrorsForStorageLocationId_FullMethodName              = "/handlerproto.ClerkHandlerService/GetAmountOfErrorsForStorageLocationId"
+	ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_FullMethodName             = "/handlerproto.ClerkHandlerService/GetAmountOfObjectsForStorageLocationId"
+	ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_FullMethodName           = "/handlerproto.ClerkHandlerService/GetAmountOfObjectsAndTotalSizeByTenantId"
 )
 
 // ClerkHandlerServiceClient is the client API for ClerkHandlerService service.
@@ -1263,6 +1266,9 @@ type ClerkHandlerServiceClient interface {
 	GetNeededQualityForObject(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
 	GetStatusForObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
 	GetAmountOfErrorsByCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfErrorsForStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfObjectsForStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfObjectsAndTotalSizeByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error)
 }
 
 type clerkHandlerServiceClient struct {
@@ -1633,6 +1639,33 @@ func (c *clerkHandlerServiceClient) GetAmountOfErrorsByCollectionId(ctx context.
 	return out, nil
 }
 
+func (c *clerkHandlerServiceClient) GetAmountOfErrorsForStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error) {
+	out := new(dlzamanagerproto.SizeAndId)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetAmountOfErrorsForStorageLocationId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) GetAmountOfObjectsForStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error) {
+	out := new(dlzamanagerproto.SizeAndId)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) GetAmountOfObjectsAndTotalSizeByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error) {
+	out := new(dlzamanagerproto.AmountAndSize)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClerkHandlerServiceServer is the server API for ClerkHandlerService service.
 // All implementations must embed UnimplementedClerkHandlerServiceServer
 // for forward compatibility
@@ -1677,6 +1710,9 @@ type ClerkHandlerServiceServer interface {
 	GetNeededQualityForObject(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
 	GetStatusForObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
 	GetAmountOfErrorsByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfErrorsForStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfObjectsForStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
+	GetAmountOfObjectsAndTotalSizeByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error)
 	mustEmbedUnimplementedClerkHandlerServiceServer()
 }
 
@@ -1803,6 +1839,15 @@ func (UnimplementedClerkHandlerServiceServer) GetStatusForObjectId(context.Conte
 }
 func (UnimplementedClerkHandlerServiceServer) GetAmountOfErrorsByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfErrorsByCollectionId not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetAmountOfErrorsForStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfErrorsForStorageLocationId not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetAmountOfObjectsForStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfObjectsForStorageLocationId not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetAmountOfObjectsAndTotalSizeByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfObjectsAndTotalSizeByTenantId not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) mustEmbedUnimplementedClerkHandlerServiceServer() {}
 
@@ -2537,6 +2582,60 @@ func _ClerkHandlerService_GetAmountOfErrorsByCollectionId_Handler(srv interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClerkHandlerService_GetAmountOfErrorsForStorageLocationId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfErrorsForStorageLocationId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetAmountOfErrorsForStorageLocationId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfErrorsForStorageLocationId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfObjectsForStorageLocationId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfObjectsForStorageLocationId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfObjectsAndTotalSizeByTenantId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetAmountOfObjectsAndTotalSizeByTenantId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClerkHandlerService_ServiceDesc is the grpc.ServiceDesc for ClerkHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2703,6 +2802,18 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAmountOfErrorsByCollectionId",
 			Handler:    _ClerkHandlerService_GetAmountOfErrorsByCollectionId_Handler,
+		},
+		{
+			MethodName: "GetAmountOfErrorsForStorageLocationId",
+			Handler:    _ClerkHandlerService_GetAmountOfErrorsForStorageLocationId_Handler,
+		},
+		{
+			MethodName: "GetAmountOfObjectsForStorageLocationId",
+			Handler:    _ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_Handler,
+		},
+		{
+			MethodName: "GetAmountOfObjectsAndTotalSizeByTenantId",
+			Handler:    _ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

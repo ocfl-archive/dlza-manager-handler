@@ -10,5 +10,6 @@ type TenantRepository interface {
 	DeleteTenant(id string) error
 	FindAllTenantsPaginated(pagination models.Pagination) ([]models.Tenant, int, error)
 	FindAllTenants() ([]models.Tenant, error)
+	GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error)
 	CreatePreparedStatements() error
 }

@@ -23,6 +23,7 @@ type ClerkHandlerServer struct {
 	ObjectInstanceCheckRepository repository.ObjectInstanceCheckRepository
 	StatusRepository              repository.StatusRepository
 	ObjectInstanceService         service.ObjectInstanceService
+	TenantRepository              repository.TenantRepository
 }
 
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
@@ -453,11 +454,38 @@ func (c *ClerkHandlerServer) GetStatusForObjectId(ctx context.Context, id *pb.Id
 }
 
 func (c *ClerkHandlerServer) GetAmountOfErrorsByCollectionId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
-	status, err := c.ObjectInstanceRepository.GetAmountOfErrorsByCollectionId(id.Id)
+	amount, err := c.ObjectInstanceRepository.GetAmountOfErrorsByCollectionId(id.Id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
 	}
-	statusPb := pb.SizeAndId{Size: int64(status)}
+	amountPb := pb.SizeAndId{Size: int64(amount)}
 
-	return &statusPb, nil
+	return &amountPb, nil
+}
+
+func (c *ClerkHandlerServer) GetAmountOfErrorsForStorageLocationId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
+	amount, err := c.StorageLocationRepository.GetAmountOfErrorsForStorageLocationId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+	}
+	amountPb := pb.SizeAndId{Size: int64(amount)}
+	return &amountPb, nil
+}
+
+func (c *ClerkHandlerServer) GetAmountOfObjectsForStorageLocationId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
+	amount, err := c.StorageLocationRepository.GetAmountOfObjectsForStorageLocationId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+	}
+	amountPb := pb.SizeAndId{Size: int64(amount)}
+	return &amountPb, nil
+}
+
+func (c *ClerkHandlerServer) GetAmountOfObjectsAndTotalSizeByTenantId(ctx context.Context, id *pb.Id) (*pb.AmountAndSize, error) {
+	amount, size, err := c.TenantRepository.GetAmountOfObjectsAndTotalSizeByTenantId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetAmountOfObjectsAndTotalSizeByTenantId for tenant with id: '%s'", id.Id)
+	}
+	amountAndSizePb := pb.AmountAndSize{Size: size, Amount: amount}
+	return &amountAndSizePb, nil
 }

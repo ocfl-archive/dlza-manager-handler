@@ -104,7 +104,7 @@ func TestGetStatusForObjectId0(t *testing.T) {
 	status, _ := objectInstanceService.GetStatusForObjectId("0")
 
 	if status != 0 {
-		panic("TestGetStatusForObjectId1 failed")
+		panic("TestGetStatusForObjectId0 failed")
 	}
 }
 
@@ -118,6 +118,6 @@ func TestGetStatusForObjectId2(t *testing.T) {
 	status, _ := objectInstanceService.GetStatusForObjectId("2")
 
 	if status != 2 {
-		panic("TestGetStatusForObjectId1 failed")
+		panic("TestGetStatusForObjectId2 failed")
 	}
 }

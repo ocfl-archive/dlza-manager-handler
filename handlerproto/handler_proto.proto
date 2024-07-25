@@ -98,6 +98,9 @@ service ClerkHandlerService {
   rpc GetNeededQualityForObject(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetStatusForObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetAmountOfErrorsByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfErrorsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfObjectsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfObjectsAndTotalSizeByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
 }
 
 service DispatcherHandlerService {
