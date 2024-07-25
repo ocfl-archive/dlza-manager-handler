@@ -42,10 +42,13 @@ func (t *TenantRepositoryImpl) CreatePreparedStatements() error {
 		SaveTenant:     fmt.Sprintf("insert into %s.TENANT(name, alias, person, email, api_key_id) values($1, $2, $3, $4, $5)", t.Schema),
 		UpdateTenant:   fmt.Sprintf("update %s.TENANT set name = $1, alias = $2, person = $3, email = $4 where id =$5", t.Schema),
 		DeleteTenant:   fmt.Sprintf("DELETE FROM %s.TENANT WHERE id = $1", t.Schema),
-		GetAmountOfObjectsAndTotalSizeByTenantId: strings.Replace("select sum(current_objects),  sum(current_size) from %s.storage_partition sp, %s.storage_location sl"+
-			" where sl.id = sp.storage_location_id"+
-			" and sl.tenant_id = $1"+
-			" group by sl.tenant_id", "%s", t.Schema, -1),
+		GetAmountOfObjectsAndTotalSizeByTenantId: strings.Replace("select sum(current_objects),  sum(current_size) from %s.tenant t"+
+			" left join  %s.storage_location sl"+
+			" on t.id = sl.tenant_id"+
+			" left join %s.storage_partition sp"+
+			" on sl.id = sp.storage_location_id"+
+			" where t.id = $1"+
+			" group by t.id", "%s", t.Schema, -1),
 	}
 	var err error
 	t.PreparedStatement = make(map[tenantPrepareStmt]*sql.Stmt)
@@ -60,13 +63,13 @@ func (t *TenantRepositoryImpl) CreatePreparedStatements() error {
 
 func (t *TenantRepositoryImpl) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
 	row := t.PreparedStatement[GetAmountOfObjectsAndTotalSizeByTenantId].QueryRow(id)
-	var amount int64
-	var size int64
+	var amount sql.NullInt64
+	var size sql.NullInt64
 	err := row.Scan(&amount, &size)
 	if err != nil {
-		return amount, size, errors.Wrapf(err, "Could not execute query: %v", t.PreparedStatement[GetAmountOfObjectsAndTotalSizeByTenantId])
+		return 0, 0, errors.Wrapf(err, "Could not execute query: %v", t.PreparedStatement[GetAmountOfObjectsAndTotalSizeByTenantId])
 	}
-	return amount, size, nil
+	return amount.Int64, size.Int64, nil
 }
 
 func (t *TenantRepositoryImpl) UpdateTenant(tenant models.Tenant) error {
