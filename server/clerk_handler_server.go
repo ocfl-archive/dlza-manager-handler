@@ -247,6 +247,20 @@ func (c *ClerkHandlerServer) GetStorageLocationsByTenantIdPaginated(ctx context.
 	return &pb.StorageLocations{StorageLocations: storageLocationsPb, TotalItems: int32(totalItems)}, nil
 }
 
+func (c *ClerkHandlerServer) GetStorageLocationsByCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
+	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByCollectionIdPaginated(mapper.ConvertToPagination(pagination))
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get storageLocations by collection with id: '%s'", pagination.Id)
+	}
+	var storageLocationsPb []*pb.StorageLocation
+
+	for _, storageLocation := range storageLocations {
+		storageLocationsPb = append(storageLocationsPb, mapper.ConvertToStorageLocationPb(storageLocation))
+	}
+
+	return &pb.StorageLocations{StorageLocations: storageLocationsPb, TotalItems: int32(totalItems)}, nil
+}
+
 func (c *ClerkHandlerServer) GetStoragePartitionsByLocationIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StoragePartitions, error) {
 	storagePartitions, totalItems, err := c.StoragePartitionRepository.GetStoragePartitionsByLocationIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
