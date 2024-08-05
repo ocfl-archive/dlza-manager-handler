@@ -230,7 +230,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByCollectionIdPaginat
 		" and c.id = $1"+
 		" group by sl.id"+
 		" order by %s %s limit %s OFFSET %s ", pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", s.Schema, -1)
-	rows, err := s.Db.Query(query, pagination.Id)
+	rows, err := s.Db.Query(query, pagination.SecondId)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
