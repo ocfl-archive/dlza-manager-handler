@@ -7,7 +7,7 @@ require (
 	github.com/je4/filesystem/v2 v2.0.15
 	github.com/jinzhu/configor v1.2.2
 	github.com/lib/pq v1.10.9
-	github.com/ocfl-archive/dlza-manager v0.0.4
+	github.com/ocfl-archive/dlza-manager v0.0.5
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240716175740-e3f259677ff7
