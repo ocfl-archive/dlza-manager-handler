@@ -13,6 +13,11 @@ type TenantRepositoryMock struct {
 	mock.Mock
 }
 
+func (m *TenantRepositoryMock) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (m *TenantRepositoryMock) FindTenantByKey(key string) (models.Tenant, error) {
 	//TODO implement me
 	panic("implement me")
