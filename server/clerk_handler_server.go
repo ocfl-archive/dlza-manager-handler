@@ -24,6 +24,7 @@ type ClerkHandlerServer struct {
 	StatusRepository              repository.StatusRepository
 	ObjectInstanceService         service.ObjectInstanceService
 	TenantRepository              repository.TenantRepository
+	StorageLocationService        service.StorageLocationService
 }
 
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
@@ -502,4 +503,13 @@ func (c *ClerkHandlerServer) GetAmountOfObjectsAndTotalSizeByTenantId(ctx contex
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size, Amount: amount}
 	return &amountAndSizePb, nil
+}
+
+func (c *ClerkHandlerServer) GetStorageLocationsStatusForCollectionAlias(ctx context.Context, sizeAndCollectionAlias *pb.SizeAndId) (*pb.Id, error) {
+	status, err := c.StorageLocationService.GetStorageLocationsStatusForCollectionAlias(sizeAndCollectionAlias.Id, sizeAndCollectionAlias.Size)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%s'", sizeAndCollectionAlias.Id)
+	}
+	locationStatusPb := pb.Id{Id: status}
+	return &locationStatusPb, nil
 }

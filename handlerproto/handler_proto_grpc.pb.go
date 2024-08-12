@@ -1211,6 +1211,7 @@ const (
 	ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_FullMethodName         = "/handlerproto.ClerkHandlerService/GetStorageLocationsByCollectionIdPaginated"
 	ClerkHandlerService_GetStoragePartitionsByLocationIdPaginated_FullMethodName          = "/handlerproto.ClerkHandlerService/GetStoragePartitionsByLocationIdPaginated"
 	ClerkHandlerService_GetObjectInstancesByStoragePartitionIdPaginated_FullMethodName    = "/handlerproto.ClerkHandlerService/GetObjectInstancesByStoragePartitionIdPaginated"
+	ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_FullMethodName        = "/handlerproto.ClerkHandlerService/GetStorageLocationsStatusForCollectionAlias"
 	ClerkHandlerService_CheckStatus_FullMethodName                                        = "/handlerproto.ClerkHandlerService/CheckStatus"
 	ClerkHandlerService_CreateStatus_FullMethodName                                       = "/handlerproto.ClerkHandlerService/CreateStatus"
 	ClerkHandlerService_AlterStatus_FullMethodName                                        = "/handlerproto.ClerkHandlerService/AlterStatus"
@@ -1261,6 +1262,7 @@ type ClerkHandlerServiceClient interface {
 	GetStorageLocationsByCollectionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionsByLocationIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartitions, error)
 	GetObjectInstancesByStoragePartitionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
+	GetStorageLocationsStatusForCollectionAlias(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
 	CheckStatus(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StatusObject, error)
 	CreateStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
@@ -1587,6 +1589,15 @@ func (c *clerkHandlerServiceClient) GetObjectInstancesByStoragePartitionIdPagina
 	return out, nil
 }
 
+func (c *clerkHandlerServiceClient) GetStorageLocationsStatusForCollectionAlias(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error) {
+	out := new(dlzamanagerproto.Id)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clerkHandlerServiceClient) CheckStatus(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StatusObject, error) {
 	out := new(dlzamanagerproto.StatusObject)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_CheckStatus_FullMethodName, in, out, opts...)
@@ -1715,6 +1726,7 @@ type ClerkHandlerServiceServer interface {
 	GetStorageLocationsByCollectionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionsByLocationIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StoragePartitions, error)
 	GetObjectInstancesByStoragePartitionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.ObjectInstances, error)
+	GetStorageLocationsStatusForCollectionAlias(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.Id, error)
 	CheckStatus(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StatusObject, error)
 	CreateStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Id, error)
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
@@ -1833,6 +1845,9 @@ func (UnimplementedClerkHandlerServiceServer) GetStoragePartitionsByLocationIdPa
 }
 func (UnimplementedClerkHandlerServiceServer) GetObjectInstancesByStoragePartitionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.ObjectInstances, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstancesByStoragePartitionIdPaginated not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetStorageLocationsStatusForCollectionAlias(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.Id, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsStatusForCollectionAlias not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) CheckStatus(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StatusObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckStatus not implemented")
@@ -2489,6 +2504,24 @@ func _ClerkHandlerService_GetObjectInstancesByStoragePartitionIdPaginated_Handle
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.SizeAndId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetStorageLocationsStatusForCollectionAlias(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetStorageLocationsStatusForCollectionAlias(ctx, req.(*dlzamanagerproto.SizeAndId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClerkHandlerService_CheckStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.Id)
 	if err := dec(in); err != nil {
@@ -2811,6 +2844,10 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectInstancesByStoragePartitionIdPaginated",
 			Handler:    _ClerkHandlerService_GetObjectInstancesByStoragePartitionIdPaginated_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationsStatusForCollectionAlias",
+			Handler:    _ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_Handler,
 		},
 		{
 			MethodName: "CheckStatus",

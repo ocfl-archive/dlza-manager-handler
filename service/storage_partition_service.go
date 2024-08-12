@@ -74,7 +74,7 @@ func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocation
 		}
 	}
 	if partitionOptimal.Id == "" {
-		return nil, errors.Wrapf(err, "Could not find optimal storagePartition for storageLocation with id: %v", sizeAndLocationId.Id)
+		return nil, errors.New("Could not find optimal storagePartition for storageLocation with id: " + sizeAndLocationId.Id)
 	}
 
 	return mapper.ConvertToStoragePartitionPb(partitionOptimal), err

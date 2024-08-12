@@ -13,27 +13,27 @@ type TenantRepositoryMock struct {
 	mock.Mock
 }
 
-func (m *TenantRepositoryMock) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
+func (m TenantRepositoryMock) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m *TenantRepositoryMock) FindTenantByKey(key string) (models.Tenant, error) {
+func (m TenantRepositoryMock) FindTenantByKey(key string) (models.Tenant, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m *TenantRepositoryMock) FindAllTenantsPaginated(pagination models.Pagination) ([]models.Tenant, int, error) {
+func (m TenantRepositoryMock) FindAllTenantsPaginated(pagination models.Pagination) ([]models.Tenant, int, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m *TenantRepositoryMock) SaveTenant(tenant models.Tenant) error {
+func (m TenantRepositoryMock) SaveTenant(tenant models.Tenant) error {
 	args := m.Called(tenant)
 	return args.Error(0)
 }
 
-func (m *TenantRepositoryMock) FindTenantById(id string) (models.Tenant, error) {
+func (m TenantRepositoryMock) FindTenantById(id string) (models.Tenant, error) {
 	args := m.Called(id)
 	tenant := models.Tenant{
 		Id:     "1",
@@ -45,18 +45,18 @@ func (m *TenantRepositoryMock) FindTenantById(id string) (models.Tenant, error) 
 
 	return tenant, args.Error(0)
 }
-func (m *TenantRepositoryMock) UpdateTenant(tenant models.Tenant) error {
+func (m TenantRepositoryMock) UpdateTenant(tenant models.Tenant) error {
 	args := m.Called(tenant)
 	return args.Error(0)
 }
-func (m *TenantRepositoryMock) DeleteTenant(id string) error {
+func (m TenantRepositoryMock) DeleteTenant(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
-func (m *TenantRepositoryMock) FindAllTenants() ([]models.Tenant, error) {
+func (m TenantRepositoryMock) FindAllTenants() ([]models.Tenant, error) {
 	return []models.Tenant{}, nil
 }
-func (m *TenantRepositoryMock) CreatePreparedStatements() error {
+func (m TenantRepositoryMock) CreatePreparedStatements() error {
 	return nil
 }
 
