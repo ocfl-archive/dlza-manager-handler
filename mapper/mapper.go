@@ -73,8 +73,8 @@ func ConvertToStorageLocation(storageLocationPb *pb.StorageLocation) models.Stor
 	storageLocation.OcflType = storageLocationPb.OcflType
 	storageLocation.NumberOfThreads = int(storageLocationPb.NumberOfThreads)
 	storageLocation.TenantId = storageLocationPb.TenantId
-	storageLocation.TotalFilesSize = storageLocationPb.TotalFilesSize
-	storageLocation.TotalExistingVolume = storageLocationPb.TotalExistingVolume
+	storageLocation.TotalFilesSize.Int64 = storageLocationPb.TotalFilesSize
+	storageLocation.TotalExistingVolume.Int64 = storageLocationPb.TotalExistingVolume
 	return storageLocation
 }
 
@@ -92,8 +92,8 @@ func ConvertToStorageLocationPb(storageLocation models.StorageLocation) *pb.Stor
 	storageLocationPb.OcflType = storageLocation.OcflType
 	storageLocationPb.NumberOfThreads = int32(storageLocation.NumberOfThreads)
 	storageLocationPb.TenantId = storageLocation.TenantId
-	storageLocationPb.TotalFilesSize = storageLocation.TotalFilesSize
-	storageLocationPb.TotalExistingVolume = storageLocation.TotalExistingVolume
+	storageLocationPb.TotalFilesSize = storageLocation.TotalFilesSize.Int64
+	storageLocationPb.TotalExistingVolume = storageLocation.TotalExistingVolume.Int64
 	return storageLocationPb
 }
 

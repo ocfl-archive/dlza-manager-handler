@@ -59,13 +59,18 @@ service ClerkHandlerService {
   rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
 
   rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
-  rpc SaveStorageLocation(dlzamanagerproto.StorageLocation) returns (dlzamanagerproto.Status){};
+  rpc SaveStorageLocation(dlzamanagerproto.StorageLocation) returns (dlzamanagerproto.Id){};
+  rpc UpdateStorageLocation(dlzamanagerproto.StorageLocation) returns (dlzamanagerproto.Status){};
   rpc DeleteStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
+
+  rpc CreateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Id){};
+  rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status){};
+  rpc DeleteStoragePartitionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
 
   rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
   rpc GetCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Collection){};
   rpc DeleteCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
-  rpc CreateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Status){};
+  rpc CreateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Id){};
   rpc UpdateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Status){};
 
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};

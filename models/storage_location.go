@@ -31,8 +31,8 @@ type StorageLocation struct {
 	Id                 string
 	NumberOfThreads    int
 	// virtual values
-	TotalFilesSize      int64
-	TotalExistingVolume int64
+	TotalFilesSize      sql.NullInt64
+	TotalExistingVolume sql.NullInt64
 }
 
 type StorageLocationJson struct {

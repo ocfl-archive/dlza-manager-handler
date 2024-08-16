@@ -83,12 +83,12 @@ func (c *ClerkHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoPa
 	return &pb.Tenants{Tenants: tenantsPb}, nil
 }
 
-func (c *ClerkHandlerServer) CreateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Status, error) {
-	_, err := c.CollectionRepository.CreateCollection(mapper.ConvertToCollection(collectionPb))
+func (c *ClerkHandlerServer) CreateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Id, error) {
+	id, err := c.CollectionRepository.CreateCollection(mapper.ConvertToCollection(collectionPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not create collection '%s'", collectionPb.Name)
+		return nil, errors.Wrapf(err, "Could not create collection '%s'", collectionPb.Name)
 	}
-	return &pb.Status{Ok: true}, nil
+	return &pb.Id{Id: id}, nil
 }
 
 func (c *ClerkHandlerServer) UpdateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Status, error) {
@@ -121,13 +121,46 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantId(ctx context.Context, id *p
 	return &pb.Collections{Collections: collectionsPb}, nil
 }
 
-func (c *ClerkHandlerServer) SaveStorageLocation(ctx context.Context, storageLocationPb *pb.StorageLocation) (*pb.Status, error) {
-	err := c.StorageLocationRepository.SaveStorageLocation(mapper.ConvertToStorageLocation(storageLocationPb))
+func (c *ClerkHandlerServer) SaveStorageLocation(ctx context.Context, storageLocationPb *pb.StorageLocation) (*pb.Id, error) {
+	id, err := c.StorageLocationRepository.SaveStorageLocation(mapper.ConvertToStorageLocation(storageLocationPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not create storageLocation '%s'", storageLocationPb.Alias)
+		return nil, errors.Wrapf(err, "Could not create storageLocation '%s'", storageLocationPb.Alias)
+	}
+	return &pb.Id{Id: id}, nil
+}
+
+func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageLocationPb *pb.StorageLocation) (*pb.Status, error) {
+	err := c.StorageLocationRepository.UpdateStorageLocation(mapper.ConvertToStorageLocation(storageLocationPb))
+	if err != nil {
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storageLocation '%s'", storageLocationPb.Alias)
 	}
 	return &pb.Status{Ok: true}, nil
 }
+
+func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Id, error) {
+	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
+	}
+	return &pb.Id{Id: id}, nil
+}
+
+func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Status, error) {
+	err := c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	if err != nil {
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%s'", storagePartitionPb.Alias)
+	}
+	return &pb.Status{Ok: true}, nil
+}
+
+func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
+	err := c.StoragePartitionRepository.DeleteStoragePartitionById(id.Id)
+	if err != nil {
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with id: '%s'", id.Id)
+	}
+	return &pb.Status{Ok: true}, nil
+}
+
 func (c *ClerkHandlerServer) DeleteStorageLocationById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.StorageLocationRepository.DeleteStorageLocationById(id.Id)
 	if err != nil {

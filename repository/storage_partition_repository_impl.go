@@ -31,7 +31,7 @@ func (s *storagePartitionRepositoryImpl) CreateStoragePartitionPreparedStatement
 	preparedStatement := map[storagePartitionRepositoryStmt]string{
 		GetStoragePartition:              fmt.Sprintf("SELECT * FROM %s.STORAGE_PARTITION o WHERE ID = $1", s.Schema),
 		CreateStoragePartition:           fmt.Sprintf("INSERT INTO %s.STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", s.Schema),
-		UpdateStoragePartition:           fmt.Sprintf("UPDATE %s.STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5 where id =$6", s.Schema),
+		UpdateStoragePartition:           fmt.Sprintf("UPDATE %s.STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7", s.Schema),
 		DeleteStoragePartition:           fmt.Sprintf("DELETE FROM %s.STORAGE_PARTITION  where id =$1", s.Schema),
 		GetStoragePartitionsByLocationId: fmt.Sprintf("SELECT * FROM %s.STORAGE_PARTITION WHERE storage_location_id = $1", s.Schema),
 	}
@@ -58,14 +58,14 @@ func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models
 }
 
 func (s *storagePartitionRepositoryImpl) UpdateStoragePartition(partition models.StoragePartition) error {
-	_, err := s.PreparedStatement[UpdateStoragePartition].Exec(partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Id)
+	_, err := s.PreparedStatement[UpdateStoragePartition].Exec(partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Alias, partition.Id)
 	if err != nil {
 		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[UpdateStoragePartition])
 	}
 	return nil
 }
 
-func (s *storagePartitionRepositoryImpl) DeleteStoragePartition(id string) error {
+func (s *storagePartitionRepositoryImpl) DeleteStoragePartitionById(id string) error {
 	_, err := s.PreparedStatement[DeleteStoragePartition].Exec(id)
 	if err != nil {
 		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[DeleteStoragePartition])

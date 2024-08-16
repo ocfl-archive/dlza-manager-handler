@@ -14,6 +14,7 @@ type storageLocationPrepareStmt int
 const (
 	GetStorageLocationsByTenantId storageLocationPrepareStmt = iota
 	DeleteStorageLocationForTenantIdById
+	UpdateStorageLocation
 	SaveStorageLocationForTenant
 	GetStorageLocationById
 	GetStorageLocationByObjectInstanceId
@@ -31,14 +32,14 @@ func (s *StorageLocationRepositoryImpl) CreateStorageLocPreparedStatements() err
 			" inner join %s.storage_location sl"+
 			" on sl.id = sp.storage_location_id where oi.id = $1", "%s", s.Schema, -1),
 		GetStorageLocationById: strings.Replace("select a.*, c.total_existing_volume from (select sl.*, sum(oi.size) as total_file_size from %s.storage_location sl"+
-			" inner join %s.storage_partition sp on sp.storage_location_id = sl.id"+
-			" inner join %s.object_instance oi on sp.id = oi.storage_partition_id"+
+			" left join %s.storage_partition sp on sp.storage_location_id = sl.id"+
+			" left join %s.object_instance oi on sp.id = oi.storage_partition_id"+
 			" where sl.id = $1 group by sl.id) a"+
-			" inner join"+
+			" left join"+
 			" (select sp.storage_location_id, sum(sp.max_size) as total_existing_volume from %s.storage_partition sp group by sp.storage_location_id) c"+
 			" on a.id = c.storage_location_id", "%s", s.Schema, -1),
 		DeleteStorageLocationForTenantIdById: fmt.Sprintf("DELETE FROM %s.storage_location WHERE id = $1", s.Schema),
-		SaveStorageLocationForTenant:         fmt.Sprintf("INSERT INTO %s.storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)  ", s.Schema),
+		SaveStorageLocationForTenant:         fmt.Sprintf("INSERT INTO %s.storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)  RETURNING id", s.Schema),
 		GetStorageLocationsByObjectId: strings.Replace("select sl.* from %s.object o,"+
 			" %s.object_instance oi,"+
 			" %s.storage_partition sp,"+
@@ -56,6 +57,7 @@ func (s *StorageLocationRepositoryImpl) CreateStorageLocPreparedStatements() err
 			" where oi.storage_partition_id = sp.id"+
 			" and sp.storage_location_id = sl.id"+
 			" and sl.id = $1", "%s", s.Schema, -1),
+		UpdateStorageLocation: fmt.Sprintf("UPDATE %s.STORAGE_LOCATION set alias = $1, type = $2, vault = $3, connection = $4, quality = $5, price = $6, security_compliency = $7, fill_first = $8, ocfl_type = $9, tenant_id = $10, number_of_threads = $12 where id =$11", s.Schema),
 	}
 	var err error
 	s.PreparedStatements = make(map[storageLocationPrepareStmt]*sql.Stmt)
@@ -109,11 +111,22 @@ func (s *StorageLocationRepositoryImpl) DeleteStorageLocationById(storageLocatio
 	return nil
 }
 
-func (s *StorageLocationRepositoryImpl) SaveStorageLocation(storageLocation models.StorageLocation) error {
-	_, err := s.PreparedStatements[SaveStorageLocationForTenant].Exec(storageLocation.Alias, storageLocation.Type, storageLocation.Vault, storageLocation.Connection, storageLocation.Quality,
+func (s *StorageLocationRepositoryImpl) SaveStorageLocation(storageLocation models.StorageLocation) (string, error) {
+	row := s.PreparedStatements[SaveStorageLocationForTenant].QueryRow(storageLocation.Alias, storageLocation.Type, storageLocation.Vault, storageLocation.Connection, storageLocation.Quality,
 		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.NumberOfThreads)
+	var id string
+	err := row.Scan(&id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatements[SaveStorageLocationForTenant])
+		return "", errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatements[SaveStorageLocationForTenant])
+	}
+	return id, nil
+}
+
+func (s *StorageLocationRepositoryImpl) UpdateStorageLocation(storageLocation models.StorageLocation) error {
+	_, err := s.PreparedStatements[UpdateStorageLocation].Exec(storageLocation.Alias, storageLocation.Type, storageLocation.Vault, storageLocation.Connection, storageLocation.Quality,
+		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.Id, storageLocation.NumberOfThreads)
+	if err != nil {
+		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatements[UpdateStorageLocation])
 	}
 	return nil
 }

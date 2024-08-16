@@ -1184,7 +1184,11 @@ const (
 	ClerkHandlerService_FindAllTenants_FullMethodName                                     = "/handlerproto.ClerkHandlerService/FindAllTenants"
 	ClerkHandlerService_GetStorageLocationsByTenantId_FullMethodName                      = "/handlerproto.ClerkHandlerService/GetStorageLocationsByTenantId"
 	ClerkHandlerService_SaveStorageLocation_FullMethodName                                = "/handlerproto.ClerkHandlerService/SaveStorageLocation"
+	ClerkHandlerService_UpdateStorageLocation_FullMethodName                              = "/handlerproto.ClerkHandlerService/UpdateStorageLocation"
 	ClerkHandlerService_DeleteStorageLocationById_FullMethodName                          = "/handlerproto.ClerkHandlerService/DeleteStorageLocationById"
+	ClerkHandlerService_CreateStoragePartition_FullMethodName                             = "/handlerproto.ClerkHandlerService/CreateStoragePartition"
+	ClerkHandlerService_UpdateStoragePartition_FullMethodName                             = "/handlerproto.ClerkHandlerService/UpdateStoragePartition"
+	ClerkHandlerService_DeleteStoragePartitionById_FullMethodName                         = "/handlerproto.ClerkHandlerService/DeleteStoragePartitionById"
 	ClerkHandlerService_GetCollectionsByTenantId_FullMethodName                           = "/handlerproto.ClerkHandlerService/GetCollectionsByTenantId"
 	ClerkHandlerService_GetCollectionById_FullMethodName                                  = "/handlerproto.ClerkHandlerService/GetCollectionById"
 	ClerkHandlerService_DeleteCollectionById_FullMethodName                               = "/handlerproto.ClerkHandlerService/DeleteCollectionById"
@@ -1234,12 +1238,16 @@ type ClerkHandlerServiceClient interface {
 	UpdateTenant(ctx context.Context, in *dlzamanagerproto.Tenant, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error)
 	GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
-	SaveStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	SaveStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
+	UpdateStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	DeleteStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	CreateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
+	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	DeleteStoragePartitionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetCollectionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collection, error)
 	DeleteCollectionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
-	CreateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	CreateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
 	UpdateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
@@ -1337,9 +1345,18 @@ func (c *clerkHandlerServiceClient) GetStorageLocationsByTenantId(ctx context.Co
 	return out, nil
 }
 
-func (c *clerkHandlerServiceClient) SaveStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
+func (c *clerkHandlerServiceClient) SaveStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error) {
+	out := new(dlzamanagerproto.Id)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_SaveStorageLocation_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) UpdateStorageLocation(ctx context.Context, in *dlzamanagerproto.StorageLocation, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
+	out := new(dlzamanagerproto.Status)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_UpdateStorageLocation_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1349,6 +1366,33 @@ func (c *clerkHandlerServiceClient) SaveStorageLocation(ctx context.Context, in 
 func (c *clerkHandlerServiceClient) DeleteStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
 	out := new(dlzamanagerproto.Status)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_DeleteStorageLocationById_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) CreateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error) {
+	out := new(dlzamanagerproto.Id)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_CreateStoragePartition_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
+	out := new(dlzamanagerproto.Status)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_UpdateStoragePartition_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) DeleteStoragePartitionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
+	out := new(dlzamanagerproto.Status)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_DeleteStoragePartitionById_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1382,8 +1426,8 @@ func (c *clerkHandlerServiceClient) DeleteCollectionById(ctx context.Context, in
 	return out, nil
 }
 
-func (c *clerkHandlerServiceClient) CreateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
+func (c *clerkHandlerServiceClient) CreateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error) {
+	out := new(dlzamanagerproto.Id)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_CreateCollection_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1698,12 +1742,16 @@ type ClerkHandlerServiceServer interface {
 	UpdateTenant(context.Context, *dlzamanagerproto.Tenant) (*dlzamanagerproto.Status, error)
 	FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error)
 	GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
-	SaveStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Status, error)
+	SaveStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Id, error)
+	UpdateStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Status, error)
 	DeleteStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
+	CreateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Id, error)
+	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
+	DeleteStoragePartitionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collection, error)
 	DeleteCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
-	CreateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error)
+	CreateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Id, error)
 	UpdateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error)
@@ -1762,11 +1810,23 @@ func (UnimplementedClerkHandlerServiceServer) FindAllTenants(context.Context, *d
 func (UnimplementedClerkHandlerServiceServer) GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByTenantId not implemented")
 }
-func (UnimplementedClerkHandlerServiceServer) SaveStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Status, error) {
+func (UnimplementedClerkHandlerServiceServer) SaveStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Id, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStorageLocation not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) UpdateStorageLocation(context.Context, *dlzamanagerproto.StorageLocation) (*dlzamanagerproto.Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStorageLocation not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) DeleteStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteStorageLocationById not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) CreateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Id, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStoragePartition not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStoragePartition not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) DeleteStoragePartitionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteStoragePartitionById not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionsByTenantId not implemented")
@@ -1777,7 +1837,7 @@ func (UnimplementedClerkHandlerServiceServer) GetCollectionById(context.Context,
 func (UnimplementedClerkHandlerServiceServer) DeleteCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCollectionById not implemented")
 }
-func (UnimplementedClerkHandlerServiceServer) CreateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error) {
+func (UnimplementedClerkHandlerServiceServer) CreateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Id, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCollection not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) UpdateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error) {
@@ -2018,6 +2078,24 @@ func _ClerkHandlerService_SaveStorageLocation_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClerkHandlerService_UpdateStorageLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.StorageLocation)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).UpdateStorageLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_UpdateStorageLocation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).UpdateStorageLocation(ctx, req.(*dlzamanagerproto.StorageLocation))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClerkHandlerService_DeleteStorageLocationById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.Id)
 	if err := dec(in); err != nil {
@@ -2032,6 +2110,60 @@ func _ClerkHandlerService_DeleteStorageLocationById_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClerkHandlerServiceServer).DeleteStorageLocationById(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_CreateStoragePartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.StoragePartition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).CreateStoragePartition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_CreateStoragePartition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).CreateStoragePartition(ctx, req.(*dlzamanagerproto.StoragePartition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_UpdateStoragePartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.StoragePartition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).UpdateStoragePartition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_UpdateStoragePartition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).UpdateStoragePartition(ctx, req.(*dlzamanagerproto.StoragePartition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_DeleteStoragePartitionById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).DeleteStoragePartitionById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_DeleteStoragePartitionById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).DeleteStoragePartitionById(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2738,8 +2870,24 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClerkHandlerService_SaveStorageLocation_Handler,
 		},
 		{
+			MethodName: "UpdateStorageLocation",
+			Handler:    _ClerkHandlerService_UpdateStorageLocation_Handler,
+		},
+		{
 			MethodName: "DeleteStorageLocationById",
 			Handler:    _ClerkHandlerService_DeleteStorageLocationById_Handler,
+		},
+		{
+			MethodName: "CreateStoragePartition",
+			Handler:    _ClerkHandlerService_CreateStoragePartition_Handler,
+		},
+		{
+			MethodName: "UpdateStoragePartition",
+			Handler:    _ClerkHandlerService_UpdateStoragePartition_Handler,
+		},
+		{
+			MethodName: "DeleteStoragePartitionById",
+			Handler:    _ClerkHandlerService_DeleteStoragePartitionById_Handler,
 		},
 		{
 			MethodName: "GetCollectionsByTenantId",
