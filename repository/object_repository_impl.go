@@ -66,7 +66,7 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 
 	var id string
 	err := o.PreparedStatement[CreateObject].QueryRow(object.Signature, pq.Array(object.Sets), pq.Array(object.Identifiers), object.Title, pq.Array(object.AlternativeTitles), object.Description,
-		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Expiration, object.Holding).Scan(&id)
+		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, pq.Array(object.Authors), object.Expiration, object.Holding).Scan(&id)
 	if err != nil {
 		return "", errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[CreateObject])
 	}
@@ -87,7 +87,7 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 
 func (o *ObjectRepositoryImpl) UpdateObject(object models.Object) error {
 	_, err := o.PreparedStatement[UpdateObject].Exec(object.Signature, pq.Array(object.Sets), pq.Array(object.Identifiers), object.Title, pq.Array(object.AlternativeTitles), object.Description,
-		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, time.Now().Format("2006-01-02 15:04:05.000000"), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Expiration, object.Holding, object.Id)
+		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, time.Now().Format("2006-01-02 15:04:05.000000"), object.Size, object.CollectionId, object.Checksum, pq.Array(object.Authors), object.Expiration, object.Holding, object.Id)
 	if err != nil {
 		return errors.Wrapf(err, "cannot update object")
 	}

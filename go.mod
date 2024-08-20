@@ -1,6 +1,6 @@
 module github.com/ocfl-archive/dlza-manager-handler
 
-go 1.22.5
+go 1.23.0
 
 require (
 	emperror.dev/errors v0.8.1
