@@ -18,6 +18,7 @@ const (
 	GetCollectionsByTenantId
 	GetCollectionIdByAlias
 	GetCollectionByAlias
+	GetCollectionByIdFromMv
 	GetCollectionById
 )
 
@@ -36,7 +37,8 @@ func (c *CollectionRepositoryImpl) CreateCollectionPreparedStatements() error {
 		GetCollectionsByTenantId: fmt.Sprintf("SELECT * FROM %s.collection where tenant_id = $1", c.Schema),
 		GetCollectionIdByAlias:   fmt.Sprintf("SELECT id FROM %s.collection where alias = $1", c.Schema),
 		GetCollectionByAlias:     fmt.Sprintf("SELECT * FROM %s.collection where alias = $1", c.Schema),
-		GetCollectionById:        fmt.Sprintf("SELECT * FROM %s.mat_coll_obj_file where id = $1", c.Schema),
+		GetCollectionByIdFromMv:  fmt.Sprintf("SELECT * FROM %s.mat_coll_obj_file where id = $1", c.Schema),
+		GetCollectionById:        fmt.Sprintf("SELECT * FROM %s.collection where id = $1", c.Schema),
 		DeleteCollectionById:     fmt.Sprintf("DELETE FROM %s.collection WHERE id = $1", c.Schema),
 		UpdateCollection:         fmt.Sprintf("UPDATE %s.collection SET description = $1, owner = $2, owner_mail= $3, name = $4, quality = $5, tenant_id= $6 where id = $7", c.Schema),
 		CreateCollection: fmt.Sprintf("INSERT INTO %s.collection(alias, description, owner, owner_mail, name, quality, tenant_id)"+
@@ -118,9 +120,20 @@ func (c *CollectionRepositoryImpl) GetCollectionById(id string) (models.Collecti
 	row := c.PreparedStatements[GetCollectionById].QueryRow(id)
 	collection := models.Collection{}
 	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
-		&collection.Quality, &collection.TenantId, &collection.Id, &collection.TotalFileSize, &collection.TotalFileCount, &collection.TotalObjectCount)
+		&collection.Quality, &collection.TenantId, &collection.Id)
 	if err != nil {
 		return collection, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionById])
+	}
+	return collection, nil
+}
+
+func (c *CollectionRepositoryImpl) GetCollectionByIdFromMv(id string) (models.Collection, error) {
+	row := c.PreparedStatements[GetCollectionByIdFromMv].QueryRow(id)
+	collection := models.Collection{}
+	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
+		&collection.Quality, &collection.TenantId, &collection.Id, &collection.TotalFileSize, &collection.TotalFileCount, &collection.TotalObjectCount)
+	if err != nil {
+		return collection, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionByIdFromMv])
 	}
 	return collection, nil
 }

@@ -1191,6 +1191,7 @@ const (
 	ClerkHandlerService_DeleteStoragePartitionById_FullMethodName                         = "/handlerproto.ClerkHandlerService/DeleteStoragePartitionById"
 	ClerkHandlerService_GetCollectionsByTenantId_FullMethodName                           = "/handlerproto.ClerkHandlerService/GetCollectionsByTenantId"
 	ClerkHandlerService_GetCollectionById_FullMethodName                                  = "/handlerproto.ClerkHandlerService/GetCollectionById"
+	ClerkHandlerService_GetCollectionByIdFromMv_FullMethodName                            = "/handlerproto.ClerkHandlerService/GetCollectionByIdFromMv"
 	ClerkHandlerService_DeleteCollectionById_FullMethodName                               = "/handlerproto.ClerkHandlerService/DeleteCollectionById"
 	ClerkHandlerService_CreateCollection_FullMethodName                                   = "/handlerproto.ClerkHandlerService/CreateCollection"
 	ClerkHandlerService_UpdateCollection_FullMethodName                                   = "/handlerproto.ClerkHandlerService/UpdateCollection"
@@ -1246,6 +1247,7 @@ type ClerkHandlerServiceClient interface {
 	DeleteStoragePartitionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetCollectionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collection, error)
+	GetCollectionByIdFromMv(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collection, error)
 	DeleteCollectionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	CreateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
 	UpdateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
@@ -1411,6 +1413,15 @@ func (c *clerkHandlerServiceClient) GetCollectionsByTenantId(ctx context.Context
 func (c *clerkHandlerServiceClient) GetCollectionById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collection, error) {
 	out := new(dlzamanagerproto.Collection)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_GetCollectionById_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) GetCollectionByIdFromMv(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collection, error) {
+	out := new(dlzamanagerproto.Collection)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetCollectionByIdFromMv_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1750,6 +1761,7 @@ type ClerkHandlerServiceServer interface {
 	DeleteStoragePartitionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collection, error)
+	GetCollectionByIdFromMv(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collection, error)
 	DeleteCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	CreateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Id, error)
 	UpdateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error)
@@ -1833,6 +1845,9 @@ func (UnimplementedClerkHandlerServiceServer) GetCollectionsByTenantId(context.C
 }
 func (UnimplementedClerkHandlerServiceServer) GetCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collection, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionById not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetCollectionByIdFromMv(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collection, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionByIdFromMv not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) DeleteCollectionById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCollectionById not implemented")
@@ -2200,6 +2215,24 @@ func _ClerkHandlerService_GetCollectionById_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClerkHandlerServiceServer).GetCollectionById(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_GetCollectionByIdFromMv_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetCollectionByIdFromMv(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetCollectionByIdFromMv_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetCollectionByIdFromMv(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2896,6 +2929,10 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCollectionById",
 			Handler:    _ClerkHandlerService_GetCollectionById_Handler,
+		},
+		{
+			MethodName: "GetCollectionByIdFromMv",
+			Handler:    _ClerkHandlerService_GetCollectionByIdFromMv_Handler,
 		},
 		{
 			MethodName: "DeleteCollectionById",

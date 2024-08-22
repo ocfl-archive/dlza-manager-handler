@@ -36,6 +36,15 @@ func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb
 	return tenantPb, nil
 }
 
+func (c *ClerkHandlerServer) GetCollectionByIdFromMv(ctx context.Context, id *pb.Id) (*pb.Collection, error) {
+	collection, err := c.CollectionRepository.GetCollectionByIdFromMv(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get collection from materialized view with id: '%s'", id.Id)
+	}
+	collectionPb := mapper.ConvertToCollectionPb(collection)
+	return collectionPb, nil
+}
+
 func (c *ClerkHandlerServer) GetCollectionById(ctx context.Context, id *pb.Id) (*pb.Collection, error) {
 	collection, err := c.CollectionRepository.GetCollectionById(id.Id)
 	if err != nil {

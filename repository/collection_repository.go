@@ -13,5 +13,6 @@ type CollectionRepository interface {
 	UpdateCollection(collection models.Collection) error
 	GetCollectionsByTenantId(tenantId string) ([]models.Collection, error)
 	GetCollectionById(id string) (models.Collection, error)
+	GetCollectionByIdFromMv(id string) (models.Collection, error)
 	CreateCollectionPreparedStatements() error
 }

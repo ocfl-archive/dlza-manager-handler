@@ -69,6 +69,7 @@ service ClerkHandlerService {
 
   rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
   rpc GetCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Collection){};
+  rpc GetCollectionByIdFromMv(dlzamanagerproto.Id) returns (dlzamanagerproto.Collection){};
   rpc DeleteCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
   rpc CreateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Id){};
   rpc UpdateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Status){};
