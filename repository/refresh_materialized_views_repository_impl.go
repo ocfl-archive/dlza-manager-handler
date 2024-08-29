@@ -30,6 +30,17 @@ func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViews() error
 	return nil
 }
 
+func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViewsFromCollectionToFile() error {
+
+	queryMatColObjFile := fmt.Sprintf("select %s.refresh_mvw2()", r.Schema)
+	_, err := r.Db.Exec(queryMatColObjFile)
+	if err != nil {
+		return errors.Wrapf(err, "Could not RefreshMaterializedViews query: '%s'", queryMatColObjFile)
+	}
+
+	return nil
+}
+
 func NewRefreshMaterializedViewsRepository(db *sql.DB, schema string) RefreshMaterializedViewsRepository {
 	return RefreshMaterializedViewsRepositoryImpl{Db: db, Schema: schema}
 }

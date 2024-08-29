@@ -13,18 +13,19 @@ import (
 
 type ClerkHandlerServer struct {
 	pbHandler.UnimplementedClerkHandlerServiceServer
-	TenantService                 service.TenantService
-	CollectionRepository          repository.CollectionRepository
-	StorageLocationRepository     repository.StorageLocationRepository
-	StoragePartitionRepository    repository.StoragePartitionRepository
-	ObjectRepository              repository.ObjectRepository
-	ObjectInstanceRepository      repository.ObjectInstanceRepository
-	FileRepository                repository.FileRepository
-	ObjectInstanceCheckRepository repository.ObjectInstanceCheckRepository
-	StatusRepository              repository.StatusRepository
-	ObjectInstanceService         service.ObjectInstanceService
-	TenantRepository              repository.TenantRepository
-	StorageLocationService        service.StorageLocationService
+	TenantService                      service.TenantService
+	CollectionRepository               repository.CollectionRepository
+	StorageLocationRepository          repository.StorageLocationRepository
+	StoragePartitionRepository         repository.StoragePartitionRepository
+	ObjectRepository                   repository.ObjectRepository
+	ObjectInstanceRepository           repository.ObjectInstanceRepository
+	FileRepository                     repository.FileRepository
+	ObjectInstanceCheckRepository      repository.ObjectInstanceCheckRepository
+	StatusRepository                   repository.StatusRepository
+	ObjectInstanceService              service.ObjectInstanceService
+	TenantRepository                   repository.TenantRepository
+	StorageLocationService             service.StorageLocationService
+	RefreshMaterializedViewsRepository repository.RefreshMaterializedViewsRepository
 }
 
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
@@ -97,13 +98,22 @@ func (c *ClerkHandlerServer) CreateCollection(ctx context.Context, collectionPb 
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create collection '%s'", collectionPb.Name)
 	}
+	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%s'", collectionPb.Name)
+	}
 	return &pb.Id{Id: id}, nil
+
 }
 
 func (c *ClerkHandlerServer) UpdateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Status, error) {
 	err := c.CollectionRepository.UpdateCollection(mapper.ConvertToCollection(collectionPb))
 	if err != nil {
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update collection '%s'", collectionPb.Name)
+	}
+	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%s'", collectionPb.Name)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -112,6 +122,10 @@ func (c *ClerkHandlerServer) DeleteCollectionById(ctx context.Context, id *pb.Id
 	err := c.CollectionRepository.DeleteCollectionById(id.Id)
 	if err != nil {
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete collectiom with id: '%s'", id.Id)
+	}
+	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile after deleting collection with id '%s'", id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
