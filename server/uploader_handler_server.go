@@ -21,14 +21,6 @@ type UploaderHandlerServer struct {
 	StatusRepository         repository.StatusRepository
 }
 
-func (u *UploaderHandlerServer) TenantHasAccess(ctx context.Context, object *pb.UploaderAccessObject) (*pb.Status, error) {
-	status, err := u.UploaderService.TenantHasAccess(object)
-	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not exequte TenantHasAccess, err: %v", err)
-	}
-	return &status, nil
-}
-
 func (u *UploaderHandlerServer) AlterStatus(ctx context.Context, statusPb *pb.StatusObject) (*pb.Status, error) {
 	status := models.ArchivingStatus{Status: statusPb.Status, LastChanged: statusPb.LastChanged, Id: statusPb.Id}
 	err := u.StatusRepository.AlterStatus(status)

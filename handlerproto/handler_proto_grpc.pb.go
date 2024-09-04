@@ -111,7 +111,6 @@ var UploaderStorageHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	UploaderHandlerService_TenantHasAccess_FullMethodName          = "/handlerproto.UploaderHandlerService/TenantHasAccess"
 	UploaderHandlerService_AlterStatus_FullMethodName              = "/handlerproto.UploaderHandlerService/AlterStatus"
 	UploaderHandlerService_GetObjectInstancesByName_FullMethodName = "/handlerproto.UploaderHandlerService/GetObjectInstancesByName"
 	UploaderHandlerService_GetObjectsByChecksum_FullMethodName     = "/handlerproto.UploaderHandlerService/GetObjectsByChecksum"
@@ -121,7 +120,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UploaderHandlerServiceClient interface {
-	TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectInstancesByName(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
@@ -133,15 +131,6 @@ type uploaderHandlerServiceClient struct {
 
 func NewUploaderHandlerServiceClient(cc grpc.ClientConnInterface) UploaderHandlerServiceClient {
 	return &uploaderHandlerServiceClient{cc}
-}
-
-func (c *uploaderHandlerServiceClient) TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, UploaderHandlerService_TenantHasAccess_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *uploaderHandlerServiceClient) AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
@@ -175,7 +164,6 @@ func (c *uploaderHandlerServiceClient) GetObjectsByChecksum(ctx context.Context,
 // All implementations must embed UnimplementedUploaderHandlerServiceServer
 // for forward compatibility
 type UploaderHandlerServiceServer interface {
-	TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error)
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
 	GetObjectInstancesByName(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
 	GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error)
@@ -186,9 +174,6 @@ type UploaderHandlerServiceServer interface {
 type UnimplementedUploaderHandlerServiceServer struct {
 }
 
-func (UnimplementedUploaderHandlerServiceServer) TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TenantHasAccess not implemented")
-}
 func (UnimplementedUploaderHandlerServiceServer) AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AlterStatus not implemented")
 }
@@ -210,24 +195,6 @@ type UnsafeUploaderHandlerServiceServer interface {
 
 func RegisterUploaderHandlerServiceServer(s grpc.ServiceRegistrar, srv UploaderHandlerServiceServer) {
 	s.RegisterService(&UploaderHandlerService_ServiceDesc, srv)
-}
-
-func _UploaderHandlerService_TenantHasAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.UploaderAccessObject)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploaderHandlerServiceServer).TenantHasAccess(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UploaderHandlerService_TenantHasAccess_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploaderHandlerServiceServer).TenantHasAccess(ctx, req.(*dlzamanagerproto.UploaderAccessObject))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _UploaderHandlerService_AlterStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -291,10 +258,6 @@ var UploaderHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.UploaderHandlerService",
 	HandlerType: (*UploaderHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "TenantHasAccess",
-			Handler:    _UploaderHandlerService_TenantHasAccess_Handler,
-		},
 		{
 			MethodName: "AlterStatus",
 			Handler:    _UploaderHandlerService_AlterStatus_Handler,
@@ -642,6 +605,7 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	StorageHandlerHandlerService_TenantHasAccess_FullMethodName                             = "/handlerproto.StorageHandlerHandlerService/TenantHasAccess"
 	StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByCollectionAlias"
 	StorageHandlerHandlerService_GetStorageLocationsByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByObjectId"
 	StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName              = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionForLocation"
@@ -661,6 +625,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StorageHandlerHandlerServiceClient interface {
+	TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
@@ -682,6 +647,15 @@ type storageHandlerHandlerServiceClient struct {
 
 func NewStorageHandlerHandlerServiceClient(cc grpc.ClientConnInterface) StorageHandlerHandlerServiceClient {
 	return &storageHandlerHandlerServiceClient{cc}
+}
+
+func (c *storageHandlerHandlerServiceClient) TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
+	out := new(dlzamanagerproto.Status)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_TenantHasAccess_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *storageHandlerHandlerServiceClient) GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
@@ -805,6 +779,7 @@ func (c *storageHandlerHandlerServiceClient) AlterStatus(ctx context.Context, in
 // All implementations must embed UnimplementedStorageHandlerHandlerServiceServer
 // for forward compatibility
 type StorageHandlerHandlerServiceServer interface {
+	TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error)
 	GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
@@ -825,6 +800,9 @@ type StorageHandlerHandlerServiceServer interface {
 type UnimplementedStorageHandlerHandlerServiceServer struct {
 }
 
+func (UnimplementedStorageHandlerHandlerServiceServer) TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TenantHasAccess not implemented")
+}
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByCollectionAlias not implemented")
 }
@@ -876,6 +854,24 @@ type UnsafeStorageHandlerHandlerServiceServer interface {
 
 func RegisterStorageHandlerHandlerServiceServer(s grpc.ServiceRegistrar, srv StorageHandlerHandlerServiceServer) {
 	s.RegisterService(&StorageHandlerHandlerService_ServiceDesc, srv)
+}
+
+func _StorageHandlerHandlerService_TenantHasAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.UploaderAccessObject)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).TenantHasAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_TenantHasAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).TenantHasAccess(ctx, req.(*dlzamanagerproto.UploaderAccessObject))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1119,6 +1115,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.StorageHandlerHandlerService",
 	HandlerType: (*StorageHandlerHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "TenantHasAccess",
+			Handler:    _StorageHandlerHandlerService_TenantHasAccess_Handler,
+		},
 		{
 			MethodName: "GetStorageLocationsByCollectionAlias",
 			Handler:    _StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_Handler,

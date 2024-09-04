@@ -105,7 +105,7 @@ func main() {
 	pb.RegisterStorageHandlerHandlerServiceServer(grpcServerHandler, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
-		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
+		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, UploaderService: &uploadService})
 	pb.RegisterClerkHandlerServiceServer(grpcServerHandler, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
 		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
 		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,

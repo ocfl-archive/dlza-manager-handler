@@ -14,6 +14,7 @@ import (
 
 type StorageHandlerHandlerServer struct {
 	pbHandler.UnimplementedStorageHandlerHandlerServiceServer
+	UploaderService                    service.UploaderService
 	CollectionRepository               repository.CollectionRepository
 	ObjectRepository                   repository.ObjectRepository
 	ObjectInstanceRepository           repository.ObjectInstanceRepository
@@ -23,6 +24,14 @@ type StorageHandlerHandlerServer struct {
 	StatusRepository                   repository.StatusRepository
 	TransactionRepository              repository.TransactionRepository
 	RefreshMaterializedViewsRepository repository.RefreshMaterializedViewsRepository
+}
+
+func (c *StorageHandlerHandlerServer) TenantHasAccess(ctx context.Context, object *pb.UploaderAccessObject) (*pb.Status, error) {
+	status, err := c.UploaderService.TenantHasAccess(object)
+	if err != nil {
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not execute TenantHasAccess, err: %v", err)
+	}
+	return &status, nil
 }
 
 func (c *StorageHandlerHandlerServer) SaveAllTableObjectsAfterCopying(ctx context.Context, instanceWithPartitionAndObjectWithFiles *pb.InstanceWithPartitionAndObjectWithFiles) (*pb.Status, error) {

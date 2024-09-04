@@ -16,7 +16,6 @@ service UploaderStorageHandlerService {
 }
 
 service UploaderHandlerService {
-  rpc TenantHasAccess(dlzamanagerproto.UploaderAccessObject) returns (dlzamanagerproto.Status) {};
   rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
   rpc GetObjectInstancesByName(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances){}
   rpc GetObjectsByChecksum(dlzamanagerproto.Id) returns (dlzamanagerproto.Objects){}
@@ -35,6 +34,7 @@ service CheckerHandlerService {
 }
 
 service StorageHandlerHandlerService {
+  rpc TenantHasAccess(dlzamanagerproto.UploaderAccessObject) returns (dlzamanagerproto.Status) {};
   rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
