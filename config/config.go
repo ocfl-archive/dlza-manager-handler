@@ -13,10 +13,16 @@ type Service struct {
 	Database    DatabaseConfig `yaml:"database" toml:"Database"`
 }
 
+type Logging struct {
+	LogLevel string
+	LogFile  string
+}
+
 type Config struct {
 	Handler        Service `yaml:"handler" toml:"Handler"`
 	StorageHandler Service `yaml:"storage-handler" toml:"StorageHandler"`
 	Clerk          Service `yaml:"clerk" toml:"Clerk"`
+	Logging        Logging `yaml:"logging" toml:"Logging"`
 }
 
 // GetConfig creates a new config from a given environment

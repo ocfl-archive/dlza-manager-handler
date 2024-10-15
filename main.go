@@ -2,15 +2,20 @@ package main
 
 import (
 	"flag"
+	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/ocfl-archive/dlza-manager-handler/config"
 	pb "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager-handler/server"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	"github.com/ocfl-archive/dlza-manager-handler/storage"
+	"github.com/rs/zerolog"
+	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
+	"time"
 
 	"emperror.dev/errors"
 	"google.golang.org/grpc"
@@ -30,6 +35,23 @@ func main() {
 		log.Fatal("Could not load the DB")
 	}
 	defer db.Close()
+
+	// create logger instance
+	var out io.Writer = os.Stdout
+	if string(conf.Logging.LogFile) != "" {
+		fp, err := os.OpenFile(string(conf.Logging.LogFile), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatalf("cannot open logfile %s: %v", string(conf.Logging.LogFile), err)
+		}
+		defer fp.Close()
+		out = fp
+	}
+
+	output := zerolog.ConsoleWriter{Out: out, TimeFormat: time.RFC3339}
+	_logger := zerolog.New(output).With().Timestamp().Logger()
+	_logger.Level(zLogger.LogLevel(string(conf.Logging.LogLevel)))
+	var logger zLogger.ZLogger = &_logger
+	daLogger := zLogger.NewZWrapper(logger)
 
 	tenantRepository := repository.NewTenantRepository(db, conf.Handler.Database.Schema)
 
@@ -105,7 +127,7 @@ func main() {
 	pb.RegisterStorageHandlerHandlerServiceServer(grpcServerHandler, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
-		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, UploaderService: &uploadService})
+		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: daLogger})
 	pb.RegisterClerkHandlerServiceServer(grpcServerHandler, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
 		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
 		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
