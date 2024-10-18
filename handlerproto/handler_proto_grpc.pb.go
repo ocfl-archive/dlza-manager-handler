@@ -9,9 +9,11 @@ package handlerproto
 import (
 	context "context"
 	dlzamanagerproto "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	proto "go.ub.unibas.ch/cloud/genericproto/v2/pkg/generic/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -3080,6 +3082,7 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	DispatcherHandlerService_Ping_FullMethodName                     = "/handlerproto.DispatcherHandlerService/Ping"
 	DispatcherHandlerService_GetLowQualityCollections_FullMethodName = "/handlerproto.DispatcherHandlerService/GetLowQualityCollections"
 )
 
@@ -3087,6 +3090,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatcherHandlerServiceClient interface {
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
 	GetLowQualityCollections(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error)
 }
 
@@ -3096,6 +3100,15 @@ type dispatcherHandlerServiceClient struct {
 
 func NewDispatcherHandlerServiceClient(cc grpc.ClientConnInterface) DispatcherHandlerServiceClient {
 	return &dispatcherHandlerServiceClient{cc}
+}
+
+func (c *dispatcherHandlerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error) {
+	out := new(proto.DefaultResponse)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_Ping_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *dispatcherHandlerServiceClient) GetLowQualityCollections(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error) {
@@ -3111,6 +3124,7 @@ func (c *dispatcherHandlerServiceClient) GetLowQualityCollections(ctx context.Co
 // All implementations must embed UnimplementedDispatcherHandlerServiceServer
 // for forward compatibility
 type DispatcherHandlerServiceServer interface {
+	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
 	GetLowQualityCollections(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
@@ -3119,6 +3133,9 @@ type DispatcherHandlerServiceServer interface {
 type UnimplementedDispatcherHandlerServiceServer struct {
 }
 
+func (UnimplementedDispatcherHandlerServiceServer) Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedDispatcherHandlerServiceServer) GetLowQualityCollections(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLowQualityCollections not implemented")
 }
@@ -3134,6 +3151,24 @@ type UnsafeDispatcherHandlerServiceServer interface {
 
 func RegisterDispatcherHandlerServiceServer(s grpc.ServiceRegistrar, srv DispatcherHandlerServiceServer) {
 	s.RegisterService(&DispatcherHandlerService_ServiceDesc, srv)
+}
+
+func _DispatcherHandlerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).Ping(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _DispatcherHandlerService_GetLowQualityCollections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -3161,6 +3196,10 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.DispatcherHandlerService",
 	HandlerType: (*DispatcherHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _DispatcherHandlerService_Ping_Handler,
+		},
 		{
 			MethodName: "GetLowQualityCollections",
 			Handler:    _DispatcherHandlerService_GetLowQualityCollections_Handler,

@@ -1,42 +1,50 @@
 package config
 
 import (
-	"github.com/jinzhu/configor"
-	"log"
+	"emperror.dev/errors"
+	"github.com/BurntSushi/toml"
+	"github.com/je4/utils/v2/pkg/config"
+	"github.com/je4/utils/v2/pkg/stashconfig"
+	"go.ub.unibas.ch/cloud/certloader/v2/pkg/loader"
+	"io/fs"
 	"os"
 )
 
-type Service struct {
-	ServiceName string         `yaml:"service_name" toml:"ServiceName"`
-	Host        string         `yaml:"host" toml:"Host"`
-	Port        int            `yaml:"port" toml:"Port"`
-	Database    DatabaseConfig `yaml:"database" toml:"Database"`
+type HandlerConfig struct {
+	LocalAddr               string             `toml:"localaddr"`
+	Domains                 []string           `toml:"domains"`
+	ExternalAddr            string             `toml:"externaladdr"`
+	Bearer                  string             `toml:"bearer"`
+	ResolverAddr            string             `toml:"resolveraddr"`
+	ResolverTimeout         config.Duration    `toml:"resolvertimeout"`
+	ResolverNotFoundTimeout config.Duration    `toml:"resolvernotfoundtimeout"`
+	ActionTimeout           config.Duration    `toml:"actiontimeout"`
+	ServerTLS               *loader.Config     `toml:"server"`
+	ClientTLS               *loader.Config     `toml:"client"`
+	GRPCClient              map[string]string  `toml:"grpcclient"`
+	Log                     stashconfig.Config `toml:"log"`
+	Database                DatabaseConfig     `toml:"database"`
 }
 
-type Logging struct {
-	LogLevel string
-	LogFile  string
-}
-
-type Config struct {
-	Handler        Service `yaml:"handler" toml:"Handler"`
-	StorageHandler Service `yaml:"storage-handler" toml:"StorageHandler"`
-	Clerk          Service `yaml:"clerk" toml:"Clerk"`
-	Logging        Logging `yaml:"logging" toml:"Logging"`
-}
-
-// GetConfig creates a new config from a given environment
-func GetConfig(configFile string) Config {
-	conf := Config{}
-	if configFile == "" {
-		configFile = "config.yml"
+func LoadHandlerConfig(fSys fs.FS, fp string, conf *HandlerConfig) error {
+	if _, err := fs.Stat(fSys, fp); err != nil {
+		path, err := os.Getwd()
+		if err != nil {
+			return errors.Wrap(err, "cannot get current working directory")
+		}
+		fSys = os.DirFS(path)
+		fp = "handler.toml"
 	}
-	err := configor.Load(&conf, configFile)
+	data, err := fs.ReadFile(fSys, fp)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrapf(err, "cannot read file [%v] %s", fSys, fp)
 	}
-	if conf.Handler.Database.Password == "" {
-		conf.Handler.Database.Password = os.Getenv("DB_PASSWORD")
+	_, err = toml.Decode(string(data), conf)
+	if conf.Database.Password == "" {
+		conf.Database.Password = os.Getenv("DB_PASSWORD")
 	}
-	return conf
+	if err != nil {
+		return errors.Wrapf(err, "error loading config file %v", fp)
+	}
+	return nil
 }

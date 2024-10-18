@@ -9,7 +9,9 @@ option csharp_namespace = "Unibas.UB.Handler.PG";
 
 package handlerproto;
 
+import "google/protobuf/empty.proto";
 import "dlza_proto.proto";
+import "defaultResponse.proto";
 
 service UploaderStorageHandlerService {
   rpc CopyFile(dlzamanagerproto.IncomingOrder) returns (dlzamanagerproto.Status) {};
@@ -112,5 +114,6 @@ service ClerkHandlerService {
 }
 
 service DispatcherHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
   rpc GetLowQualityCollections(dlzamanagerproto.NoParam) returns (dlzamanagerproto.CollectionAliases) {};
 }
