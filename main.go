@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"fmt"
+	"github.com/je4/trustutil/v2/pkg/certutil"
 	configutil "github.com/je4/utils/v2/pkg/config"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/ocfl-archive/dlza-manager-handler/config"
@@ -13,16 +15,15 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/storage"
 	ublogger "gitlab.switch.ch/ub-unibas/go-ublogger/v2"
 	"go.ub.unibas.ch/cloud/certloader/v2/pkg/loader"
+	"go.ub.unibas.ch/cloud/miniresolver/v2/pkg/resolver"
 	"io"
 	"io/fs"
 	"log"
-	"net"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
-
-	"emperror.dev/errors"
-	"google.golang.org/grpc"
 )
 
 var configfile = flag.String("config", "", "config file in toml format")
@@ -99,6 +100,48 @@ func main() {
 	}
 	defer db.Close()
 
+	// create TLS Certificate.
+	// the certificate MUST contain <package>.<service> as DNS name
+	for _, domain := range conf.Domains {
+		var domainPrefix string
+		if domain != "" {
+			domainPrefix = domain + "."
+		}
+		certutil.AddDefaultDNSNames(domainPrefix + pb.DispatcherHandlerService_ServiceDesc.ServiceName)
+	}
+
+	// create client TLS certificate
+	// the certificate MUST contain "grpc:miniresolverproto.MiniResolver" or "*" in URIs
+	lmct := logger.With().Str("service", "minresolver client loader").Logger()
+	miniresolverClientTLSConfig, clientLoader, err := loader.CreateClientLoader(conf.ClientTLS, &lmct)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("cannot create client loader")
+	}
+	defer clientLoader.Close()
+
+	serverTLSConfig, serverLoader, err := loader.CreateServerLoader(true, conf.ServerTLS, nil, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("cannot create server loader")
+	}
+	defer serverLoader.Close()
+
+	logger.Info().Msgf("resolver address is %s", conf.ResolverAddr)
+
+	resolverClient, err := resolver.NewMiniresolverClient(conf.ResolverAddr, conf.GRPCClient, miniresolverClientTLSConfig, serverTLSConfig, time.Duration(conf.ResolverTimeout), time.Duration(conf.ResolverNotFoundTimeout), logger)
+	if err != nil {
+		logger.Fatal().Msgf("cannot create resolver client: %v", err)
+	}
+	defer resolverClient.Close()
+
+	// create grpc server with resolver for name resolution
+	grpcServer, err := resolverClient.NewServer(conf.LocalAddr, conf.Domains, true)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("cannot create server")
+	}
+	addr := grpcServer.GetAddr()
+	l2 = _logger.With().Timestamp().Str("addr", addr).Logger() //.Output(output)
+	logger = &l2
+
 	tenantRepository := repository.NewTenantRepository(db, conf.Database.Schema)
 
 	err = tenantRepository.CreatePreparedStatements()
@@ -141,6 +184,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("couldn't create prepared statements for objectInstanceCheckRepository err: %v", err)
 	}
+	_ = objectInstanceService
 	storagePartitionRepository := repository.NewStoragePartitionRepository(db, conf.Database.Schema)
 	err = storagePartitionRepository.CreateStoragePartitionPreparedStatements()
 	if err != nil {
@@ -159,33 +203,45 @@ func main() {
 		log.Fatalf("couldn't create prepared statements for statusRepository err: %v", err)
 	}
 	uploadService := service.UploaderServiceImpl{CollectionRepository: collectionRepository, TenantRepository: tenantRepository}
+	_ = uploadService
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
+	_ = storageLocationService
 
 	transactionRepository := repository.NewTransactionRepository(db, conf.Database.Schema)
+	_ = transactionRepository
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(db, conf.Database.Schema)
+	_ = refreshMaterializedViewRepository
 
-	//Listen StorageHandler, Dispatcher, Clerk
-	lisHandler, err := net.Listen("tcp", conf.LocalAddr)
-	if err != nil {
-		panic(errors.Wrapf(err, "Failed to listen gRPC server"))
-	}
-	grpcServerHandler := grpc.NewServer()
-	pb.RegisterStorageHandlerHandlerServiceServer(grpcServerHandler, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
-		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
-		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
-		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
-	pb.RegisterClerkHandlerServiceServer(grpcServerHandler, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
-		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
-		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
-		ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
-	pb.RegisterDispatcherHandlerServiceServer(grpcServerHandler, &server.DispatcherHandlerServer{DispatcherRepository: dispatcherRepository})
-	pb.RegisterUploaderHandlerServiceServer(grpcServerHandler, &server.UploaderHandlerServer{UploaderService: &uploadService, TransactionRepository: transactionRepository,
-		CollectionRepository: collectionRepository, StatusRepository: statusRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository})
-	pb.RegisterCheckerHandlerServiceServer(grpcServerHandler, &server.CheckerHandlerServer{ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository,
-		StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository})
-	log.Printf("server started at %v", lisHandler.Addr())
+	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository))
+	/*
+		//Listen StorageHandler, Dispatcher, Clerk
+		lisHandler, err := net.Listen("tcp", conf.LocalAddr)
+		if err != nil {
+			panic(errors.Wrapf(err, "Failed to listen gRPC server"))
+		}
+		//grpcServerHandler := grpc.NewServer()
+		pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
+			ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
+			StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
+			RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
+		pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
+			CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
+			FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
+			ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
+		pb.RegisterUploaderHandlerServiceServer(grpcServer, &server.UploaderHandlerServer{UploaderService: &uploadService, TransactionRepository: transactionRepository,
+			CollectionRepository: collectionRepository, StatusRepository: statusRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository})
+		pb.RegisterCheckerHandlerServiceServer(grpcServer, &server.CheckerHandlerServer{ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository,
+			StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository})
+		log.Printf("server started at %v", lisHandler.Addr())
 
-	if err := grpcServerHandler.Serve(lisHandler); err != nil {
-		panic(errors.Wrapf(err, "Failed to serve gRPC server on port %v", conf.LocalAddr))
-	}
+	*/
+
+	grpcServer.Startup()
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	fmt.Println("press ctrl+c to stop server")
+	s := <-done
+	fmt.Println("got signal:", s)
+
+	defer grpcServer.GracefulStop()
 }

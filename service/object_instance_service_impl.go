@@ -1,8 +1,8 @@
 package service
 
 import (
+	"emperror.dev/errors"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
-	"github.com/pkg/errors"
 )
 
 func NewObjectInstanceService(objectInstanceRepository repository.ObjectInstanceRepository) ObjectInstanceService {

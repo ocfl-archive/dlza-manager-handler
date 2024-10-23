@@ -2,9 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/ocfl-archive/dlza-manager-handler/models"
-	"github.com/pkg/errors"
 	"slices"
 	"strconv"
 	"strings"

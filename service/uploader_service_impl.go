@@ -1,9 +1,9 @@
 package service
 
 import (
+	"emperror.dev/errors"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
-	"github.com/pkg/errors"
 )
 
 type UploaderServiceImpl struct {

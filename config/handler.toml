@@ -1,10 +1,8 @@
-#localaddr = ":8789"
-localaddr = ":9082"
-#domains = ["ubmedia", "mediathek"]
-domains = ["ubmedia"]
+localaddr = ""
+domains = ["ubdlza"]
 bearer = "grmbl"
-#resolveraddr = "[::1]:7777"
-resolveraddr = "127.0.0.1:7777"
+resolveraddr = "[::1]:7777"
+#resolveraddr = "127.0.0.1:7777"
 resolvertimeout = "10m"
 actiontimeout = "15m"
 resolvernotfoundtimeout = "10s"
@@ -13,37 +11,38 @@ externaladdr = "https://localhost:8765"
 #[grpcclient]
 #mediaserverdb = "localhost:7653"
 
-[resttls]
+[client]
 type = "minivault"
 initialtimeout = "1h"
-[resttls.minivault]
+[client.minivault]
 baseurl = "https://localhost:8759/api/v1"
-parenttoken = "pa.2dd5bf83545bab0f.906016a45dc58eb3"
-tokentype = "server_cert"
-tokenpolicies = ["mediaserveraction"]
+parenttoken = "pa.222e37a97b5605c3.fa6cf488616e8480" #pa.2dc483e73851c137.15d94e61e0b377f1
+tokentype = "client_cert"
+tokenpolicies = ["ubdlza.handler"]
 tokeninterval = "48h"
 tokenttl = "96h"
-certtype = "server_cert"
-dnss = ["localhost"]
-uris = []
-ips = ["127.0.0.1", "::1"]
-certinterval = "24h"
+certtype = "client_cert"
+dnss = []
+uris = ["grpc:miniresolverproto.MiniResolver"]
+ips = []
+certinterval = "36h"
 certttl = "48h"
 ca = ["certs/minivault.ca.pem"]
 usesystempool = false
+
 
 [server]
 type = "minivault"
 initialtimeout = "1h"
 [server.minivault]
 baseurl = "https://localhost:8759/api/v1"
-parenttoken = "pa.2dd5bf83545bab0f.906016a45dc58eb3" #pa.2dc483e73851c137.15d94e61e0b377f1
+parenttoken = "pa.222e37a97b5605c3.fa6cf488616e8480" #pa.2dc483e73851c137.15d94e61e0b377f1
 tokentype = "server_cert"
-tokenpolicies = ["mediaserveraction"]
+tokenpolicies = ["ubdlza.handler"]
 tokeninterval = "48h"
 tokenttl = "96h"
 certtype = "server_cert"
-dnss = ["ubmedia.mediaserverproto.Action", "ubmedia.mediaserverproto.ActionDispatcher", "mediathek.mediaserverproto.Action", "mediathek.mediaserverproto.ActionDispatcher"]
+dnss = ["ubdlza.handlerproto.DispatcherHandlerService"]
 uris = []
 ips = []
 certinterval = "36h"
@@ -56,28 +55,9 @@ host = "localhost"
 port = "5000"
 user = "jarekp"
 password = ""
-db_name = "archive_prod"
+dbname = "archive_prod"
 sslmode = "require"
 schema = "management_test"
-
-[client]
-type = "minivault"
-initialtimeout = "1h"
-[client.minivault]
-baseurl = "https://localhost:8759/api/v1"
-parenttoken = "pa.2dd5bf83545bab0f.906016a45dc58eb3" #pa.2dc483e73851c137.15d94e61e0b377f1
-tokentype = "client_cert"
-tokenpolicies = ["mediaserveraction"]
-tokeninterval = "48h"
-tokenttl = "96h"
-certtype = "client_cert"
-dnss = []
-uris = ["grpc:miniresolverproto.MiniResolver", "grpc:instance_ubimage.mediaserverproto.Action", "grpc:instance_ubviewer.mediaserverproto.Action", "grpc:ubmedia.mediaserverproto.Database", "grpc:mediathek.mediaserverproto.Database"]
-ips = []
-certinterval = "24h"
-certttl = "48h"
-ca = ["certs/minivault.ca.pem"]
-usesystempool = false
 
 [log]
 level = "debug"

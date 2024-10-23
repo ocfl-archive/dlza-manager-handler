@@ -2,8 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
-	"github.com/pkg/errors"
 )
 
 type RefreshMaterializedViewsRepositoryImpl struct {

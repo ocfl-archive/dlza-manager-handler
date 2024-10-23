@@ -2,10 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/lib/pq"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
-	"github.com/pkg/errors"
 )
 
 type TransactionRepositoryImpl struct {
