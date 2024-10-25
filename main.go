@@ -213,6 +213,10 @@ func main() {
 	_ = refreshMaterializedViewRepository
 
 	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository))
+	pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
+		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
+		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
+		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
 	/*
 		//Listen StorageHandler, Dispatcher, Clerk
 		lisHandler, err := net.Listen("tcp", conf.LocalAddr)
@@ -220,10 +224,6 @@ func main() {
 			panic(errors.Wrapf(err, "Failed to listen gRPC server"))
 		}
 		//grpcServerHandler := grpc.NewServer()
-		pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
-			ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
-			StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
-			RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
 		pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
 			CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
 			FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,

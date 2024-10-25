@@ -607,6 +607,7 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	StorageHandlerHandlerService_Ping_FullMethodName                                        = "/handlerproto.StorageHandlerHandlerService/Ping"
 	StorageHandlerHandlerService_TenantHasAccess_FullMethodName                             = "/handlerproto.StorageHandlerHandlerService/TenantHasAccess"
 	StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByCollectionAlias"
 	StorageHandlerHandlerService_GetStorageLocationsByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByObjectId"
@@ -627,6 +628,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StorageHandlerHandlerServiceClient interface {
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
 	TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
@@ -649,6 +651,15 @@ type storageHandlerHandlerServiceClient struct {
 
 func NewStorageHandlerHandlerServiceClient(cc grpc.ClientConnInterface) StorageHandlerHandlerServiceClient {
 	return &storageHandlerHandlerServiceClient{cc}
+}
+
+func (c *storageHandlerHandlerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error) {
+	out := new(proto.DefaultResponse)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_Ping_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *storageHandlerHandlerServiceClient) TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
@@ -781,6 +792,7 @@ func (c *storageHandlerHandlerServiceClient) AlterStatus(ctx context.Context, in
 // All implementations must embed UnimplementedStorageHandlerHandlerServiceServer
 // for forward compatibility
 type StorageHandlerHandlerServiceServer interface {
+	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
 	TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error)
 	GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
@@ -802,6 +814,9 @@ type StorageHandlerHandlerServiceServer interface {
 type UnimplementedStorageHandlerHandlerServiceServer struct {
 }
 
+func (UnimplementedStorageHandlerHandlerServiceServer) Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedStorageHandlerHandlerServiceServer) TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TenantHasAccess not implemented")
 }
@@ -856,6 +871,24 @@ type UnsafeStorageHandlerHandlerServiceServer interface {
 
 func RegisterStorageHandlerHandlerServiceServer(s grpc.ServiceRegistrar, srv StorageHandlerHandlerServiceServer) {
 	s.RegisterService(&StorageHandlerHandlerService_ServiceDesc, srv)
+}
+
+func _StorageHandlerHandlerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).Ping(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _StorageHandlerHandlerService_TenantHasAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1117,6 +1150,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.StorageHandlerHandlerService",
 	HandlerType: (*StorageHandlerHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _StorageHandlerHandlerService_Ping_Handler,
+		},
 		{
 			MethodName: "TenantHasAccess",
 			Handler:    _StorageHandlerHandlerService_TenantHasAccess_Handler,
