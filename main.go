@@ -217,19 +217,11 @@ func main() {
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
 		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
+	pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
+		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
+		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
+		ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
 	/*
-		//Listen StorageHandler, Dispatcher, Clerk
-		lisHandler, err := net.Listen("tcp", conf.LocalAddr)
-		if err != nil {
-			panic(errors.Wrapf(err, "Failed to listen gRPC server"))
-		}
-		//grpcServerHandler := grpc.NewServer()
-		pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
-			CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
-			FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
-			ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository})
-		pb.RegisterUploaderHandlerServiceServer(grpcServer, &server.UploaderHandlerServer{UploaderService: &uploadService, TransactionRepository: transactionRepository,
-			CollectionRepository: collectionRepository, StatusRepository: statusRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository})
 		pb.RegisterCheckerHandlerServiceServer(grpcServer, &server.CheckerHandlerServer{ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository,
 			StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository})
 		log.Printf("server started at %v", lisHandler.Addr())

@@ -16,7 +16,7 @@ type = "minivault"
 initialtimeout = "1h"
 [client.minivault]
 baseurl = "https://localhost:8759/api/v1"
-parenttoken = "pa.222f3a8fa28296a7.6306cf3df19e457d" #pa.2dc483e73851c137.15d94e61e0b377f1
+parenttoken = "pa.222c6fb62c4a55ff.e743336410a81ab4" #pa.2dc483e73851c137.15d94e61e0b377f1
 tokentype = "client_cert"
 tokenpolicies = ["ubdlza.handler"]
 tokeninterval = "48h"
@@ -36,13 +36,13 @@ type = "minivault"
 initialtimeout = "1h"
 [server.minivault]
 baseurl = "https://localhost:8759/api/v1"
-parenttoken = "pa.222f3a8fa28296a7.6306cf3df19e457d" #pa.2dc483e73851c137.15d94e61e0b377f1
+parenttoken = "pa.222c6fb62c4a55ff.e743336410a81ab4" #pa.2dc483e73851c137.15d94e61e0b377f1
 tokentype = "server_cert"
 tokenpolicies = ["ubdlza.handler"]
 tokeninterval = "48h"
 tokenttl = "96h"
 certtype = "server_cert"
-dnss = ["ubdlza.handlerproto.DispatcherHandlerService","ubdlza.handlerproto.StorageHandlerHandlerService"]
+dnss = ["ubdlza.handlerproto.DispatcherHandlerService","ubdlza.handlerproto.StorageHandlerHandlerService", "ubdlza.handlerproto.ClerkHandlerService"]
 uris = []
 ips = []
 certinterval = "36h"
