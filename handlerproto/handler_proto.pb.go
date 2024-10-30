@@ -170,7 +170,7 @@ var file_handler_proto_proto_rawDesc = []byte{
 	0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75,
 	0x73, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x1a, 0x18, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61,
 	0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x22, 0x00, 0x32, 0xf6, 0x21, 0x0a, 0x13, 0x43, 0x6c, 0x65, 0x72, 0x6b, 0x48, 0x61, 0x6e,
+	0x73, 0x22, 0x00, 0x32, 0xdd, 0x22, 0x0a, 0x13, 0x43, 0x6c, 0x65, 0x72, 0x6b, 0x48, 0x61, 0x6e,
 	0x64, 0x6c, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x42, 0x0a, 0x0e, 0x46,
 	0x69, 0x6e, 0x64, 0x54, 0x65, 0x6e, 0x61, 0x6e, 0x74, 0x42, 0x79, 0x49, 0x64, 0x12, 0x14, 0x2e,
 	0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f,
@@ -441,24 +441,30 @@ var file_handler_proto_proto_rawDesc = []byte{
 	0x74, 0x49, 0x64, 0x12, 0x14, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65,
 	0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x49, 0x64, 0x1a, 0x1f, 0x2e, 0x64, 0x6c, 0x7a, 0x61,
 	0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x41, 0x6e, 0x64, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x00, 0x32, 0x78, 0x0a, 0x18,
-	0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65,
-	0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5c, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x4c,
-	0x6f, 0x77, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x12, 0x19, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67,
-	0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x6f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x1a,
-	0x23, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x6c, 0x69,
-	0x61, 0x73, 0x65, 0x73, 0x22, 0x00, 0x42, 0x81, 0x01, 0x0a, 0x17, 0x63, 0x68, 0x2e, 0x75, 0x6e,
-	0x69, 0x62, 0x61, 0x73, 0x2e, 0x75, 0x62, 0x2e, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x2e,
-	0x70, 0x67, 0x42, 0x0c, 0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f,
-	0x50, 0x01, 0x5a, 0x39, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6f,
-	0x63, 0x66, 0x6c, 0x2d, 0x61, 0x72, 0x63, 0x68, 0x69, 0x76, 0x65, 0x2f, 0x64, 0x6c, 0x7a, 0x61,
-	0x2d, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2d, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72,
-	0x2f, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0xa2, 0x02, 0x03,
-	0x55, 0x42, 0x42, 0xaa, 0x02, 0x14, 0x55, 0x6e, 0x69, 0x62, 0x61, 0x73, 0x2e, 0x55, 0x42, 0x2e,
-	0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x2e, 0x50, 0x47, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x75, 0x6e, 0x74, 0x41, 0x6e, 0x64, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x00, 0x12, 0x65, 0x0a, 0x2a,
+	0x47, 0x65, 0x74, 0x53, 0x69, 0x7a, 0x65, 0x46, 0x6f, 0x72, 0x41, 0x6c, 0x6c, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x73, 0x42, 0x79, 0x43, 0x6f,
+	0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x14, 0x2e, 0x64, 0x6c, 0x7a,
+	0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x49, 0x64,
+	0x1a, 0x1f, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x41, 0x6e, 0x64, 0x53, 0x69, 0x7a,
+	0x65, 0x22, 0x00, 0x32, 0x78, 0x0a, 0x18, 0x44, 0x69, 0x73, 0x70, 0x61, 0x74, 0x63, 0x68, 0x65,
+	0x72, 0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
+	0x5c, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x4c, 0x6f, 0x77, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79,
+	0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x19, 0x2e, 0x64, 0x6c,
+	0x7a, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e,
+	0x6f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x1a, 0x23, 0x2e, 0x64, 0x6c, 0x7a, 0x61, 0x6d, 0x61, 0x6e,
+	0x61, 0x67, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x65, 0x73, 0x22, 0x00, 0x42, 0x81, 0x01,
+	0x0a, 0x17, 0x63, 0x68, 0x2e, 0x75, 0x6e, 0x69, 0x62, 0x61, 0x73, 0x2e, 0x75, 0x62, 0x2e, 0x68,
+	0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x2e, 0x70, 0x67, 0x42, 0x0c, 0x48, 0x61, 0x6e, 0x64, 0x6c,
+	0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x39, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6f, 0x63, 0x66, 0x6c, 0x2d, 0x61, 0x72, 0x63, 0x68, 0x69,
+	0x76, 0x65, 0x2f, 0x64, 0x6c, 0x7a, 0x61, 0x2d, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2d,
+	0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x2f, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0xa2, 0x02, 0x03, 0x55, 0x42, 0x42, 0xaa, 0x02, 0x14, 0x55, 0x6e, 0x69,
+	0x62, 0x61, 0x73, 0x2e, 0x55, 0x42, 0x2e, 0x48, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x72, 0x2e, 0x50,
+	0x47, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_handler_proto_proto_goTypes = []interface{}{
@@ -568,84 +574,86 @@ var file_handler_proto_proto_depIdxs = []int32{
 	3,  // 71: handlerproto.ClerkHandlerService.GetAmountOfErrorsForStorageLocationId:input_type -> dlzamanagerproto.Id
 	3,  // 72: handlerproto.ClerkHandlerService.GetAmountOfObjectsForStorageLocationId:input_type -> dlzamanagerproto.Id
 	3,  // 73: handlerproto.ClerkHandlerService.GetAmountOfObjectsAndTotalSizeByTenantId:input_type -> dlzamanagerproto.Id
-	5,  // 74: handlerproto.DispatcherHandlerService.GetLowQualityCollections:input_type -> dlzamanagerproto.NoParam
-	15, // 75: handlerproto.UploaderStorageHandlerService.CopyFile:output_type -> dlzamanagerproto.Status
-	15, // 76: handlerproto.UploaderHandlerService.TenantHasAccess:output_type -> dlzamanagerproto.Status
-	15, // 77: handlerproto.UploaderHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
-	16, // 78: handlerproto.UploaderHandlerService.GetObjectInstancesByName:output_type -> dlzamanagerproto.ObjectInstances
-	17, // 79: handlerproto.UploaderHandlerService.GetObjectsByChecksum:output_type -> dlzamanagerproto.Objects
-	15, // 80: handlerproto.ClerkStorageHandlerService.CreateStoragePartition:output_type -> dlzamanagerproto.Status
-	16, // 81: handlerproto.CheckerHandlerService.getAllObjectInstances:output_type -> dlzamanagerproto.ObjectInstances
-	5,  // 82: handlerproto.CheckerHandlerService.UpdateObjectInstance:output_type -> dlzamanagerproto.NoParam
-	5,  // 83: handlerproto.CheckerHandlerService.CreateObjectInstanceCheck:output_type -> dlzamanagerproto.NoParam
-	12, // 84: handlerproto.CheckerHandlerService.GetStorageLocationByObjectInstanceId:output_type -> dlzamanagerproto.StorageLocation
-	18, // 85: handlerproto.CheckerHandlerService.GetObjectById:output_type -> dlzamanagerproto.Object
-	19, // 86: handlerproto.StorageHandlerHandlerService.GetStorageLocationsByCollectionAlias:output_type -> dlzamanagerproto.StorageLocations
-	19, // 87: handlerproto.StorageHandlerHandlerService.GetStorageLocationsByObjectId:output_type -> dlzamanagerproto.StorageLocations
-	4,  // 88: handlerproto.StorageHandlerHandlerService.GetStoragePartitionForLocation:output_type -> dlzamanagerproto.StoragePartition
-	15, // 89: handlerproto.StorageHandlerHandlerService.SaveAllTableObjectsAfterCopying:output_type -> dlzamanagerproto.Status
-	12, // 90: handlerproto.StorageHandlerHandlerService.GetStorageLocationById:output_type -> dlzamanagerproto.StorageLocation
-	4,  // 91: handlerproto.StorageHandlerHandlerService.GetAndSaveStoragePartitionWithRelevantAlias:output_type -> dlzamanagerproto.StoragePartition
-	15, // 92: handlerproto.StorageHandlerHandlerService.UpdateStoragePartition:output_type -> dlzamanagerproto.Status
-	17, // 93: handlerproto.StorageHandlerHandlerService.GetObjectsByCollectionAlias:output_type -> dlzamanagerproto.Objects
-	16, // 94: handlerproto.StorageHandlerHandlerService.GetObjectsInstancesByObjectId:output_type -> dlzamanagerproto.ObjectInstances
-	3,  // 95: handlerproto.StorageHandlerHandlerService.CreateObjectInstance:output_type -> dlzamanagerproto.Id
-	20, // 96: handlerproto.StorageHandlerHandlerService.GetStoragePartitionsByStorageLocationId:output_type -> dlzamanagerproto.StoragePartitions
-	15, // 97: handlerproto.StorageHandlerHandlerService.DeleteObjectInstance:output_type -> dlzamanagerproto.Status
-	15, // 98: handlerproto.StorageHandlerHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
-	11, // 99: handlerproto.ClerkHandlerService.FindTenantById:output_type -> dlzamanagerproto.Tenant
-	15, // 100: handlerproto.ClerkHandlerService.DeleteTenant:output_type -> dlzamanagerproto.Status
-	15, // 101: handlerproto.ClerkHandlerService.SaveTenant:output_type -> dlzamanagerproto.Status
-	15, // 102: handlerproto.ClerkHandlerService.UpdateTenant:output_type -> dlzamanagerproto.Status
-	21, // 103: handlerproto.ClerkHandlerService.FindAllTenants:output_type -> dlzamanagerproto.Tenants
-	19, // 104: handlerproto.ClerkHandlerService.GetStorageLocationsByTenantId:output_type -> dlzamanagerproto.StorageLocations
-	3,  // 105: handlerproto.ClerkHandlerService.SaveStorageLocation:output_type -> dlzamanagerproto.Id
-	15, // 106: handlerproto.ClerkHandlerService.UpdateStorageLocation:output_type -> dlzamanagerproto.Status
-	15, // 107: handlerproto.ClerkHandlerService.DeleteStorageLocationById:output_type -> dlzamanagerproto.Status
-	3,  // 108: handlerproto.ClerkHandlerService.CreateStoragePartition:output_type -> dlzamanagerproto.Id
-	15, // 109: handlerproto.ClerkHandlerService.UpdateStoragePartition:output_type -> dlzamanagerproto.Status
-	15, // 110: handlerproto.ClerkHandlerService.DeleteStoragePartitionById:output_type -> dlzamanagerproto.Status
-	22, // 111: handlerproto.ClerkHandlerService.GetCollectionsByTenantId:output_type -> dlzamanagerproto.Collections
-	13, // 112: handlerproto.ClerkHandlerService.GetCollectionById:output_type -> dlzamanagerproto.Collection
-	13, // 113: handlerproto.ClerkHandlerService.GetCollectionByIdFromMv:output_type -> dlzamanagerproto.Collection
-	15, // 114: handlerproto.ClerkHandlerService.DeleteCollectionById:output_type -> dlzamanagerproto.Status
-	3,  // 115: handlerproto.ClerkHandlerService.CreateCollection:output_type -> dlzamanagerproto.Id
-	15, // 116: handlerproto.ClerkHandlerService.UpdateCollection:output_type -> dlzamanagerproto.Status
-	18, // 117: handlerproto.ClerkHandlerService.GetObjectById:output_type -> dlzamanagerproto.Object
-	17, // 118: handlerproto.ClerkHandlerService.GetObjectsByChecksum:output_type -> dlzamanagerproto.Objects
-	6,  // 119: handlerproto.ClerkHandlerService.GetObjectInstanceById:output_type -> dlzamanagerproto.ObjectInstance
-	23, // 120: handlerproto.ClerkHandlerService.GetFileById:output_type -> dlzamanagerproto.File
-	7,  // 121: handlerproto.ClerkHandlerService.GetObjectInstanceCheckById:output_type -> dlzamanagerproto.ObjectInstanceCheck
-	12, // 122: handlerproto.ClerkHandlerService.GetStorageLocationById:output_type -> dlzamanagerproto.StorageLocation
-	4,  // 123: handlerproto.ClerkHandlerService.GetStoragePartitionById:output_type -> dlzamanagerproto.StoragePartition
-	21, // 124: handlerproto.ClerkHandlerService.FindAllTenantsPaginated:output_type -> dlzamanagerproto.Tenants
-	22, // 125: handlerproto.ClerkHandlerService.GetCollectionsByTenantIdPaginated:output_type -> dlzamanagerproto.Collections
-	17, // 126: handlerproto.ClerkHandlerService.GetObjectsByCollectionIdPaginated:output_type -> dlzamanagerproto.Objects
-	24, // 127: handlerproto.ClerkHandlerService.GetFilesByCollectionIdPaginated:output_type -> dlzamanagerproto.Files
-	25, // 128: handlerproto.ClerkHandlerService.GetMimeTypesForCollectionId:output_type -> dlzamanagerproto.MimeTypes
-	26, // 129: handlerproto.ClerkHandlerService.GetPronomsForCollectionId:output_type -> dlzamanagerproto.Pronoms
-	16, // 130: handlerproto.ClerkHandlerService.GetObjectInstancesByObjectIdPaginated:output_type -> dlzamanagerproto.ObjectInstances
-	24, // 131: handlerproto.ClerkHandlerService.GetFilesByObjectIdPaginated:output_type -> dlzamanagerproto.Files
-	27, // 132: handlerproto.ClerkHandlerService.GetObjectInstanceChecksByObjectInstanceIdPaginated:output_type -> dlzamanagerproto.ObjectInstanceChecks
-	16, // 133: handlerproto.ClerkHandlerService.GetObjectInstancesByName:output_type -> dlzamanagerproto.ObjectInstances
-	19, // 134: handlerproto.ClerkHandlerService.GetStorageLocationsByTenantIdPaginated:output_type -> dlzamanagerproto.StorageLocations
-	19, // 135: handlerproto.ClerkHandlerService.GetStorageLocationsByCollectionIdPaginated:output_type -> dlzamanagerproto.StorageLocations
-	20, // 136: handlerproto.ClerkHandlerService.GetStoragePartitionsByLocationIdPaginated:output_type -> dlzamanagerproto.StoragePartitions
-	16, // 137: handlerproto.ClerkHandlerService.GetObjectInstancesByStoragePartitionIdPaginated:output_type -> dlzamanagerproto.ObjectInstances
-	3,  // 138: handlerproto.ClerkHandlerService.GetStorageLocationsStatusForCollectionAlias:output_type -> dlzamanagerproto.Id
-	2,  // 139: handlerproto.ClerkHandlerService.CheckStatus:output_type -> dlzamanagerproto.StatusObject
-	3,  // 140: handlerproto.ClerkHandlerService.CreateStatus:output_type -> dlzamanagerproto.Id
-	15, // 141: handlerproto.ClerkHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
-	9,  // 142: handlerproto.ClerkHandlerService.GetResultingQualityForObject:output_type -> dlzamanagerproto.SizeAndId
-	9,  // 143: handlerproto.ClerkHandlerService.GetNeededQualityForObject:output_type -> dlzamanagerproto.SizeAndId
-	9,  // 144: handlerproto.ClerkHandlerService.GetStatusForObjectId:output_type -> dlzamanagerproto.SizeAndId
-	9,  // 145: handlerproto.ClerkHandlerService.GetAmountOfErrorsByCollectionId:output_type -> dlzamanagerproto.SizeAndId
-	9,  // 146: handlerproto.ClerkHandlerService.GetAmountOfErrorsForStorageLocationId:output_type -> dlzamanagerproto.SizeAndId
-	9,  // 147: handlerproto.ClerkHandlerService.GetAmountOfObjectsForStorageLocationId:output_type -> dlzamanagerproto.SizeAndId
-	28, // 148: handlerproto.ClerkHandlerService.GetAmountOfObjectsAndTotalSizeByTenantId:output_type -> dlzamanagerproto.AmountAndSize
-	29, // 149: handlerproto.DispatcherHandlerService.GetLowQualityCollections:output_type -> dlzamanagerproto.CollectionAliases
-	75, // [75:150] is the sub-list for method output_type
-	0,  // [0:75] is the sub-list for method input_type
+	3,  // 74: handlerproto.ClerkHandlerService.GetSizeForAllObjectInstancesByCollectionId:input_type -> dlzamanagerproto.Id
+	5,  // 75: handlerproto.DispatcherHandlerService.GetLowQualityCollections:input_type -> dlzamanagerproto.NoParam
+	15, // 76: handlerproto.UploaderStorageHandlerService.CopyFile:output_type -> dlzamanagerproto.Status
+	15, // 77: handlerproto.UploaderHandlerService.TenantHasAccess:output_type -> dlzamanagerproto.Status
+	15, // 78: handlerproto.UploaderHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
+	16, // 79: handlerproto.UploaderHandlerService.GetObjectInstancesByName:output_type -> dlzamanagerproto.ObjectInstances
+	17, // 80: handlerproto.UploaderHandlerService.GetObjectsByChecksum:output_type -> dlzamanagerproto.Objects
+	15, // 81: handlerproto.ClerkStorageHandlerService.CreateStoragePartition:output_type -> dlzamanagerproto.Status
+	16, // 82: handlerproto.CheckerHandlerService.getAllObjectInstances:output_type -> dlzamanagerproto.ObjectInstances
+	5,  // 83: handlerproto.CheckerHandlerService.UpdateObjectInstance:output_type -> dlzamanagerproto.NoParam
+	5,  // 84: handlerproto.CheckerHandlerService.CreateObjectInstanceCheck:output_type -> dlzamanagerproto.NoParam
+	12, // 85: handlerproto.CheckerHandlerService.GetStorageLocationByObjectInstanceId:output_type -> dlzamanagerproto.StorageLocation
+	18, // 86: handlerproto.CheckerHandlerService.GetObjectById:output_type -> dlzamanagerproto.Object
+	19, // 87: handlerproto.StorageHandlerHandlerService.GetStorageLocationsByCollectionAlias:output_type -> dlzamanagerproto.StorageLocations
+	19, // 88: handlerproto.StorageHandlerHandlerService.GetStorageLocationsByObjectId:output_type -> dlzamanagerproto.StorageLocations
+	4,  // 89: handlerproto.StorageHandlerHandlerService.GetStoragePartitionForLocation:output_type -> dlzamanagerproto.StoragePartition
+	15, // 90: handlerproto.StorageHandlerHandlerService.SaveAllTableObjectsAfterCopying:output_type -> dlzamanagerproto.Status
+	12, // 91: handlerproto.StorageHandlerHandlerService.GetStorageLocationById:output_type -> dlzamanagerproto.StorageLocation
+	4,  // 92: handlerproto.StorageHandlerHandlerService.GetAndSaveStoragePartitionWithRelevantAlias:output_type -> dlzamanagerproto.StoragePartition
+	15, // 93: handlerproto.StorageHandlerHandlerService.UpdateStoragePartition:output_type -> dlzamanagerproto.Status
+	17, // 94: handlerproto.StorageHandlerHandlerService.GetObjectsByCollectionAlias:output_type -> dlzamanagerproto.Objects
+	16, // 95: handlerproto.StorageHandlerHandlerService.GetObjectsInstancesByObjectId:output_type -> dlzamanagerproto.ObjectInstances
+	3,  // 96: handlerproto.StorageHandlerHandlerService.CreateObjectInstance:output_type -> dlzamanagerproto.Id
+	20, // 97: handlerproto.StorageHandlerHandlerService.GetStoragePartitionsByStorageLocationId:output_type -> dlzamanagerproto.StoragePartitions
+	15, // 98: handlerproto.StorageHandlerHandlerService.DeleteObjectInstance:output_type -> dlzamanagerproto.Status
+	15, // 99: handlerproto.StorageHandlerHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
+	11, // 100: handlerproto.ClerkHandlerService.FindTenantById:output_type -> dlzamanagerproto.Tenant
+	15, // 101: handlerproto.ClerkHandlerService.DeleteTenant:output_type -> dlzamanagerproto.Status
+	15, // 102: handlerproto.ClerkHandlerService.SaveTenant:output_type -> dlzamanagerproto.Status
+	15, // 103: handlerproto.ClerkHandlerService.UpdateTenant:output_type -> dlzamanagerproto.Status
+	21, // 104: handlerproto.ClerkHandlerService.FindAllTenants:output_type -> dlzamanagerproto.Tenants
+	19, // 105: handlerproto.ClerkHandlerService.GetStorageLocationsByTenantId:output_type -> dlzamanagerproto.StorageLocations
+	3,  // 106: handlerproto.ClerkHandlerService.SaveStorageLocation:output_type -> dlzamanagerproto.Id
+	15, // 107: handlerproto.ClerkHandlerService.UpdateStorageLocation:output_type -> dlzamanagerproto.Status
+	15, // 108: handlerproto.ClerkHandlerService.DeleteStorageLocationById:output_type -> dlzamanagerproto.Status
+	3,  // 109: handlerproto.ClerkHandlerService.CreateStoragePartition:output_type -> dlzamanagerproto.Id
+	15, // 110: handlerproto.ClerkHandlerService.UpdateStoragePartition:output_type -> dlzamanagerproto.Status
+	15, // 111: handlerproto.ClerkHandlerService.DeleteStoragePartitionById:output_type -> dlzamanagerproto.Status
+	22, // 112: handlerproto.ClerkHandlerService.GetCollectionsByTenantId:output_type -> dlzamanagerproto.Collections
+	13, // 113: handlerproto.ClerkHandlerService.GetCollectionById:output_type -> dlzamanagerproto.Collection
+	13, // 114: handlerproto.ClerkHandlerService.GetCollectionByIdFromMv:output_type -> dlzamanagerproto.Collection
+	15, // 115: handlerproto.ClerkHandlerService.DeleteCollectionById:output_type -> dlzamanagerproto.Status
+	3,  // 116: handlerproto.ClerkHandlerService.CreateCollection:output_type -> dlzamanagerproto.Id
+	15, // 117: handlerproto.ClerkHandlerService.UpdateCollection:output_type -> dlzamanagerproto.Status
+	18, // 118: handlerproto.ClerkHandlerService.GetObjectById:output_type -> dlzamanagerproto.Object
+	17, // 119: handlerproto.ClerkHandlerService.GetObjectsByChecksum:output_type -> dlzamanagerproto.Objects
+	6,  // 120: handlerproto.ClerkHandlerService.GetObjectInstanceById:output_type -> dlzamanagerproto.ObjectInstance
+	23, // 121: handlerproto.ClerkHandlerService.GetFileById:output_type -> dlzamanagerproto.File
+	7,  // 122: handlerproto.ClerkHandlerService.GetObjectInstanceCheckById:output_type -> dlzamanagerproto.ObjectInstanceCheck
+	12, // 123: handlerproto.ClerkHandlerService.GetStorageLocationById:output_type -> dlzamanagerproto.StorageLocation
+	4,  // 124: handlerproto.ClerkHandlerService.GetStoragePartitionById:output_type -> dlzamanagerproto.StoragePartition
+	21, // 125: handlerproto.ClerkHandlerService.FindAllTenantsPaginated:output_type -> dlzamanagerproto.Tenants
+	22, // 126: handlerproto.ClerkHandlerService.GetCollectionsByTenantIdPaginated:output_type -> dlzamanagerproto.Collections
+	17, // 127: handlerproto.ClerkHandlerService.GetObjectsByCollectionIdPaginated:output_type -> dlzamanagerproto.Objects
+	24, // 128: handlerproto.ClerkHandlerService.GetFilesByCollectionIdPaginated:output_type -> dlzamanagerproto.Files
+	25, // 129: handlerproto.ClerkHandlerService.GetMimeTypesForCollectionId:output_type -> dlzamanagerproto.MimeTypes
+	26, // 130: handlerproto.ClerkHandlerService.GetPronomsForCollectionId:output_type -> dlzamanagerproto.Pronoms
+	16, // 131: handlerproto.ClerkHandlerService.GetObjectInstancesByObjectIdPaginated:output_type -> dlzamanagerproto.ObjectInstances
+	24, // 132: handlerproto.ClerkHandlerService.GetFilesByObjectIdPaginated:output_type -> dlzamanagerproto.Files
+	27, // 133: handlerproto.ClerkHandlerService.GetObjectInstanceChecksByObjectInstanceIdPaginated:output_type -> dlzamanagerproto.ObjectInstanceChecks
+	16, // 134: handlerproto.ClerkHandlerService.GetObjectInstancesByName:output_type -> dlzamanagerproto.ObjectInstances
+	19, // 135: handlerproto.ClerkHandlerService.GetStorageLocationsByTenantIdPaginated:output_type -> dlzamanagerproto.StorageLocations
+	19, // 136: handlerproto.ClerkHandlerService.GetStorageLocationsByCollectionIdPaginated:output_type -> dlzamanagerproto.StorageLocations
+	20, // 137: handlerproto.ClerkHandlerService.GetStoragePartitionsByLocationIdPaginated:output_type -> dlzamanagerproto.StoragePartitions
+	16, // 138: handlerproto.ClerkHandlerService.GetObjectInstancesByStoragePartitionIdPaginated:output_type -> dlzamanagerproto.ObjectInstances
+	3,  // 139: handlerproto.ClerkHandlerService.GetStorageLocationsStatusForCollectionAlias:output_type -> dlzamanagerproto.Id
+	2,  // 140: handlerproto.ClerkHandlerService.CheckStatus:output_type -> dlzamanagerproto.StatusObject
+	3,  // 141: handlerproto.ClerkHandlerService.CreateStatus:output_type -> dlzamanagerproto.Id
+	15, // 142: handlerproto.ClerkHandlerService.AlterStatus:output_type -> dlzamanagerproto.Status
+	9,  // 143: handlerproto.ClerkHandlerService.GetResultingQualityForObject:output_type -> dlzamanagerproto.SizeAndId
+	9,  // 144: handlerproto.ClerkHandlerService.GetNeededQualityForObject:output_type -> dlzamanagerproto.SizeAndId
+	9,  // 145: handlerproto.ClerkHandlerService.GetStatusForObjectId:output_type -> dlzamanagerproto.SizeAndId
+	9,  // 146: handlerproto.ClerkHandlerService.GetAmountOfErrorsByCollectionId:output_type -> dlzamanagerproto.SizeAndId
+	9,  // 147: handlerproto.ClerkHandlerService.GetAmountOfErrorsForStorageLocationId:output_type -> dlzamanagerproto.SizeAndId
+	9,  // 148: handlerproto.ClerkHandlerService.GetAmountOfObjectsForStorageLocationId:output_type -> dlzamanagerproto.SizeAndId
+	28, // 149: handlerproto.ClerkHandlerService.GetAmountOfObjectsAndTotalSizeByTenantId:output_type -> dlzamanagerproto.AmountAndSize
+	28, // 150: handlerproto.ClerkHandlerService.GetSizeForAllObjectInstancesByCollectionId:output_type -> dlzamanagerproto.AmountAndSize
+	29, // 151: handlerproto.DispatcherHandlerService.GetLowQualityCollections:output_type -> dlzamanagerproto.CollectionAliases
+	76, // [76:152] is the sub-list for method output_type
+	0,  // [0:76] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

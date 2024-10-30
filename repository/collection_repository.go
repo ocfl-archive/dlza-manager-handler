@@ -15,4 +15,5 @@ type CollectionRepository interface {
 	GetCollectionById(id string) (models.Collection, error)
 	GetCollectionByIdFromMv(id string) (models.Collection, error)
 	CreateCollectionPreparedStatements() error
+	GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error)
 }

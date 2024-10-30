@@ -109,6 +109,7 @@ service ClerkHandlerService {
   rpc GetAmountOfErrorsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetAmountOfObjectsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetAmountOfObjectsAndTotalSizeByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
+  rpc GetSizeForAllObjectInstancesByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
 }
 
 service DispatcherHandlerService {

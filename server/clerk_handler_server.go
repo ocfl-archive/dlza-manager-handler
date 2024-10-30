@@ -569,3 +569,12 @@ func (c *ClerkHandlerServer) GetStorageLocationsStatusForCollectionAlias(ctx con
 	locationStatusPb := pb.Id{Id: status}
 	return &locationStatusPb, nil
 }
+
+func (c *ClerkHandlerServer) GetSizeForAllObjectInstancesByCollectionId(ctx context.Context, id *pb.Id) (*pb.AmountAndSize, error) {
+	size, err := c.CollectionRepository.GetSizeForAllObjectInstancesByCollectionId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetSizeForAllObjectInstancesByCollectionId for collection with id: '%s'", id.Id)
+	}
+	amountAndSizePb := pb.AmountAndSize{Size: size}
+	return &amountAndSizePb, nil
+}
