@@ -6,6 +6,10 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 )
 
+func NewUploaderService(tenantRepository repository.TenantRepository, collectionRepository repository.CollectionRepository) UploaderService {
+	return &UploaderServiceImpl{TenantRepository: tenantRepository, CollectionRepository: collectionRepository}
+}
+
 type UploaderServiceImpl struct {
 	TenantRepository     repository.TenantRepository
 	CollectionRepository repository.CollectionRepository

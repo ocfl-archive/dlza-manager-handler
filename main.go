@@ -202,21 +202,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("couldn't create prepared statements for statusRepository err: %v", err)
 	}
-	uploadService := service.UploaderServiceImpl{CollectionRepository: collectionRepository, TenantRepository: tenantRepository}
-	_ = uploadService
+	uploadService := service.NewUploaderService(tenantRepository, collectionRepository)
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
-	_ = storageLocationService
-
 	transactionRepository := repository.NewTransactionRepository(db, conf.Database.Schema)
-	_ = transactionRepository
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(db, conf.Database.Schema)
-	_ = refreshMaterializedViewRepository
 
 	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository))
 	pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
-		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
+		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, UploaderService: uploadService, Logger: logger})
 	pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
 		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
 		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
