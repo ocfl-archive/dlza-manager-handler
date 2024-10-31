@@ -22,353 +22,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UploaderStorageHandlerService_CopyFile_FullMethodName = "/handlerproto.UploaderStorageHandlerService/CopyFile"
-)
-
-// UploaderStorageHandlerServiceClient is the client API for UploaderStorageHandlerService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type UploaderStorageHandlerServiceClient interface {
-	CopyFile(ctx context.Context, in *dlzamanagerproto.IncomingOrder, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
-}
-
-type uploaderStorageHandlerServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewUploaderStorageHandlerServiceClient(cc grpc.ClientConnInterface) UploaderStorageHandlerServiceClient {
-	return &uploaderStorageHandlerServiceClient{cc}
-}
-
-func (c *uploaderStorageHandlerServiceClient) CopyFile(ctx context.Context, in *dlzamanagerproto.IncomingOrder, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, UploaderStorageHandlerService_CopyFile_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// UploaderStorageHandlerServiceServer is the server API for UploaderStorageHandlerService service.
-// All implementations must embed UnimplementedUploaderStorageHandlerServiceServer
-// for forward compatibility
-type UploaderStorageHandlerServiceServer interface {
-	CopyFile(context.Context, *dlzamanagerproto.IncomingOrder) (*dlzamanagerproto.Status, error)
-	mustEmbedUnimplementedUploaderStorageHandlerServiceServer()
-}
-
-// UnimplementedUploaderStorageHandlerServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedUploaderStorageHandlerServiceServer struct {
-}
-
-func (UnimplementedUploaderStorageHandlerServiceServer) CopyFile(context.Context, *dlzamanagerproto.IncomingOrder) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CopyFile not implemented")
-}
-func (UnimplementedUploaderStorageHandlerServiceServer) mustEmbedUnimplementedUploaderStorageHandlerServiceServer() {
-}
-
-// UnsafeUploaderStorageHandlerServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to UploaderStorageHandlerServiceServer will
-// result in compilation errors.
-type UnsafeUploaderStorageHandlerServiceServer interface {
-	mustEmbedUnimplementedUploaderStorageHandlerServiceServer()
-}
-
-func RegisterUploaderStorageHandlerServiceServer(s grpc.ServiceRegistrar, srv UploaderStorageHandlerServiceServer) {
-	s.RegisterService(&UploaderStorageHandlerService_ServiceDesc, srv)
-}
-
-func _UploaderStorageHandlerService_CopyFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.IncomingOrder)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploaderStorageHandlerServiceServer).CopyFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UploaderStorageHandlerService_CopyFile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploaderStorageHandlerServiceServer).CopyFile(ctx, req.(*dlzamanagerproto.IncomingOrder))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// UploaderStorageHandlerService_ServiceDesc is the grpc.ServiceDesc for UploaderStorageHandlerService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var UploaderStorageHandlerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "handlerproto.UploaderStorageHandlerService",
-	HandlerType: (*UploaderStorageHandlerServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CopyFile",
-			Handler:    _UploaderStorageHandlerService_CopyFile_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "handler_proto.proto",
-}
-
-const (
-	UploaderHandlerService_AlterStatus_FullMethodName              = "/handlerproto.UploaderHandlerService/AlterStatus"
-	UploaderHandlerService_GetObjectInstancesByName_FullMethodName = "/handlerproto.UploaderHandlerService/GetObjectInstancesByName"
-	UploaderHandlerService_GetObjectsByChecksum_FullMethodName     = "/handlerproto.UploaderHandlerService/GetObjectsByChecksum"
-)
-
-// UploaderHandlerServiceClient is the client API for UploaderHandlerService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type UploaderHandlerServiceClient interface {
-	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
-	GetObjectInstancesByName(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
-	GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
-}
-
-type uploaderHandlerServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewUploaderHandlerServiceClient(cc grpc.ClientConnInterface) UploaderHandlerServiceClient {
-	return &uploaderHandlerServiceClient{cc}
-}
-
-func (c *uploaderHandlerServiceClient) AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, UploaderHandlerService_AlterStatus_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *uploaderHandlerServiceClient) GetObjectInstancesByName(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error) {
-	out := new(dlzamanagerproto.ObjectInstances)
-	err := c.cc.Invoke(ctx, UploaderHandlerService_GetObjectInstancesByName_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *uploaderHandlerServiceClient) GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error) {
-	out := new(dlzamanagerproto.Objects)
-	err := c.cc.Invoke(ctx, UploaderHandlerService_GetObjectsByChecksum_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// UploaderHandlerServiceServer is the server API for UploaderHandlerService service.
-// All implementations must embed UnimplementedUploaderHandlerServiceServer
-// for forward compatibility
-type UploaderHandlerServiceServer interface {
-	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
-	GetObjectInstancesByName(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
-	GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error)
-	mustEmbedUnimplementedUploaderHandlerServiceServer()
-}
-
-// UnimplementedUploaderHandlerServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedUploaderHandlerServiceServer struct {
-}
-
-func (UnimplementedUploaderHandlerServiceServer) AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AlterStatus not implemented")
-}
-func (UnimplementedUploaderHandlerServiceServer) GetObjectInstancesByName(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstancesByName not implemented")
-}
-func (UnimplementedUploaderHandlerServiceServer) GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsByChecksum not implemented")
-}
-func (UnimplementedUploaderHandlerServiceServer) mustEmbedUnimplementedUploaderHandlerServiceServer() {
-}
-
-// UnsafeUploaderHandlerServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to UploaderHandlerServiceServer will
-// result in compilation errors.
-type UnsafeUploaderHandlerServiceServer interface {
-	mustEmbedUnimplementedUploaderHandlerServiceServer()
-}
-
-func RegisterUploaderHandlerServiceServer(s grpc.ServiceRegistrar, srv UploaderHandlerServiceServer) {
-	s.RegisterService(&UploaderHandlerService_ServiceDesc, srv)
-}
-
-func _UploaderHandlerService_AlterStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.StatusObject)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploaderHandlerServiceServer).AlterStatus(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UploaderHandlerService_AlterStatus_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploaderHandlerServiceServer).AlterStatus(ctx, req.(*dlzamanagerproto.StatusObject))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UploaderHandlerService_GetObjectInstancesByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.Id)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploaderHandlerServiceServer).GetObjectInstancesByName(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UploaderHandlerService_GetObjectInstancesByName_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploaderHandlerServiceServer).GetObjectInstancesByName(ctx, req.(*dlzamanagerproto.Id))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UploaderHandlerService_GetObjectsByChecksum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.Id)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UploaderHandlerServiceServer).GetObjectsByChecksum(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UploaderHandlerService_GetObjectsByChecksum_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploaderHandlerServiceServer).GetObjectsByChecksum(ctx, req.(*dlzamanagerproto.Id))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// UploaderHandlerService_ServiceDesc is the grpc.ServiceDesc for UploaderHandlerService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var UploaderHandlerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "handlerproto.UploaderHandlerService",
-	HandlerType: (*UploaderHandlerServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "AlterStatus",
-			Handler:    _UploaderHandlerService_AlterStatus_Handler,
-		},
-		{
-			MethodName: "GetObjectInstancesByName",
-			Handler:    _UploaderHandlerService_GetObjectInstancesByName_Handler,
-		},
-		{
-			MethodName: "GetObjectsByChecksum",
-			Handler:    _UploaderHandlerService_GetObjectsByChecksum_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "handler_proto.proto",
-}
-
-const (
-	ClerkStorageHandlerService_CreateStoragePartition_FullMethodName = "/handlerproto.ClerkStorageHandlerService/CreateStoragePartition"
-)
-
-// ClerkStorageHandlerServiceClient is the client API for ClerkStorageHandlerService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ClerkStorageHandlerServiceClient interface {
-	CreateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
-}
-
-type clerkStorageHandlerServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewClerkStorageHandlerServiceClient(cc grpc.ClientConnInterface) ClerkStorageHandlerServiceClient {
-	return &clerkStorageHandlerServiceClient{cc}
-}
-
-func (c *clerkStorageHandlerServiceClient) CreateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, ClerkStorageHandlerService_CreateStoragePartition_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// ClerkStorageHandlerServiceServer is the server API for ClerkStorageHandlerService service.
-// All implementations must embed UnimplementedClerkStorageHandlerServiceServer
-// for forward compatibility
-type ClerkStorageHandlerServiceServer interface {
-	CreateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
-	mustEmbedUnimplementedClerkStorageHandlerServiceServer()
-}
-
-// UnimplementedClerkStorageHandlerServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedClerkStorageHandlerServiceServer struct {
-}
-
-func (UnimplementedClerkStorageHandlerServiceServer) CreateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateStoragePartition not implemented")
-}
-func (UnimplementedClerkStorageHandlerServiceServer) mustEmbedUnimplementedClerkStorageHandlerServiceServer() {
-}
-
-// UnsafeClerkStorageHandlerServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ClerkStorageHandlerServiceServer will
-// result in compilation errors.
-type UnsafeClerkStorageHandlerServiceServer interface {
-	mustEmbedUnimplementedClerkStorageHandlerServiceServer()
-}
-
-func RegisterClerkStorageHandlerServiceServer(s grpc.ServiceRegistrar, srv ClerkStorageHandlerServiceServer) {
-	s.RegisterService(&ClerkStorageHandlerService_ServiceDesc, srv)
-}
-
-func _ClerkStorageHandlerService_CreateStoragePartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.StoragePartition)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClerkStorageHandlerServiceServer).CreateStoragePartition(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ClerkStorageHandlerService_CreateStoragePartition_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClerkStorageHandlerServiceServer).CreateStoragePartition(ctx, req.(*dlzamanagerproto.StoragePartition))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// ClerkStorageHandlerService_ServiceDesc is the grpc.ServiceDesc for ClerkStorageHandlerService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var ClerkStorageHandlerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "handlerproto.ClerkStorageHandlerService",
-	HandlerType: (*ClerkStorageHandlerServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CreateStoragePartition",
-			Handler:    _ClerkStorageHandlerService_CreateStoragePartition_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "handler_proto.proto",
-}
-
-const (
 	CheckerHandlerService_GetAllObjectInstances_FullMethodName                = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
 	CheckerHandlerService_UpdateObjectInstance_FullMethodName                 = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
 	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName            = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
@@ -1216,6 +869,7 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	ClerkHandlerService_Ping_FullMethodName                                               = "/handlerproto.ClerkHandlerService/Ping"
 	ClerkHandlerService_FindTenantById_FullMethodName                                     = "/handlerproto.ClerkHandlerService/FindTenantById"
 	ClerkHandlerService_DeleteTenant_FullMethodName                                       = "/handlerproto.ClerkHandlerService/DeleteTenant"
 	ClerkHandlerService_SaveTenant_FullMethodName                                         = "/handlerproto.ClerkHandlerService/SaveTenant"
@@ -1272,6 +926,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ClerkHandlerServiceClient interface {
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
 	FindTenantById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Tenant, error)
 	DeleteTenant(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	SaveTenant(ctx context.Context, in *dlzamanagerproto.Tenant, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
@@ -1330,6 +985,15 @@ type clerkHandlerServiceClient struct {
 
 func NewClerkHandlerServiceClient(cc grpc.ClientConnInterface) ClerkHandlerServiceClient {
 	return &clerkHandlerServiceClient{cc}
+}
+
+func (c *clerkHandlerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error) {
+	out := new(proto.DefaultResponse)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_Ping_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *clerkHandlerServiceClient) FindTenantById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Tenant, error) {
@@ -1786,6 +1450,7 @@ func (c *clerkHandlerServiceClient) GetAmountOfObjectsAndTotalSizeByTenantId(ctx
 // All implementations must embed UnimplementedClerkHandlerServiceServer
 // for forward compatibility
 type ClerkHandlerServiceServer interface {
+	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
 	FindTenantById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Tenant, error)
 	DeleteTenant(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	SaveTenant(context.Context, *dlzamanagerproto.Tenant) (*dlzamanagerproto.Status, error)
@@ -1843,6 +1508,9 @@ type ClerkHandlerServiceServer interface {
 type UnimplementedClerkHandlerServiceServer struct {
 }
 
+func (UnimplementedClerkHandlerServiceServer) Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedClerkHandlerServiceServer) FindTenantById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Tenant, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindTenantById not implemented")
 }
@@ -2004,6 +1672,24 @@ type UnsafeClerkHandlerServiceServer interface {
 
 func RegisterClerkHandlerServiceServer(s grpc.ServiceRegistrar, srv ClerkHandlerServiceServer) {
 	s.RegisterService(&ClerkHandlerService_ServiceDesc, srv)
+}
+
+func _ClerkHandlerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).Ping(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ClerkHandlerService_FindTenantById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -2913,6 +2599,10 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.ClerkHandlerService",
 	HandlerType: (*ClerkHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _ClerkHandlerService_Ping_Handler,
+		},
 		{
 			MethodName: "FindTenantById",
 			Handler:    _ClerkHandlerService_FindTenantById_Handler,

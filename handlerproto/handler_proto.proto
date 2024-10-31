@@ -13,20 +13,6 @@ import "google/protobuf/empty.proto";
 import "dlza_proto.proto";
 import "defaultResponse.proto";
 
-service UploaderStorageHandlerService {
-  rpc CopyFile(dlzamanagerproto.IncomingOrder) returns (dlzamanagerproto.Status) {};
-}
-
-service UploaderHandlerService {
-  rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
-  rpc GetObjectInstancesByName(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances){}
-  rpc GetObjectsByChecksum(dlzamanagerproto.Id) returns (dlzamanagerproto.Objects){}
-}
-
-service ClerkStorageHandlerService {
-  rpc CreateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status) {};
-}
-
 service CheckerHandlerService {
   rpc getAllObjectInstances(dlzamanagerproto.NoParam) returns (dlzamanagerproto.ObjectInstances) {};
   rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
@@ -54,6 +40,7 @@ service StorageHandlerHandlerService {
 }
 
 service ClerkHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
 
   rpc FindTenantById(dlzamanagerproto.Id) returns (dlzamanagerproto.Tenant){};
   rpc DeleteTenant(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
