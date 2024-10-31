@@ -184,7 +184,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("couldn't create prepared statements for objectInstanceCheckRepository err: %v", err)
 	}
-	_ = objectInstanceService
+
 	storagePartitionRepository := repository.NewStoragePartitionRepository(db, conf.Database.Schema)
 	err = storagePartitionRepository.CreateStoragePartitionPreparedStatements()
 	if err != nil {
