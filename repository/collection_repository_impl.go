@@ -20,6 +20,7 @@ const (
 	GetCollectionByAlias
 	GetCollectionByIdFromMv
 	GetCollectionById
+	GetSizeForAllObjectInstancesByCollectionId
 )
 
 type CollectionRepositoryImpl struct {
@@ -43,6 +44,10 @@ func (c *CollectionRepositoryImpl) CreateCollectionPreparedStatements() error {
 		UpdateCollection:         fmt.Sprintf("UPDATE %s.collection SET description = $1, owner = $2, owner_mail= $3, name = $4, quality = $5, tenant_id= $6 where id = $7", c.Schema),
 		CreateCollection: fmt.Sprintf("INSERT INTO %s.collection(alias, description, owner, owner_mail, name, quality, tenant_id)"+
 			" VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", c.Schema),
+		GetSizeForAllObjectInstancesByCollectionId: strings.Replace("select sum(oi.size) from %s.object o"+
+			" left join  %s.object_instance oi"+
+			" on o.id = oi.object_id"+
+			" where o.collection_id = $1", "%s", c.Schema, -1),
 	}
 	var err error
 	c.PreparedStatements = make(map[collectionPreparedStmt]*sql.Stmt)
@@ -53,6 +58,16 @@ func (c *CollectionRepositoryImpl) CreateCollectionPreparedStatements() error {
 		}
 	}
 	return nil
+}
+
+func (c *CollectionRepositoryImpl) GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error) {
+	row := c.PreparedStatements[GetSizeForAllObjectInstancesByCollectionId].QueryRow(id)
+	var size sql.NullInt64
+	err := row.Scan(&size)
+	if err != nil {
+		return 0, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetSizeForAllObjectInstancesByCollectionId])
+	}
+	return size.Int64, nil
 }
 
 func (c *CollectionRepositoryImpl) CreateCollection(collection models.Collection) (string, error) {
