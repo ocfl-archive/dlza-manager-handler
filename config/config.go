@@ -22,6 +22,7 @@ type HandlerConfig struct {
 	ServerTLS               *loader.Config     `toml:"server"`
 	ClientTLS               *loader.Config     `toml:"client"`
 	GRPCClient              map[string]string  `toml:"grpcclient"`
+	DBConn                  config.EnvString   `toml:"dbconn"`
 	Log                     stashconfig.Config `toml:"log"`
 	Database                DatabaseConfig     `toml:"database"`
 }

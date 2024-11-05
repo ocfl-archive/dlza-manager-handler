@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/je4/trustutil/v2/pkg/certutil"
 	configutil "github.com/je4/utils/v2/pkg/config"
 	"github.com/je4/utils/v2/pkg/zLogger"
@@ -22,11 +25,30 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"syscall"
 	"time"
 )
 
 var configfile = flag.String("config", "", "config file in toml format")
+
+type queryTracer struct {
+	log zLogger.ZLogger
+}
+
+func (tracer *queryTracer) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
+	tracer.log.Debug().Msgf("postgreSQL command start '%s' - %v", data.SQL, data.Args)
+	return ctx
+}
+
+func (tracer *queryTracer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryEndData) {
+	if data.Err != nil {
+		tracer.log.Error().Err(data.Err).Msgf("postgreSQL command error")
+		return
+	}
+	tracer.log.Debug().Msgf("postgreSQL command end: %s (%d)", data.CommandTag.String(), data.CommandTag.RowsAffected())
+}
 
 func main() {
 	flag.Parse()
@@ -93,10 +115,36 @@ func main() {
 	l2 := _logger.With().Timestamp().Str("host", hostname).Logger() //.Output(output)
 	var logger zLogger.ZLogger = &l2
 
+	pgxConf, err := pgxpool.ParseConfig(string(conf.DBConn))
+	if err != nil {
+		logger.Fatal().Err(err).Msg("cannot parse db connection string")
+	}
+	// create prepared queries on each connection
+	pgxConf.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		return service.AfterConnectFunc(ctx, conn, logger)
+	}
+	pgxConf.BeforeConnect = func(ctx context.Context, cfg *pgx.ConnConfig) error {
+		cfg.Tracer = &queryTracer{log: logger}
+		return nil
+	}
+	var conn *pgxpool.Pool
+	var dbstrRegexp = regexp.MustCompile(`^postgres://postgres:([^@]+)@.+$`)
+	pws := dbstrRegexp.FindStringSubmatch(string(conf.DBConn))
+	if len(pws) == 2 {
+		logger.Info().Msgf("connecting to database: %s", strings.Replace(string(conf.DBConn), pws[1], "xxxxxxxx", -1))
+	} else {
+		logger.Info().Msgf("connecting to database")
+	}
+	conn, err = pgxpool.NewWithConfig(context.Background(), pgxConf)
+	if err != nil {
+		logger.Fatal().Err(err).Msgf("cannot connect to database: %s", conf.DBConn)
+	}
+	defer conn.Close()
+
 	db, err := storage.NewConnection(&conf.Database)
 
 	if err != nil {
-		log.Fatal("Could not load the DB")
+		logger.Fatal().Err(err).Msg("Could not load the DB")
 	}
 	defer db.Close()
 
@@ -141,6 +189,15 @@ func main() {
 	addr := grpcServer.GetAddr()
 	l2 = _logger.With().Timestamp().Str("addr", addr).Logger() //.Output(output)
 	logger = &l2
+
+	tenantRepositoryTest := repository.NewTenantRepositoryTt(conn)
+	tenants, err := tenantRepositoryTest.FindAllTenants()
+
+	collectionRepositoryTest := repository.NewCollectionRepositoryTt(conn)
+	collections, err := collectionRepositoryTest.FindAllCollections()
+
+	_ = tenants
+	_ = collections
 
 	tenantRepository := repository.NewTenantRepository(db, conf.Database.Schema)
 
