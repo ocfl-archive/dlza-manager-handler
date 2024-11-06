@@ -118,10 +118,6 @@ func main() {
 	transactionRepository := repository.NewTransactionRepository(db, conf.Handler.Database.Schema)
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(db, conf.Handler.Database.Schema)
 
-	collectionWithIds, _ := dispatcherRepository.GetLowQualityCollectionsWithObjectIds()
-
-	_ = collectionWithIds
-
 	//Listen StorageHandler, Dispatcher, Clerk
 	lisHandler, err := net.Listen("tcp", ":"+strconv.Itoa(conf.Handler.Port))
 	if err != nil {
