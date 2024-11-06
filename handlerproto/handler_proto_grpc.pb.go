@@ -655,6 +655,7 @@ const (
 	StorageHandlerHandlerService_GetStoragePartitionsByStorageLocationId_FullMethodName     = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionsByStorageLocationId"
 	StorageHandlerHandlerService_DeleteObjectInstance_FullMethodName                        = "/handlerproto.StorageHandlerHandlerService/DeleteObjectInstance"
 	StorageHandlerHandlerService_AlterStatus_FullMethodName                                 = "/handlerproto.StorageHandlerHandlerService/AlterStatus"
+	StorageHandlerHandlerService_GetObjectById_FullMethodName                               = "/handlerproto.StorageHandlerHandlerService/GetObjectById"
 )
 
 // StorageHandlerHandlerServiceClient is the client API for StorageHandlerHandlerService service.
@@ -674,6 +675,7 @@ type StorageHandlerHandlerServiceClient interface {
 	GetStoragePartitionsByStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartitions, error)
 	DeleteObjectInstance(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 }
 
 type storageHandlerHandlerServiceClient struct {
@@ -801,6 +803,15 @@ func (c *storageHandlerHandlerServiceClient) AlterStatus(ctx context.Context, in
 	return out, nil
 }
 
+func (c *storageHandlerHandlerServiceClient) GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
+	out := new(dlzamanagerproto.Object)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetObjectById_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StorageHandlerHandlerServiceServer is the server API for StorageHandlerHandlerService service.
 // All implementations must embed UnimplementedStorageHandlerHandlerServiceServer
 // for forward compatibility
@@ -818,6 +829,7 @@ type StorageHandlerHandlerServiceServer interface {
 	GetStoragePartitionsByStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StoragePartitions, error)
 	DeleteObjectInstance(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
+	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	mustEmbedUnimplementedStorageHandlerHandlerServiceServer()
 }
 
@@ -863,6 +875,9 @@ func (UnimplementedStorageHandlerHandlerServiceServer) DeleteObjectInstance(cont
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AlterStatus not implemented")
+}
+func (UnimplementedStorageHandlerHandlerServiceServer) GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectById not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) mustEmbedUnimplementedStorageHandlerHandlerServiceServer() {
 }
@@ -1112,6 +1127,24 @@ func _StorageHandlerHandlerService_AlterStatus_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StorageHandlerHandlerService_GetObjectById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).GetObjectById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_GetObjectById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).GetObjectById(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StorageHandlerHandlerService_ServiceDesc is the grpc.ServiceDesc for StorageHandlerHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1170,6 +1203,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AlterStatus",
 			Handler:    _StorageHandlerHandlerService_AlterStatus_Handler,
+		},
+		{
+			MethodName: "GetObjectById",
+			Handler:    _StorageHandlerHandlerService_GetObjectById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -3117,14 +3154,14 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	DispatcherHandlerService_GetLowQualityCollections_FullMethodName = "/handlerproto.DispatcherHandlerService/GetLowQualityCollections"
+	DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName = "/handlerproto.DispatcherHandlerService/GetLowQualityCollectionsWithObjectIds"
 )
 
 // DispatcherHandlerServiceClient is the client API for DispatcherHandlerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatcherHandlerServiceClient interface {
-	GetLowQualityCollections(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error)
+	GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error)
 }
 
 type dispatcherHandlerServiceClient struct {
@@ -3135,9 +3172,9 @@ func NewDispatcherHandlerServiceClient(cc grpc.ClientConnInterface) DispatcherHa
 	return &dispatcherHandlerServiceClient{cc}
 }
 
-func (c *dispatcherHandlerServiceClient) GetLowQualityCollections(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error) {
+func (c *dispatcherHandlerServiceClient) GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error) {
 	out := new(dlzamanagerproto.CollectionAliases)
-	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetLowQualityCollections_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3148,7 +3185,7 @@ func (c *dispatcherHandlerServiceClient) GetLowQualityCollections(ctx context.Co
 // All implementations must embed UnimplementedDispatcherHandlerServiceServer
 // for forward compatibility
 type DispatcherHandlerServiceServer interface {
-	GetLowQualityCollections(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error)
+	GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
 
@@ -3156,8 +3193,8 @@ type DispatcherHandlerServiceServer interface {
 type UnimplementedDispatcherHandlerServiceServer struct {
 }
 
-func (UnimplementedDispatcherHandlerServiceServer) GetLowQualityCollections(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLowQualityCollections not implemented")
+func (UnimplementedDispatcherHandlerServiceServer) GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLowQualityCollectionsWithObjectIds not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) mustEmbedUnimplementedDispatcherHandlerServiceServer() {
 }
@@ -3173,20 +3210,20 @@ func RegisterDispatcherHandlerServiceServer(s grpc.ServiceRegistrar, srv Dispatc
 	s.RegisterService(&DispatcherHandlerService_ServiceDesc, srv)
 }
 
-func _DispatcherHandlerService_GetLowQualityCollections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.NoParam)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollections(ctx, in)
+		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollectionsWithObjectIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DispatcherHandlerService_GetLowQualityCollections_FullMethodName,
+		FullMethod: DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollections(ctx, req.(*dlzamanagerproto.NoParam))
+		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollectionsWithObjectIds(ctx, req.(*dlzamanagerproto.NoParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3199,8 +3236,8 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DispatcherHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetLowQualityCollections",
-			Handler:    _DispatcherHandlerService_GetLowQualityCollections_Handler,
+			MethodName: "GetLowQualityCollectionsWithObjectIds",
+			Handler:    _DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

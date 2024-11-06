@@ -48,6 +48,7 @@ service StorageHandlerHandlerService {
   rpc GetStoragePartitionsByStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.StoragePartitions);
   rpc DeleteObjectInstance(dlzamanagerproto.Id) returns (dlzamanagerproto.Status);
   rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
+  rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
 }
 
 service ClerkHandlerService {
@@ -113,5 +114,5 @@ service ClerkHandlerService {
 }
 
 service DispatcherHandlerService {
-  rpc GetLowQualityCollections(dlzamanagerproto.NoParam) returns (dlzamanagerproto.CollectionAliases) {};
+  rpc GetLowQualityCollectionsWithObjectIds(dlzamanagerproto.NoParam) returns (dlzamanagerproto.CollectionAliases) {};
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/pkg/errors"
+	"golang.org/x/exp/maps"
 )
 
 type DispatcherHandlerServer struct {
@@ -13,15 +14,19 @@ type DispatcherHandlerServer struct {
 	DispatcherRepository repository.DispatcherRepository
 }
 
-func (d *DispatcherHandlerServer) GetLowQualityCollections(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
-	collectionAliases, err := d.DispatcherRepository.GetCollectionsWithLowQuality()
+func (d *DispatcherHandlerServer) GetLowQualityCollectionsWithObjectIds(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
+	collectionsWithObjectIds, err := d.DispatcherRepository.GetLowQualityCollectionsWithObjectIds()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get LowQualityCollections")
 	}
-	collectionAliasesPb := make([]*pb.CollectionAlias, 0)
 
-	for _, collectionAlias := range collectionAliases {
-		collectionAliasPb := pb.CollectionAlias{CollectionAlias: collectionAlias}
+	collectionAliasesPb := make([]*pb.CollectionAlias, 0)
+	for _, collectionAlias := range maps.Keys(collectionsWithObjectIds) {
+		idsPb := make([]*pb.Id, 0)
+		for _, id := range collectionsWithObjectIds[collectionAlias] {
+			idsPb = append(idsPb, &pb.Id{Id: id})
+		}
+		collectionAliasPb := pb.CollectionAlias{CollectionAlias: collectionAlias, Ids: idsPb}
 		collectionAliasesPb = append(collectionAliasesPb, &collectionAliasPb)
 	}
 
