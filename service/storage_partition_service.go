@@ -2,10 +2,10 @@ package service
 
 import (
 	"emperror.dev/errors"
-	"github.com/ocfl-archive/dlza-manager-handler/mapper"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	"github.com/ocfl-archive/dlza-manager/mapper"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
@@ -65,10 +65,10 @@ func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocation
 
 	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Id)
 
-	var currentSize int
+	var currentSize int64
 	var partitionOptimal models.StoragePartition
 	for _, partition := range partitions {
-		if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+int(sizeAndLocationId.Size) <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) {
+		if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+sizeAndLocationId.Size <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) {
 			currentSize = partition.CurrentSize
 			partitionOptimal = partition
 		}

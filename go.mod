@@ -10,7 +10,7 @@ require (
 	github.com/je4/trustutil/v2 v2.0.26
 	github.com/je4/utils/v2 v2.0.51
 	github.com/lib/pq v1.10.9
-	github.com/ocfl-archive/dlza-manager v0.0.6
+	github.com/ocfl-archive/dlza-manager v0.0.8
 	github.com/stretchr/testify v1.9.0
 	gitlab.switch.ch/ub-unibas/go-ublogger/v2 v2.0.1
 	go.ub.unibas.ch/cloud/certloader/v2 v2.0.12

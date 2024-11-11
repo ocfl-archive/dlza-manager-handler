@@ -1,42 +1,37 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/ocfl-archive/dlza-manager/models"
 
 	"emperror.dev/errors"
 )
 
 type CheckerRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[checkerPrepareStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-type checkerPrepareStmt int
-
 const (
-	FindAllObjectsWithErrors checkerPrepareStmt = iota
-	FindObjectIdByObjectInstance
+	FindAllObjectsWithErrors     = "FindAllObjectsWithErrors"
+	FindObjectIdByObjectInstance = "FindObjectIdByObjectInstance"
 )
 
-func (c *CheckerRepositoryImpl) CreatePreparedStatementsForChecker() error {
+func CreateCheckerPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[checkerPrepareStmt]string{
-		FindAllObjectsWithErrors: fmt.Sprintf("SELECT oi.object_id, oi.path FROM %s.object_instance oi inner join %s.object_instance_check oic"+
-			" on oi.id = oic.object_instance_id"+
-			" where checktime <=  CURRENT_DATE - '30 day'::interval"+
-			" AND oic.error = 'true'", c.Schema, c.Schema),
-		FindObjectIdByObjectInstance: fmt.Sprintf("SELECT oi.status, oi.path FROM %s.object_instance oi where oi.object_id = $1", c.Schema),
+	preparedStatements := map[string]string{
+		FindAllObjectsWithErrors: "SELECT oi.object_id, oi.path FROM object_instance oi inner join object_instance_check oic" +
+			" on oi.id = oic.object_instance_id" +
+			" where checktime <=  CURRENT_DATE - '30 day'::interval" +
+			" AND oic.error = 'true'",
+		FindObjectIdByObjectInstance: "SELECT oi.status, oi.path FROM object_instance oi where oi.object_id = $1",
 	}
-	var err error
-	c.PreparedStatement = make(map[checkerPrepareStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		c.PreparedStatement[key], err = c.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
@@ -44,9 +39,9 @@ func (c *CheckerRepositoryImpl) CreatePreparedStatementsForChecker() error {
 
 func (c *CheckerRepositoryImpl) GetPathsToCopy() ([]models.CopyPaths, error) {
 
-	rowsRs, err := c.PreparedStatement[FindAllObjectsWithErrors].Query()
+	rowsRs, err := c.Db.Query(context.Background(), FindAllObjectsWithErrors)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot execute query")
+		return nil, errors.Wrapf(err, "cannot execute query for method: %v", FindAllObjectsWithErrors)
 	}
 
 	listObjectI := make([]string, 0)
@@ -63,9 +58,9 @@ func (c *CheckerRepositoryImpl) GetPathsToCopy() ([]models.CopyPaths, error) {
 	}
 	list := make([]models.CopyPaths, 0)
 	for index, item := range listObjectI {
-		rowsOI, err := c.PreparedStatement[FindObjectIdByObjectInstance].Query(item)
+		rowsOI, err := c.Db.Query(context.Background(), FindObjectIdByObjectInstance, item)
 		if err != nil {
-			return nil, errors.Wrapf(err, "cannot execute query")
+			return nil, errors.Wrapf(err, "cannot execute query for method: %v", FindObjectIdByObjectInstance)
 		}
 		copyPaths := models.CopyPaths{}
 		for rowsOI.Next() {
@@ -94,9 +89,8 @@ func (c *CheckerRepositoryImpl) GetPathsToCopy() ([]models.CopyPaths, error) {
 	return nil, nil
 }
 
-func NewCheckerRepository(db *sql.DB, schema string) CheckerRepository {
+func NewCheckerRepository(db *pgxpool.Pool) CheckerRepository {
 	return &CheckerRepositoryImpl{
-		Db:     db,
-		Schema: schema,
+		Db: db,
 	}
 }

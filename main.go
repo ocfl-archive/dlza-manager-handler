@@ -15,7 +15,6 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager-handler/server"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
-	"github.com/ocfl-archive/dlza-manager-handler/storage"
 	ublogger "gitlab.switch.ch/ub-unibas/go-ublogger/v2"
 	"go.ub.unibas.ch/cloud/certloader/v2/pkg/loader"
 	"go.ub.unibas.ch/cloud/miniresolver/v2/pkg/resolver"
@@ -141,13 +140,6 @@ func main() {
 	}
 	defer conn.Close()
 
-	db, err := storage.NewConnection(&conf.Database)
-
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Could not load the DB")
-	}
-	defer db.Close()
-
 	// create TLS Certificate.
 	// the certificate MUST contain <package>.<service> as DNS name
 	for _, domain := range conf.Domains {
@@ -190,79 +182,38 @@ func main() {
 	l2 = _logger.With().Timestamp().Str("addr", addr).Logger() //.Output(output)
 	logger = &l2
 
-	tenantRepositoryTest := repository.NewTenantRepositoryTt(conn)
-	tenants, err := tenantRepositoryTest.FindAllTenants()
+	tenantRepository := repository.NewTenantRepository(conn)
+	collectionRepository := repository.NewCollectionRepository(conn)
+	objectRepository := repository.NewObjectRepository(conn)
+	objectInstanceRepository := repository.NewObjectInstanceRepository(conn)
+	fileRepository := repository.NewFileRepository(conn)
+	objectInstanceCheckRepository := repository.NewObjectInstanceCheckRepository(conn)
+	storageLocationRepository := repository.NewStorageLocationRepository(conn)
+	storagePartitionRepository := repository.NewStoragePartitionRepository(conn)
+	//checkerRepository := repository.NewCheckerRepository(conn)
+	dispatcherRepository := repository.NewDispatcherRepository(conn)
+	statusRepository := repository.NewStatusRepository(conn)
+	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(conn)
+	transactionRepository := repository.NewTransactionRepository(conn)
 
-	collectionRepositoryTest := repository.NewCollectionRepositoryTt(conn)
-	collections, err := collectionRepositoryTest.FindAllCollections()
+	object, _ := objectRepository.GetObjectById("e63d033c-fe4c-432e-b1e5-c8b7c6bcebda")
 
-	_ = tenants
-	_ = collections
+	_ = object
 
-	tenantRepository := repository.NewTenantRepository(db, conf.Database.Schema)
+	object.Expiration = "2025-01-02 15:04:05"
+	object.Holding = ""
+	object.Title = "test"
+	object.Id = ""
 
-	err = tenantRepository.CreatePreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for tenantRepository err: %v", err)
-	}
-	checkerRepository := repository.NewCheckerRepository(db, conf.Database.Schema)
-	err = checkerRepository.CreatePreparedStatementsForChecker()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for checkerRepository err: %v", err)
-	}
-	objectRepository := repository.NewObjectRepository(db, conf.Database.Schema)
-	err = objectRepository.CreateObjectPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for objectRepository err: %v", err)
-	}
-	dispatcherRepository := repository.NewDispatcherRepository(db, conf.Database.Schema)
-	err = dispatcherRepository.CreateDispatcherPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for dispatcherRepository err: %v", err)
-	}
-	storageLocationRepository := repository.NewStorageLocationRepository(db, conf.Database.Schema)
-	err = storageLocationRepository.CreateStorageLocPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for storageLocationRepository err: %v", err)
-	}
-	collectionRepository := repository.NewCollectionRepository(db, conf.Database.Schema)
-	err = collectionRepository.CreateCollectionPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for collectionRepository err: %v", err)
-	}
-	objectInstanceRepository := repository.NewObjectInstanceRepository(db, conf.Database.Schema)
-	err = objectInstanceRepository.CreateObjectInstancePreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for objectInstanceRepository err: %v", err)
-	}
+	objectRepository.CreateObject(object)
+	err = refreshMaterializedViewRepository.RefreshMaterializedViews()
+
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
-	objectInstanceCheckRepository := repository.NewObjectInstanceCheckRepository(db, conf.Database.Schema)
-	err = objectInstanceCheckRepository.CreateObjectInstanceCheckPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for objectInstanceCheckRepository err: %v", err)
-	}
 
-	storagePartitionRepository := repository.NewStoragePartitionRepository(db, conf.Database.Schema)
-	err = storagePartitionRepository.CreateStoragePartitionPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for storagePartitionRepository err: %v", err)
-	}
 	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository}
 
-	fileRepository := repository.NewFileRepository(db, conf.Database.Schema)
-	err = fileRepository.CreateFilePreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for fileRepository err: %v", err)
-	}
-	statusRepository := repository.NewStatusRepository(db, conf.Database.Schema)
-	err = statusRepository.CreateStatusPreparedStatements()
-	if err != nil {
-		log.Fatalf("couldn't create prepared statements for statusRepository err: %v", err)
-	}
 	uploadService := service.NewUploaderService(tenantRepository, collectionRepository)
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
-	transactionRepository := repository.NewTransactionRepository(db, conf.Database.Schema)
-	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(db, conf.Database.Schema)
 
 	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository))
 	pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,

@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/ocfl-archive/dlza-manager-handler/models"
+import "github.com/ocfl-archive/dlza-manager/models"
 
 type FileRepository interface {
 	CreateFile(file models.File) error
@@ -10,5 +10,4 @@ type FileRepository interface {
 	GetFilesByCollectionIdPaginated(pagination models.Pagination) ([]models.File, int, error)
 	GetMimeTypesForCollectionId(pagination models.Pagination) ([]models.MimeType, int, error)
 	GetPronomsForCollectionId(pagination models.Pagination) ([]models.Pronom, int, error)
-	CreateFilePreparedStatements() error
 }

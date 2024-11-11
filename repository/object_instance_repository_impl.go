@@ -1,83 +1,78 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-type objectInstanceRepositoryStmt int
-
 const (
-	GetObjectInstance objectInstanceRepositoryStmt = iota
-	CreateObjectInstance
-	DeleteObjectInstance
-	GetObjectInstancesByObjectId
-	GetAllObjectInstances
-	UpdateObjectInstance
-	GetAmountOfErrorsByCollectionId
+	GetObjectInstance               = "GetObjectInstance"
+	CreateObjectInstance            = "CreateObjectInstance"
+	DeleteObjectInstance            = "DeleteObjectInstance"
+	GetObjectInstancesByObjectId    = "GetObjectInstancesByObjectId"
+	GetAllObjectInstances           = "GetAllObjectInstances"
+	UpdateObjectInstance            = "UpdateObjectInstance"
+	GetAmountOfErrorsByCollectionId = "GetAmountOfErrorsByCollectionId"
 )
 
 type objectInstanceRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[objectInstanceRepositoryStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-func (o *objectInstanceRepositoryImpl) CreateObjectInstancePreparedStatements() error {
+func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[objectInstanceRepositoryStmt]string{
-		GetObjectInstance:            fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE o WHERE ID = $1", o.Schema),
-		CreateObjectInstance:         fmt.Sprintf("INSERT INTO %s.OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id", o.Schema),
-		UpdateObjectInstance:         fmt.Sprintf("UPDATE %s.OBJECT_INSTANCE set status = $1 where id = $2", o.Schema),
-		DeleteObjectInstance:         fmt.Sprintf("DELETE FROM %s.OBJECT_INSTANCE  where id =$1", o.Schema),
-		GetObjectInstancesByObjectId: fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE where object_id = $1", o.Schema),
-		GetAllObjectInstances:        fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE", o.Schema),
-		GetAmountOfErrorsByCollectionId: strings.Replace("select count(oi.*) from %s.collection c,"+
-			" %s.object o, %s.object_instance oi"+
-			" where c.id = o.collection_id"+
-			" and o.id = oi.object_id"+
-			" and oi.status = 'error'"+
-			" and o.collection_id = $1", "%s", o.Schema, -1),
+	preparedStatements := map[string]string{
+		GetObjectInstance:            "SELECT * FROM OBJECT_INSTANCE o WHERE ID = $1",
+		CreateObjectInstance:         "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		UpdateObjectInstance:         "UPDATE OBJECT_INSTANCE set status = $1 where id = $2",
+		DeleteObjectInstance:         "DELETE FROM OBJECT_INSTANCE  where id =$1",
+		GetObjectInstancesByObjectId: "SELECT * FROM OBJECT_INSTANCE where object_id = $1",
+		GetAllObjectInstances:        "SELECT * FROM OBJECT_INSTANCE",
+		GetAmountOfErrorsByCollectionId: "select count(oi.*) from collection c," +
+			" object o, object_instance oi" +
+			" where c.id = o.collection_id" +
+			" and o.id = oi.object_id" +
+			" and oi.status = 'error'" +
+			" and o.collection_id = $1",
 	}
-	var err error
-	o.PreparedStatement = make(map[objectInstanceRepositoryStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		o.PreparedStatement[key], err = o.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
 }
 
 func (o *objectInstanceRepositoryImpl) GetAmountOfErrorsByCollectionId(id string) (int, error) {
-	row := o.PreparedStatement[GetAmountOfErrorsByCollectionId].QueryRow(id)
+	row := o.Db.QueryRow(context.Background(), GetAmountOfErrorsByCollectionId, id)
 	var amount int
 	err := row.Scan(&amount)
 	if err != nil {
-		return amount, errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[GetAmountOfErrorsByCollectionId])
+		return amount, errors.Wrapf(err, "Could not execute query for method: %v", GetAmountOfErrorsByCollectionId)
 	}
 	return amount, nil
 }
 
 func (o *objectInstanceRepositoryImpl) UpdateObjectInstance(objectInstance models.ObjectInstance) error {
-	_, err := o.PreparedStatement[UpdateObjectInstance].Exec(objectInstance.Status, objectInstance.Id)
+	_, err := o.Db.Exec(context.Background(), UpdateObjectInstance, objectInstance.Status, objectInstance.Id)
 
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[UpdateObjectInstance])
+		return errors.Wrapf(err, "Could not execute query for method: %v", UpdateObjectInstance)
 	}
 	return nil
 }
 
 func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectInstance, error) {
-	rows, err := o.PreparedStatement[GetAllObjectInstances].Query()
+	rows, err := o.Db.Query(context.Background(), GetAllObjectInstances)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[GetAllObjectInstances])
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetAllObjectInstances)
 	}
 	var objectInstances []models.ObjectInstance
 
@@ -86,7 +81,7 @@ func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectI
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", o.PreparedStatement[GetObjectInstancesByObjectId])
+			return nil, errors.Wrapf(err, "Could not scan rows for in method: %v", GetObjectInstancesByObjectId)
 		}
 		objectInstances = append(objectInstances, objectInstance)
 	}
@@ -94,34 +89,37 @@ func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectI
 }
 
 func (o *objectInstanceRepositoryImpl) CreateObjectInstance(objectInstance models.ObjectInstance) (string, error) {
-	row := o.PreparedStatement[CreateObjectInstance].QueryRow(objectInstance.Path, objectInstance.Size, objectInstance.Status, objectInstance.StoragePartitionId, objectInstance.ObjectId)
+	row := o.Db.QueryRow(context.Background(), CreateObjectInstance, objectInstance.Path, objectInstance.Size, objectInstance.Status, objectInstance.StoragePartitionId, objectInstance.ObjectId)
 
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[CreateObjectInstance])
+		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObjectInstance)
 	}
 	return id, nil
 }
 
 func (o *objectInstanceRepositoryImpl) DeleteObjectInstance(id string) error {
-	_, err := o.PreparedStatement[DeleteObjectInstance].Exec(id)
+	_, err := o.Db.Exec(context.Background(), DeleteObjectInstance, id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[DeleteObjectInstance])
+		return errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
 	}
 	return nil
 }
 
 func (o *objectInstanceRepositoryImpl) GetObjectInstanceById(id string) (models.ObjectInstance, error) {
 	objectInstance := models.ObjectInstance{}
-	err := o.PreparedStatement[GetObjectInstance].QueryRow(id).Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	err := o.Db.QueryRow(context.Background(), GetObjectInstance, id).Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	if err != nil {
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
+	}
 	return objectInstance, err
 }
 
 func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) ([]models.ObjectInstance, error) {
-	rows, err := o.PreparedStatement[GetObjectInstancesByObjectId].Query(id)
+	rows, err := o.Db.Query(context.Background(), GetObjectInstancesByObjectId, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[GetObjectInstancesByObjectId])
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstancesByObjectId)
 	}
 	var objectInstances []models.ObjectInstance
 
@@ -130,7 +128,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) (
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", o.PreparedStatement[GetObjectInstancesByObjectId])
+			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetObjectInstancesByObjectId)
 		}
 		objectInstances = append(objectInstances, objectInstance)
 	}
@@ -138,9 +136,9 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) (
 }
 
 func (o *objectInstanceRepositoryImpl) GetObjectInstancesByName(name string) ([]models.ObjectInstance, error) {
-	query := strings.Replace(fmt.Sprintf("SELECT * FROM _schema.OBJECT_INSTANCE where path like "+"'%s/%s'", "%", name), "_schema", o.Schema, -1)
+	query := fmt.Sprintf("SELECT * FROM OBJECT_INSTANCE where path like "+"'%s/%s'", "%", name)
 	var objectInstances []models.ObjectInstance
-	rows, err := o.Db.Query(query)
+	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -184,12 +182,12 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPaginated(pag
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM _schema.OBJECT_INSTANCE oi"+
-		" inner join _schema.object o on oi.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", o.Schema, -1)
-	rows, err := o.Db.Query(query)
+	query := fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM OBJECT_INSTANCE oi"+
+		" inner join object o on oi.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -236,12 +234,12 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM _schema.OBJECT_INSTANCE oi"+
-		" inner join _schema.storage_partition sp on oi.storage_partition_id = sp.id"+
-		" inner join _schema.storage_location sl on sl.id = sp.storage_location_id"+
-		" inner join _schema.tenant t on t.id = sl.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", o.Schema, -1)
-	rows, err := o.Db.Query(query)
+	query := fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM OBJECT_INSTANCE oi"+
+		" inner join storage_partition sp on oi.storage_partition_id = sp.id"+
+		" inner join storage_location sl on sl.id = sp.storage_location_id"+
+		" inner join tenant t on t.id = sl.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -260,8 +258,8 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 	return objectInstances, totalItems, nil
 }
 
-func NewObjectInstanceRepository(db *sql.DB, schema string) ObjectInstanceRepository {
-	return &objectInstanceRepositoryImpl{Db: db, Schema: schema}
+func NewObjectInstanceRepository(db *pgxpool.Pool) ObjectInstanceRepository {
+	return &objectInstanceRepositoryImpl{Db: db}
 }
 
 func getLikeQueryForObjectInstance(searchKey string) string {

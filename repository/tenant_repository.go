@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/ocfl-archive/dlza-manager-handler/models"
+import "github.com/ocfl-archive/dlza-manager/models"
 
 type TenantRepository interface {
 	FindTenantById(id string) (models.Tenant, error)
@@ -11,5 +11,4 @@ type TenantRepository interface {
 	FindAllTenantsPaginated(pagination models.Pagination) ([]models.Tenant, int, error)
 	FindAllTenants() ([]models.Tenant, error)
 	GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error)
-	CreatePreparedStatements() error
 }

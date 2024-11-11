@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/ocfl-archive/dlza-manager-handler/models"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"log"
 )
 

@@ -16,5 +16,41 @@ func AfterConnectFunc(ctx context.Context, conn *pgx.Conn, logger zLogger.ZLogge
 	if err != nil {
 		return err
 	}
+	err = repository.CreateObjectPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateObjectInstancePreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateFilePreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateObjectInstanceCheckPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateStorageLocPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateStoragePartitionPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateCheckerPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateDispatcherPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
+	err = repository.CreateStatusPreparedStatements(ctx, conn)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -1,29 +1,28 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"emperror.dev/errors"
-	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type RefreshMaterializedViewsRepositoryImpl struct {
-	Db     *sql.DB
-	Schema string
+	Db *pgxpool.Pool
 }
 
 func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViews() error {
-	queryMatColObj := fmt.Sprintf("select %s.refresh_mvw1()", r.Schema)
-	_, err := r.Db.Exec(queryMatColObj)
+	queryMatColObj := "select refresh_mvw1()"
+	_, err := r.Db.Exec(context.Background(), queryMatColObj)
 	if err != nil {
 		return errors.Wrapf(err, "Could not RefreshMaterializedViews query: '%s'", queryMatColObj)
 	}
-	queryMatColObjFile := fmt.Sprintf("select %s.refresh_mvw2()", r.Schema)
-	_, err = r.Db.Exec(queryMatColObjFile)
+	queryMatColObjFile := "select refresh_mvw2()"
+	_, err = r.Db.Exec(context.Background(), queryMatColObjFile)
 	if err != nil {
 		return errors.Wrapf(err, "Could not RefreshMaterializedViews query: '%s'", queryMatColObjFile)
 	}
-	queryMatTenantFile := fmt.Sprintf("select %s.refresh_mvw3()", r.Schema)
-	_, err = r.Db.Exec(queryMatTenantFile)
+	queryMatTenantFile := "select refresh_mvw3()"
+	_, err = r.Db.Exec(context.Background(), queryMatTenantFile)
 	if err != nil {
 		return errors.Wrapf(err, "Could not RefreshMaterializedViews query: '%s'", queryMatTenantFile)
 	}
@@ -32,8 +31,8 @@ func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViews() error
 
 func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViewsFromCollectionToFile() error {
 
-	queryMatColObjFile := fmt.Sprintf("select %s.refresh_mvw2()", r.Schema)
-	_, err := r.Db.Exec(queryMatColObjFile)
+	queryMatColObjFile := "select refresh_mvw2()"
+	_, err := r.Db.Exec(context.Background(), queryMatColObjFile)
 	if err != nil {
 		return errors.Wrapf(err, "Could not RefreshMaterializedViews query: '%s'", queryMatColObjFile)
 	}
@@ -41,6 +40,6 @@ func (r RefreshMaterializedViewsRepositoryImpl) RefreshMaterializedViewsFromColl
 	return nil
 }
 
-func NewRefreshMaterializedViewsRepository(db *sql.DB, schema string) RefreshMaterializedViewsRepository {
-	return RefreshMaterializedViewsRepositoryImpl{Db: db, Schema: schema}
+func NewRefreshMaterializedViewsRepository(db *pgxpool.Pool) RefreshMaterializedViewsRepository {
+	return RefreshMaterializedViewsRepositoryImpl{Db: db}
 }

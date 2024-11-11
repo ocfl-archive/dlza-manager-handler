@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/ocfl-archive/dlza-manager/models"
 )
 
 type ObjectRepository interface {
@@ -11,7 +11,6 @@ type ObjectRepository interface {
 	UpdateObject(object models.Object) error
 	GetObjectsByCollectionId(id string) ([]models.Object, error)
 	GetObjectsByCollectionIdPaginated(pagination models.Pagination) ([]models.Object, int, error)
-	CreateObjectPreparedStatements() error
 	GetResultingQualityForObject(id string) (int, error)
 	GetNeededQualityForObject(id string) (int, error)
 }

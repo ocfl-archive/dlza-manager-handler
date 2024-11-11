@@ -1,65 +1,63 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-type objectInstanceCheckRepositoryStmt int
-
 const (
-	GetObjectInstanceCheckById objectInstanceCheckRepositoryStmt = iota
-	CreateObjectInstanceCheck
+	GetObjectInstanceCheckById = "GetObjectInstanceCheckById"
+	CreateObjectInstanceCheck  = "CreateObjectInstanceCheck"
 )
 
-type objectInstanceCheckRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[objectInstanceCheckRepositoryStmt]*sql.Stmt
+type ObjectInstanceCheckRepositoryImpl struct {
+	Db *pgxpool.Pool
 }
 
-func (o *objectInstanceCheckRepositoryImpl) CreateObjectInstanceCheckPreparedStatements() error {
+func CreateObjectInstanceCheckPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[objectInstanceCheckRepositoryStmt]string{
-		GetObjectInstanceCheckById: fmt.Sprintf("SELECT * FROM %s.OBJECT_INSTANCE_CHECK WHERE ID = $1", o.Schema),
-		CreateObjectInstanceCheck: fmt.Sprintf("INSERT INTO %s.OBJECT_INSTANCE_CHECK(error, message, object_instance_id)"+
-			" VALUES ($1, $2, $3) RETURNING id", o.Schema),
+	preparedStatements := map[string]string{
+		GetObjectInstanceCheckById: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE ID = $1",
+		CreateObjectInstanceCheck: "INSERT INTO OBJECT_INSTANCE_CHECK(error, message, object_instance_id)" +
+			" VALUES ($1, $2, $3) RETURNING id",
 	}
-	var err error
-	o.PreparedStatement = make(map[objectInstanceCheckRepositoryStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		o.PreparedStatement[key], err = o.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
 }
 
-func (o *objectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInstanceCheck models.ObjectInstanceCheck) (string, error) {
+func (o *ObjectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInstanceCheck models.ObjectInstanceCheck) (string, error) {
 
-	row := o.PreparedStatement[CreateObjectInstanceCheck].QueryRow(objectInstanceCheck.Error, objectInstanceCheck.Message, objectInstanceCheck.ObjectInstanceId)
+	row := o.Db.QueryRow(context.Background(), CreateObjectInstanceCheck, objectInstanceCheck.Error, objectInstanceCheck.Message, objectInstanceCheck.ObjectInstanceId)
 
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query: %v", o.PreparedStatement[CreateObjectInstanceCheck])
+		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObjectInstanceCheck)
 	}
 	return id, nil
 }
 
-func (o *objectInstanceCheckRepositoryImpl) GetObjectInstanceCheckById(id string) (models.ObjectInstanceCheck, error) {
+func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceCheckById(id string) (models.ObjectInstanceCheck, error) {
 	objectInstanceCheck := models.ObjectInstanceCheck{}
-	err := o.PreparedStatement[GetObjectInstanceCheckById].QueryRow(id).Scan(&objectInstanceCheck.CheckTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+	err := o.Db.QueryRow(context.Background(), GetObjectInstanceCheckById, id).Scan(&objectInstanceCheck.CheckTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+	if err != nil {
+		return models.ObjectInstanceCheck{}, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceCheckById)
+	}
 	return objectInstanceCheck, err
 }
 
-func (o *objectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInstanceIdPaginated(pagination models.Pagination) ([]models.ObjectInstanceCheck, int, error) {
+func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInstanceIdPaginated(pagination models.Pagination) ([]models.ObjectInstanceCheck, int, error) {
 	firstCondition := ""
 	secondCondition := ""
 	if pagination.SecondId != "" {
@@ -87,13 +85,13 @@ func (o *objectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT oic.* FROM _schema.OBJECT_INSTANCE_CHECK oic"+
-		" inner join _schema.object_instance oi on oic.object_instance_id = oi.id"+
-		" inner join _schema.object o on oi.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField), "oic."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", o.Schema, -1)
-	rows, err := o.Db.Query(query)
+	query := fmt.Sprintf("SELECT oic.* FROM OBJECT_INSTANCE_CHECK oic"+
+		" inner join object_instance oi on oic.object_instance_id = oi.id"+
+		" inner join object o on oi.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField), "oic."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -108,14 +106,14 @@ func (o *objectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 		}
 		objectInstanceChecks = append(objectInstanceChecks, objectInstanceCheck)
 	}
-	countQuery := strings.Replace(fmt.Sprintf("SELECT count(*) as total_items FROM _schema.OBJECT_INSTANCE_CHECK oic"+
-		" inner join _schema.object_instance oi on oic.object_instance_id = oi.id"+
-		" inner join _schema.object o on oi.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField)), "_schema", o.Schema, -1)
+	countQuery := fmt.Sprintf("SELECT count(*) as total_items FROM OBJECT_INSTANCE_CHECK oic"+
+		" inner join object_instance oi on oic.object_instance_id = oi.id"+
+		" inner join object o on oi.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField))
 	var totalItems int
-	countRow := o.Db.QueryRow(countQuery)
+	countRow := o.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
@@ -123,8 +121,8 @@ func (o *objectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	return objectInstanceChecks, totalItems, nil
 }
 
-func NewObjectInstanceCheckRepository(db *sql.DB, schema string) ObjectInstanceCheckRepository {
-	return &objectInstanceCheckRepositoryImpl{Db: db, Schema: schema}
+func NewObjectInstanceCheckRepository(db *pgxpool.Pool) ObjectInstanceCheckRepository {
+	return &ObjectInstanceCheckRepositoryImpl{Db: db}
 }
 
 func getLikeQueryForObjectInstanceCheck(searchKey string) string {

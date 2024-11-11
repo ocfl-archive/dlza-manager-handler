@@ -4,9 +4,9 @@ import (
 	"context"
 	"emperror.dev/errors"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
-	"github.com/ocfl-archive/dlza-manager-handler/mapper"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	"github.com/ocfl-archive/dlza-manager/mapper"
 )
 
 type CheckerHandlerServer struct {

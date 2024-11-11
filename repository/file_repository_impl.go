@@ -1,50 +1,45 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lib/pq"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-type filePrepareStmt int
-
 const (
-	CreateFile filePrepareStmt = iota
-	DeleteFile
-	GetFileById
+	CreateFile  = "CreateFile"
+	DeleteFile  = "DeleteFile"
+	GetFileById = "GetFileById"
 )
 
 type FileRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[filePrepareStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-func NewFileRepository(Db *sql.DB, schema string) FileRepository {
+func NewFileRepository(db *pgxpool.Pool) FileRepository {
 	return &FileRepositoryImpl{
-		Db:     Db,
-		Schema: schema,
+		Db: db,
 	}
 }
 
-func (f *FileRepositoryImpl) CreateFilePreparedStatements() error {
+func CreateFilePreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[filePrepareStmt]string{
-		CreateFile:  fmt.Sprintf("insert into %s.File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)", f.Schema),
-		DeleteFile:  fmt.Sprintf("DELETE FROM %s.File WHERE id = $1", f.Schema),
-		GetFileById: fmt.Sprintf("SELECT * FROM %s.FILE WHERE id = $1", f.Schema),
+	preparedStatements := map[string]string{
+		CreateFile:  "insert into File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		DeleteFile:  "DELETE FROM File WHERE id = $1",
+		GetFileById: "SELECT * FROM FILE WHERE id = $1",
 	}
-	var err error
-	f.PreparedStatement = make(map[filePrepareStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		f.PreparedStatement[key], err = f.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
@@ -52,26 +47,32 @@ func (f *FileRepositoryImpl) CreateFilePreparedStatements() error {
 
 func (f *FileRepositoryImpl) GetFileById(id string) (models.File, error) {
 	var file models.File
-	err := f.PreparedStatement[GetFileById].QueryRow(id).Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
-		&file.Pronom, &file.Width, &file.Height, &file.Duration, &file.Id, &file.ObjectId)
+	var width sql.NullInt64
+	var height sql.NullInt64
+	var duration sql.NullInt64
+	err := f.Db.QueryRow(context.Background(), GetFileById, id).Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
+		&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 	if err != nil {
-		return file, errors.Wrapf(err, "Could not execute query: %v", f.PreparedStatement[GetFileById])
+		return file, errors.Wrapf(err, "Could not execute query for method: %v", GetFileById)
 	}
+	file.Width = width.Int64
+	file.Height = height.Int64
+	file.Duration = duration.Int64
 	return file, nil
 }
 
 func (f *FileRepositoryImpl) DeleteFile(id string) error {
-	_, err := f.PreparedStatement[DeleteFile].Exec(id)
+	_, err := f.Db.Exec(context.Background(), DeleteFile, id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", f.PreparedStatement[DeleteFile])
+		return errors.Wrapf(err, "Could not execute query for method: %v", DeleteFile)
 	}
 	return nil
 }
 
 func (f *FileRepositoryImpl) CreateFile(file models.File) error {
-	_, err := f.PreparedStatement[CreateFile].Exec(file.Checksum, pq.Array(file.Name), file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
+	_, err := f.Db.Exec(context.Background(), CreateFile, file.Checksum, pq.Array(file.Name), file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", f.PreparedStatement[CreateFile])
+		return errors.Wrapf(err, "Could not execute query for method: %v", CreateFile)
 	}
 	return nil
 }
@@ -104,12 +105,12 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT f.* FROM _schema.FILE f"+
-		" inner join _schema.object o on f.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", f.Schema, -1)
-	rows, err := f.Db.Query(query)
+	query := fmt.Sprintf("SELECT f.* FROM FILE f"+
+		" inner join object o on f.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -117,21 +118,27 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 	var files []models.File
 	for rows.Next() {
 		var file models.File
+		var width sql.NullInt64
+		var height sql.NullInt64
+		var duration sql.NullInt64
 		err := rows.Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
-			&file.Pronom, &file.Width, &file.Height, &file.Duration, &file.Id, &file.ObjectId)
+			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		file.Width = width.Int64
+		file.Height = height.Int64
+		file.Duration = duration.Int64
 		files = append(files, file)
 	}
 
-	countQuery := strings.Replace(fmt.Sprintf("SELECT count(*) as total_items FROM _schema.FILE f"+
-		" inner join _schema.object o on f.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField)), "_schema", f.Schema, -1)
+	countQuery := fmt.Sprintf("SELECT count(*) as total_items FROM FILE f"+
+		" inner join object o on f.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField))
 	var totalItems int
-	countRow := f.Db.QueryRow(countQuery)
+	countRow := f.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
@@ -167,12 +174,12 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT f.* FROM _schema.FILE f"+
-		" inner join _schema.object o on f.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", f.Schema, -1)
-	rows, err := f.Db.Query(query)
+	query := fmt.Sprintf("SELECT f.* FROM FILE f"+
+		" inner join object o on f.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -180,21 +187,27 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 	var files []models.File
 	for rows.Next() {
 		var file models.File
+		var width sql.NullInt64
+		var height sql.NullInt64
+		var duration sql.NullInt64
 		err := rows.Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
-			&file.Pronom, &file.Width, &file.Height, &file.Duration, &file.Id, &file.ObjectId)
+			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		file.Width = width.Int64
+		file.Height = height.Int64
+		file.Duration = duration.Int64
 		files = append(files, file)
 	}
 
-	countQuery := strings.Replace(fmt.Sprintf("SELECT count(*) as total_items FROM _schema.FILE f"+
-		" inner join _schema.object o on f.object_id = o.id"+
-		" inner join _schema.collection c on c.id = o.collection_id"+
-		" inner join _schema.tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField)), "_schema", f.Schema, -1)
+	countQuery := fmt.Sprintf("SELECT count(*) as total_items FROM FILE f"+
+		" inner join object o on f.object_id = o.id"+
+		" inner join collection c on c.id = o.collection_id"+
+		" inner join tenant t on t.id = c.tenant_id"+
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField))
 	var totalItems int
-	countRow := f.Db.QueryRow(countQuery)
+	countRow := f.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
@@ -226,9 +239,9 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 		}
 	}
 
-	query := strings.Replace(fmt.Sprintf("SELECT mtfj.mime_type as id, count(mtfj.*) as file_count, count(*) OVER() FROM _schema.mat_tenant_file_join mtfj"+
-		" %s %s group by mtfj.mime_type order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", f.Schema, -1)
-	rows, err := f.Db.Query(query)
+	query := fmt.Sprintf("SELECT mtfj.mime_type as id, count(mtfj.*) as file_count, count(*) OVER() FROM mat_tenant_file_join mtfj"+
+		" %s %s group by mtfj.mime_type order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -237,10 +250,12 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 	mimeTypes := make([]models.MimeType, 0)
 	for rows.Next() {
 		mimeType := models.MimeType{}
-		err := rows.Scan(&mimeType.Id, &mimeType.FileCount, &totalItems)
+		var id sql.NullString
+		err := rows.Scan(&id, &mimeType.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		mimeType.Id = id.String
 		mimeTypes = append(mimeTypes, mimeType)
 	}
 	return mimeTypes, totalItems, nil
@@ -270,9 +285,9 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		}
 	}
 
-	query := strings.Replace(fmt.Sprintf("SELECT mtfj.pronom as id, count(mtfj.*) as file_count, count(*) OVER() FROM _schema.mat_tenant_file_join mtfj"+
-		" %s %s group by mtfj.pronom order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", f.Schema, -1)
-	rows, err := f.Db.Query(query)
+	query := fmt.Sprintf("SELECT mtfj.pronom as id, count(mtfj.*) as file_count, count(*) OVER() FROM mat_tenant_file_join mtfj"+
+		" %s %s group by mtfj.pronom order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -281,12 +296,13 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 	pronoms := make([]models.Pronom, 0)
 	for rows.Next() {
 		pronom := models.Pronom{}
-		err := rows.Scan(&pronom.Id, &pronom.FileCount, &totalItems)
+		var id sql.NullString
+		err := rows.Scan(&id, &pronom.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		pronomWithoutSpaces := strings.Replace(pronom.Id.String, " ", "", -1)
-		pronom.Id.String = pronomWithoutSpaces
+		pronomWithoutSpaces := strings.Replace(id.String, " ", "", -1)
+		pronom.Id = pronomWithoutSpaces
 		pronoms = append(pronoms, pronom)
 	}
 	return pronoms, totalItems, nil

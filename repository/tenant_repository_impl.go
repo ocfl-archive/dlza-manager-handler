@@ -1,110 +1,101 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
-	"log"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"strconv"
 	"strings"
 )
 
-type tenantPrepareStmt int
-
 const (
-	FindAllTenants tenantPrepareStmt = iota
-	FindTenantById
-	SaveTenant
-	UpdateTenant
-	DeleteTenant
-	GetAmountOfObjectsAndTotalSizeByTenantId
+	FindAllTenants                           = "FindAllTenants"
+	FindTenantById                           = "FindTenantById"
+	SaveTenant                               = "SaveTenant"
+	UpdateTenant                             = "UpdateTenant"
+	DeleteTenant                             = "DeleteTenant"
+	GetAmountOfObjectsAndTotalSizeByTenantId = "GetAmountOfObjectsAndTotalSizeByTenantId"
 )
 
 type TenantRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[tenantPrepareStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-func NewTenantRepository(Db *sql.DB, schema string) TenantRepository {
+func NewTenantRepository(Db *pgxpool.Pool) TenantRepository {
 	return &TenantRepositoryImpl{
-		Db:     Db,
-		Schema: schema,
+		Db: Db,
 	}
 }
 
-func (t *TenantRepositoryImpl) CreatePreparedStatements() error {
+func CreateTenantPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[tenantPrepareStmt]string{
-		FindAllTenants: fmt.Sprintf("SELECT * FROM %s.TENANT", t.Schema),
-		FindTenantById: fmt.Sprintf("SELECT * FROM %s.TENANT WHERE id = $1", t.Schema),
-		SaveTenant:     fmt.Sprintf("insert into %s.TENANT(name, alias, person, email, api_key_id) values($1, $2, $3, $4, $5)", t.Schema),
-		UpdateTenant:   fmt.Sprintf("update %s.TENANT set name = $1, alias = $2, person = $3, email = $4 where id =$5", t.Schema),
-		DeleteTenant:   fmt.Sprintf("DELETE FROM %s.TENANT WHERE id = $1", t.Schema),
-		GetAmountOfObjectsAndTotalSizeByTenantId: strings.Replace("select sum(current_objects),  sum(current_size) from %s.tenant t"+
-			" left join  %s.storage_location sl"+
-			" on t.id = sl.tenant_id"+
-			" left join %s.storage_partition sp"+
-			" on sl.id = sp.storage_location_id"+
-			" where t.id = $1"+
-			" group by t.id", "%s", t.Schema, -1),
+	tenantPreparedStatements := map[string]string{
+		FindAllTenants: "SELECT * FROM TENANT",
+		FindTenantById: "SELECT * FROM TENANT WHERE id = $1",
+		SaveTenant:     "insert into TENANT(name, alias, person, email, api_key_id) values($1, $2, $3, $4, $5)",
+		UpdateTenant:   "update TENANT set name = $1, alias = $2, person = $3, email = $4 where id =$5",
+		DeleteTenant:   "DELETE FROM TENANT WHERE id = $1",
+		GetAmountOfObjectsAndTotalSizeByTenantId: "select sum(current_objects),  sum(current_size) from tenant t" +
+			" left join storage_location sl" +
+			" on t.id = sl.tenant_id" +
+			" left join storage_partition sp" +
+			" on sl.id = sp.storage_location_id" +
+			" where t.id = $1" +
+			" group by t.id",
 	}
-	var err error
-	t.PreparedStatement = make(map[tenantPrepareStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		t.PreparedStatement[key], err = t.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range tenantPreparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
 }
 
 func (t *TenantRepositoryImpl) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
-	row := t.PreparedStatement[GetAmountOfObjectsAndTotalSizeByTenantId].QueryRow(id)
+	row := t.Db.QueryRow(context.Background(), GetAmountOfObjectsAndTotalSizeByTenantId, id)
 	var amount sql.NullInt64
 	var size sql.NullInt64
 	err := row.Scan(&amount, &size)
 	if err != nil {
-		return 0, 0, errors.Wrapf(err, "Could not execute query: %v", t.PreparedStatement[GetAmountOfObjectsAndTotalSizeByTenantId])
+		return 0, 0, errors.Wrapf(err, "Could not execute query: %v", GetAmountOfObjectsAndTotalSizeByTenantId)
 	}
 	return amount.Int64, size.Int64, nil
 }
 
 func (t *TenantRepositoryImpl) UpdateTenant(tenant models.Tenant) error {
-	_, err := t.PreparedStatement[UpdateTenant].Exec(tenant.Name, tenant.Alias, tenant.Person, tenant.Email, tenant.Id)
+	_, err := t.Db.Exec(context.Background(), UpdateTenant, tenant.Name, tenant.Alias, tenant.Person, tenant.Email, tenant.Id)
 	if err != nil {
-		log.Print(err)
-		return err
+		return errors.Wrapf(err, "Could not execute query: %v", UpdateTenant)
 	}
 	return nil
 }
 
 func (t *TenantRepositoryImpl) DeleteTenant(id string) error {
-	_, err := t.PreparedStatement[DeleteTenant].Exec(id)
+	_, err := t.Db.Exec(context.Background(), DeleteTenant, id)
 	if err != nil {
-		log.Printf("err message: %v", err)
-		return err
+		return errors.Wrapf(err, "Could not execute query: %v", DeleteTenant)
 	}
 	return nil
 }
 
 func (t *TenantRepositoryImpl) FindTenantById(id string) (models.Tenant, error) {
 	var tenant models.Tenant
-	err := t.PreparedStatement[FindTenantById].QueryRow(id).Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId.String)
+	err := t.Db.QueryRow(context.Background(), FindTenantById, id).Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
 	if err != nil {
-		log.Print(err)
-		return tenant, err
+		return tenant, errors.Wrapf(err, "Could not execute query: %v", FindTenantById)
 	}
 	return tenant, nil
 }
 
 func (t *TenantRepositoryImpl) FindTenantByKey(key string) (models.Tenant, error) {
 	var tenant models.Tenant
-	query := strings.Replace(fmt.Sprintf("SELECT t.name, t.alias, t.person, t.email, t.id, t.api_key_id  FROM _schema.Tenant t, _schema.api_key a"+
-		" where t.api_key_id = a.id and a.key = '%s'", key), "_schema", t.Schema, -1)
-	countRow := t.Db.QueryRow(query)
+	query := fmt.Sprintf("SELECT t.name, t.alias, t.person, t.email, t.id, t.api_key_id  FROM Tenant t, api_key a"+
+		" where t.api_key_id = a.id and a.key = '%s'", key)
+	countRow := t.Db.QueryRow(context.Background(), query)
 	err := countRow.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
 	if err != nil {
 		return tenant, errors.Wrapf(err, "Could not scan tenant for query: %v", query)
@@ -113,19 +104,17 @@ func (t *TenantRepositoryImpl) FindTenantByKey(key string) (models.Tenant, error
 }
 
 func (t *TenantRepositoryImpl) SaveTenant(tenant models.Tenant) error {
-	_, err := t.PreparedStatement[SaveTenant].Exec(tenant.Name, tenant.Alias, tenant.Person, tenant.Email, tenant.ApiKeyId.String)
+	_, err := t.Db.Exec(context.Background(), SaveTenant, tenant.Name, tenant.Alias, tenant.Person, tenant.Email, tenant.ApiKeyId)
 	if err != nil {
-		log.Printf("err message: %v", err)
-		return err
+		return errors.Wrapf(err, "Could not execute query: %v", SaveTenant)
 	}
 	return nil
 }
 
 func (t *TenantRepositoryImpl) FindAllTenants() ([]models.Tenant, error) {
-	rows, err := t.PreparedStatement[FindAllTenants].Query()
+	rows, err := t.Db.Query(context.Background(), FindAllTenants)
 	if err != nil {
-		log.Printf("Could not execute query: %v", t.PreparedStatement[FindAllTenants])
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not execute query: %v", FindAllTenants)
 	}
 	var tenants []models.Tenant
 
@@ -133,8 +122,7 @@ func (t *TenantRepositoryImpl) FindAllTenants() ([]models.Tenant, error) {
 		var tenant models.Tenant
 		err := rows.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
 		if err != nil {
-			log.Printf("Could not scan rows for query: %v", t.PreparedStatement[FindAllTenants])
-			return nil, err
+			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", FindAllTenants)
 		}
 		tenants = append(tenants, tenant)
 	}
@@ -154,12 +142,11 @@ func (t *TenantRepositoryImpl) FindAllTenantsPaginated(pagination models.Paginat
 		secondCondition = "and"
 	}
 
-	query := fmt.Sprintf("SELECT *,  count(*) over() as total_items FROM %s.TENANT t %s %s %s order by %s %s limit %s OFFSET %s", t.Schema,
+	query := fmt.Sprintf("SELECT *,  count(*) over() as total_items FROM TENANT t %s %s %s order by %s %s limit %s OFFSET %s",
 		firstCondition, secondCondition, getLikeQueryForTenant(pagination.SearchField), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
-	rows, err := t.Db.Query(query)
+	rows, err := t.Db.Query(context.Background(), query)
 	if err != nil {
-		log.Printf("Could not execute query: %v", query)
-		return nil, 0, err
+		return nil, 0, errors.Wrapf(err, "Could not scan tenant for query: %v", query)
 	}
 	var tenants []models.Tenant
 	var totalItems int
@@ -168,8 +155,7 @@ func (t *TenantRepositoryImpl) FindAllTenantsPaginated(pagination models.Paginat
 		var tenant models.Tenant
 		err := rows.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId, &totalItems)
 		if err != nil {
-			log.Printf("Could not scan rows for query: %v", query)
-			return nil, 0, err
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
 		tenants = append(tenants, tenant)
 	}

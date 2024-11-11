@@ -1,13 +1,12 @@
 package repository
 
-import "github.com/ocfl-archive/dlza-manager-handler/models"
+import "github.com/ocfl-archive/dlza-manager/models"
 
 type StorageLocationRepository interface {
 	GetStorageLocationsByTenantId(tenantId string) ([]models.StorageLocation, error)
 	DeleteStorageLocationById(storageLocationId string) error
 	SaveStorageLocation(models.StorageLocation) (string, error)
 	UpdateStorageLocation(models.StorageLocation) error
-	CreateStorageLocPreparedStatements() error
 	GetStorageLocationById(id string) (models.StorageLocation, error)
 	GetStorageLocationByObjectInstanceId(id string) (models.StorageLocation, error)
 	GetStorageLocationsByObjectId(id string) ([]models.StorageLocation, error)

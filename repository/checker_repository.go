@@ -1,8 +1,7 @@
 package repository
 
-import "github.com/ocfl-archive/dlza-manager-handler/models"
+import "github.com/ocfl-archive/dlza-manager/models"
 
 type CheckerRepository interface {
 	GetPathsToCopy() ([]models.CopyPaths, error)
-	CreatePreparedStatementsForChecker() error
 }

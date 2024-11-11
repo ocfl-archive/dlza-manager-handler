@@ -4,11 +4,11 @@ import (
 	"context"
 	"emperror.dev/errors"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
-	"github.com/ocfl-archive/dlza-manager-handler/mapper"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	"github.com/ocfl-archive/dlza-manager/mapper"
+	"github.com/ocfl-archive/dlza-manager/models"
 )
 
 type ClerkHandlerServer struct {
@@ -420,7 +420,7 @@ func (c *ClerkHandlerServer) GetMimeTypesForCollectionId(ctx context.Context, pa
 
 	mimeTypesPb := make([]*pb.MimeType, 0)
 	for _, mimeType := range mimeTypes {
-		mimeTypePb := &pb.MimeType{Id: mimeType.Id.String, FileCount: int32(mimeType.FileCount)}
+		mimeTypePb := &pb.MimeType{Id: mimeType.Id, FileCount: mimeType.FileCount}
 		mimeTypesPb = append(mimeTypesPb, mimeTypePb)
 	}
 
@@ -435,7 +435,7 @@ func (c *ClerkHandlerServer) GetPronomsForCollectionId(ctx context.Context, pagi
 
 	pronomsPb := make([]*pb.Pronom, 0)
 	for _, pronom := range pronoms {
-		pronomPb := &pb.Pronom{Id: pronom.Id.String, FileCount: int32(pronom.FileCount)}
+		pronomPb := &pb.Pronom{Id: pronom.Id, FileCount: pronom.FileCount}
 		pronomsPb = append(pronomsPb, pronomPb)
 	}
 

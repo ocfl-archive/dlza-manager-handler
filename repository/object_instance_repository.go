@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/ocfl-archive/dlza-manager-handler/models"
+import "github.com/ocfl-archive/dlza-manager/models"
 
 type ObjectInstanceRepository interface {
 	CreateObjectInstance(models.ObjectInstance) (string, error)
@@ -12,6 +12,5 @@ type ObjectInstanceRepository interface {
 	GetObjectInstancesByPartitionIdPaginated(pagination models.Pagination) ([]models.ObjectInstance, int, error)
 	GetAllObjectInstances() ([]models.ObjectInstance, error)
 	GetAmountOfErrorsByCollectionId(id string) (int, error)
-	CreateObjectInstancePreparedStatements() error
 	GetObjectInstancesByName(name string) ([]models.ObjectInstance, error)
 }

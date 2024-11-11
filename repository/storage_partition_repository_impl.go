@@ -1,89 +1,87 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
 )
 
-type storagePartitionRepositoryStmt int
-
 const (
-	GetStoragePartition storagePartitionRepositoryStmt = iota
-	CreateStoragePartition
-	UpdateStoragePartition
-	DeleteStoragePartition
-	GetStoragePartitionsByLocationId
+	GetStoragePartition              = "GetStoragePartition"
+	CreateStoragePartition           = "CreateStoragePartition"
+	UpdateStoragePartition           = "UpdateStoragePartition"
+	DeleteStoragePartition           = "DeleteStoragePartition"
+	GetStoragePartitionsByLocationId = "GetStoragePartitionsByLocationId"
 )
 
 type storagePartitionRepositoryImpl struct {
-	Db                *sql.DB
-	Schema            string
-	PreparedStatement map[storagePartitionRepositoryStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-func (s *storagePartitionRepositoryImpl) CreateStoragePartitionPreparedStatements() error {
+func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
-	preparedStatement := map[storagePartitionRepositoryStmt]string{
-		GetStoragePartition:              fmt.Sprintf("SELECT * FROM %s.STORAGE_PARTITION o WHERE ID = $1", s.Schema),
-		CreateStoragePartition:           fmt.Sprintf("INSERT INTO %s.STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", s.Schema),
-		UpdateStoragePartition:           fmt.Sprintf("UPDATE %s.STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7", s.Schema),
-		DeleteStoragePartition:           fmt.Sprintf("DELETE FROM %s.STORAGE_PARTITION  where id =$1", s.Schema),
-		GetStoragePartitionsByLocationId: fmt.Sprintf("SELECT * FROM %s.STORAGE_PARTITION WHERE storage_location_id = $1", s.Schema),
+	preparedStatements := map[string]string{
+		GetStoragePartition:              "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
+		CreateStoragePartition:           "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		UpdateStoragePartition:           "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7",
+		DeleteStoragePartition:           "DELETE FROM STORAGE_PARTITION  where id =$1",
+		GetStoragePartitionsByLocationId: "SELECT * FROM STORAGE_PARTITION WHERE storage_location_id = $1",
 	}
-	var err error
-	s.PreparedStatement = make(map[storagePartitionRepositoryStmt]*sql.Stmt)
-	for key, stmt := range preparedStatement {
-		s.PreparedStatement[key], err = s.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
 }
 
 func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models.StoragePartition) (string, error) {
-	row := s.PreparedStatement[CreateStoragePartition].QueryRow(partition.Alias, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.StorageLocationId)
+	row := s.Db.QueryRow(context.Background(), CreateStoragePartition, partition.Alias, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.StorageLocationId)
 
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[CreateStoragePartition])
+		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateStoragePartition)
 	}
 	return id, nil
 }
 
 func (s *storagePartitionRepositoryImpl) UpdateStoragePartition(partition models.StoragePartition) error {
-	_, err := s.PreparedStatement[UpdateStoragePartition].Exec(partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Alias, partition.Id)
+	_, err := s.Db.Exec(context.Background(), UpdateStoragePartition, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Alias, partition.Id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[UpdateStoragePartition])
+		return errors.Wrapf(err, "Could not execute query for method: %v", UpdateStoragePartition)
 	}
 	return nil
 }
 
 func (s *storagePartitionRepositoryImpl) DeleteStoragePartitionById(id string) error {
-	_, err := s.PreparedStatement[DeleteStoragePartition].Exec(id)
+	_, err := s.Db.Exec(context.Background(), DeleteStoragePartition, id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[DeleteStoragePartition])
+		return errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartition)
 	}
 	return nil
 }
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionById(id string) (models.StoragePartition, error) {
 	storagePartition := models.StoragePartition{}
-	err := s.PreparedStatement[GetStoragePartition].QueryRow(id).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
+	err := s.Db.QueryRow(context.Background(), GetStoragePartition, id).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
 		&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
+	if err != nil {
+		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartition)
+	}
 	return storagePartition, err
 }
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationId(locationId string) ([]models.StoragePartition, error) {
-	rows, err := s.PreparedStatement[GetStoragePartitionsByLocationId].Query(locationId)
+	rows, err := s.Db.Query(context.Background(), GetStoragePartitionsByLocationId, locationId)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", s.PreparedStatement[GetStoragePartitionsByLocationId])
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionsByLocationId)
 	}
 	var storagePartitions []models.StoragePartition
 
@@ -92,7 +90,7 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationId(locati
 		err := rows.Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize, &storagePartition.MaxObjects, &storagePartition.CurrentSize,
 			&storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", s.PreparedStatement[GetStoragePartitionsByLocationId])
+			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetStoragePartitionsByLocationId)
 		}
 		storagePartitions = append(storagePartitions, storagePartition)
 	}
@@ -127,11 +125,11 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationIdPaginat
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := strings.Replace(fmt.Sprintf("SELECT sp.*, count(*) over() as total_items FROM _schema.STORAGE_PARTITION sp"+
-		" inner join _schema.storage_location sl on sl.id = sp.storage_location_id"+
-		" inner join _schema.tenant t on t.id = sl.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForStoragePartition(pagination.SearchField), "sp."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", s.Schema, -1)
-	rows, err := s.Db.Query(query)
+	query := fmt.Sprintf("SELECT sp.*, count(*) over() as total_items FROM STORAGE_PARTITION sp"+
+		" inner join storage_location sl on sl.id = sp.storage_location_id"+
+		" inner join tenant t on t.id = sl.tenant_id"+
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForStoragePartition(pagination.SearchField), "sp."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	rows, err := s.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -150,8 +148,8 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationIdPaginat
 	return storagePartitions, totalItems, nil
 }
 
-func NewStoragePartitionRepository(db *sql.DB, schema string) StoragePartitionRepository {
-	return &storagePartitionRepositoryImpl{Db: db, Schema: schema}
+func NewStoragePartitionRepository(db *pgxpool.Pool) StoragePartitionRepository {
+	return &storagePartitionRepositoryImpl{Db: db}
 }
 
 func getLikeQueryForStoragePartition(searchKey string) string {

@@ -1,109 +1,105 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 	"strconv"
 	"strings"
 )
 
-type collectionPreparedStmt int
-
 const (
-	CreateCollection collectionPreparedStmt = iota
-	DeleteCollectionById
-	UpdateCollection
-	GetCollectionsByTenantId
-	GetCollectionIdByAlias
-	GetCollectionByAlias
-	GetCollectionByIdFromMv
-	GetCollectionById
-	GetSizeForAllObjectInstancesByCollectionId
+	CreateCollection                           = "CreateCollection"
+	DeleteCollectionById                       = "DeleteCollectionById"
+	UpdateCollection                           = "UpdateCollection"
+	GetCollectionsByTenantId                   = "GetCollectionsByTenantId"
+	GetCollectionIdByAlias                     = "GetCollectionIdByAlias"
+	GetCollectionByAlias                       = "GetCollectionByAlias"
+	GetCollectionByIdFromMv                    = "GetCollectionByIdFromMv"
+	GetCollectionById                          = "GetCollectionById"
+	GetSizeForAllObjectInstancesByCollectionId = "GetSizeForAllObjectInstancesByCollectionId"
 )
 
 type CollectionRepositoryImpl struct {
-	Db                 *sql.DB
-	Schema             string
-	PreparedStatements map[collectionPreparedStmt]*sql.Stmt
+	Db *pgxpool.Pool
 }
 
-func NewCollectionRepository(db *sql.DB, schema string) CollectionRepository {
-	return &CollectionRepositoryImpl{Db: db, Schema: schema}
+func NewCollectionRepository(db *pgxpool.Pool) CollectionRepository {
+	return &CollectionRepositoryImpl{Db: db}
 }
 
-func (c *CollectionRepositoryImpl) CreateCollectionPreparedStatements() error {
-	preparedStatements := map[collectionPreparedStmt]string{
-		GetCollectionsByTenantId: fmt.Sprintf("SELECT * FROM %s.collection where tenant_id = $1", c.Schema),
-		GetCollectionIdByAlias:   fmt.Sprintf("SELECT id FROM %s.collection where alias = $1", c.Schema),
-		GetCollectionByAlias:     fmt.Sprintf("SELECT * FROM %s.collection where alias = $1", c.Schema),
-		GetCollectionByIdFromMv:  fmt.Sprintf("SELECT * FROM %s.mat_coll_obj_file where id = $1", c.Schema),
-		GetCollectionById:        fmt.Sprintf("SELECT * FROM %s.collection where id = $1", c.Schema),
-		DeleteCollectionById:     fmt.Sprintf("DELETE FROM %s.collection WHERE id = $1", c.Schema),
-		UpdateCollection:         fmt.Sprintf("UPDATE %s.collection SET description = $1, owner = $2, owner_mail= $3, name = $4, quality = $5, tenant_id= $6 where id = $7", c.Schema),
-		CreateCollection: fmt.Sprintf("INSERT INTO %s.collection(alias, description, owner, owner_mail, name, quality, tenant_id)"+
-			" VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", c.Schema),
-		GetSizeForAllObjectInstancesByCollectionId: strings.Replace("select sum(oi.size) from %s.object o"+
-			" left join  %s.object_instance oi"+
-			" on o.id = oi.object_id"+
-			" where o.collection_id = $1", "%s", c.Schema, -1),
+func CreateCollectionPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
+	preparedStatements := map[string]string{
+		GetCollectionsByTenantId: "SELECT * FROM collection where tenant_id = $1",
+		GetCollectionIdByAlias:   "SELECT id FROM collection where alias = $1",
+		GetCollectionByAlias:     "SELECT * FROM collection where alias = $1",
+		GetCollectionByIdFromMv:  "SELECT * FROM mat_coll_obj_file where id = $1",
+		GetCollectionById:        "SELECT * FROM collection where id = $1",
+		DeleteCollectionById:     "DELETE FROM collection WHERE id = $1",
+		UpdateCollection:         "UPDATE collection SET description = $1, owner = $2, owner_mail= $3, name = $4, quality = $5, tenant_id= $6 where id = $7",
+		CreateCollection: "INSERT INTO collection(alias, description, owner, owner_mail, name, quality, tenant_id)" +
+			" VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		GetSizeForAllObjectInstancesByCollectionId: "select sum(oi.size) from object o" +
+			" left join  object_instance oi" +
+			" on o.id = oi.object_id" +
+			" where o.collection_id = $1",
 	}
-	var err error
-	c.PreparedStatements = make(map[collectionPreparedStmt]*sql.Stmt)
-	for key, stmt := range preparedStatements {
-		c.PreparedStatements[key], err = c.Db.Prepare(stmt)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create sql query %s", stmt)
+	for name, sqlStm := range preparedStatements {
+		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
+			return errors.Wrapf(err, "cannot prepare statement '%s' - '%s'", name, sqlStm)
 		}
 	}
 	return nil
 }
 
 func (c *CollectionRepositoryImpl) GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error) {
-	row := c.PreparedStatements[GetSizeForAllObjectInstancesByCollectionId].QueryRow(id)
+	row := c.Db.QueryRow(context.Background(), GetSizeForAllObjectInstancesByCollectionId, id)
 	var size sql.NullInt64
 	err := row.Scan(&size)
 	if err != nil {
-		return 0, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetSizeForAllObjectInstancesByCollectionId])
+		return 0, errors.Wrapf(err, "Could not execute query for method: %v", GetSizeForAllObjectInstancesByCollectionId)
 	}
 	return size.Int64, nil
 }
 
 func (c *CollectionRepositoryImpl) CreateCollection(collection models.Collection) (string, error) {
 
-	row := c.PreparedStatements[CreateCollection].QueryRow(collection.Alias, collection.Description, collection.Owner, collection.OwnerMail, collection.Name,
+	row := c.Db.QueryRow(context.Background(), CreateCollection, collection.Alias, collection.Description, collection.Owner, collection.OwnerMail, collection.Name,
 		collection.Quality, collection.TenantId)
 
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[CreateCollection])
+		return "", errors.Wrapf(err, "Could not execute query in method: %v", CreateCollection)
 	}
 	return id, nil
 }
 
 func (c *CollectionRepositoryImpl) DeleteCollectionById(id string) error {
-	_, err := c.PreparedStatements[DeleteCollectionById].Exec(id)
+	_, err := c.Db.Exec(context.Background(), DeleteCollectionById, id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[DeleteCollectionById])
+		return errors.Wrapf(err, "Could not execute query in method: %v", DeleteCollectionById)
 	}
 	return nil
 }
 
 func (c *CollectionRepositoryImpl) UpdateCollection(collection models.Collection) error {
-	_, err := c.PreparedStatements[UpdateCollection].Exec(collection.Description, collection.Owner, collection.OwnerMail, collection.Name,
+	_, err := c.Db.Exec(context.Background(), UpdateCollection, collection.Description, collection.Owner, collection.OwnerMail, collection.Name,
 		collection.Quality, collection.TenantId, collection.Id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[UpdateCollection])
+		return errors.Wrapf(err, "Could not execute query in method: %v", UpdateCollection)
 	}
 	return nil
 }
 
 func (c *CollectionRepositoryImpl) GetCollectionsByTenantId(tenantId string) ([]models.Collection, error) {
-	rows, err := c.PreparedStatements[GetCollectionsByTenantId].Query(tenantId)
+	rows, err := c.Db.Query(context.Background(), GetCollectionsByTenantId, tenantId)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionsByTenantId])
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetCollectionsByTenantId)
 	}
 	var collections []models.Collection
 
@@ -112,7 +108,7 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantId(tenantId string) ([]
 		err := rows.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
 			&collection.Quality, &collection.TenantId, &collection.Id)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", c.PreparedStatements[GetCollectionsByTenantId])
+			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetCollectionsByTenantId)
 		}
 		collections = append(collections, collection)
 	}
@@ -120,46 +116,52 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantId(tenantId string) ([]
 }
 
 func (c *CollectionRepositoryImpl) GetCollectionIdByAlias(alias string) (string, error) {
-	row := c.PreparedStatements[GetCollectionIdByAlias].QueryRow(alias)
+	row := c.Db.QueryRow(context.Background(), GetCollectionIdByAlias, alias)
 	var id string
 
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionIdByAlias])
+		return "", errors.Wrapf(err, "Could not execute query in method: %v", GetCollectionIdByAlias)
 	}
 
 	return id, nil
 }
 
 func (c *CollectionRepositoryImpl) GetCollectionById(id string) (models.Collection, error) {
-	row := c.PreparedStatements[GetCollectionById].QueryRow(id)
+	row := c.Db.QueryRow(context.Background(), GetCollectionById, id)
 	collection := models.Collection{}
 	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
 		&collection.Quality, &collection.TenantId, &collection.Id)
 	if err != nil {
-		return collection, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionById])
+		return collection, errors.Wrapf(err, "Could not execute query in method: %v", GetCollectionById)
 	}
 	return collection, nil
 }
 
 func (c *CollectionRepositoryImpl) GetCollectionByIdFromMv(id string) (models.Collection, error) {
-	row := c.PreparedStatements[GetCollectionByIdFromMv].QueryRow(id)
+	row := c.Db.QueryRow(context.Background(), GetCollectionByIdFromMv, id)
 	collection := models.Collection{}
+	var totalFileSize sql.NullInt64
+	var totalFileCount sql.NullInt64
+	var totalObjectCount sql.NullInt64
 	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
-		&collection.Quality, &collection.TenantId, &collection.Id, &collection.TotalFileSize, &collection.TotalFileCount, &collection.TotalObjectCount)
+		&collection.Quality, &collection.TenantId, &collection.Id, &totalFileSize, &totalFileCount, &totalObjectCount)
 	if err != nil {
-		return collection, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionByIdFromMv])
+		return collection, errors.Wrapf(err, "Could not execute query in method: %v", GetCollectionByIdFromMv)
 	}
+	collection.TotalFileSize = totalFileSize.Int64
+	collection.TotalFileCount = totalFileCount.Int64
+	collection.TotalObjectCount = totalObjectCount.Int64
 	return collection, nil
 }
 
 func (c *CollectionRepositoryImpl) GetCollectionByAlias(alias string) (models.Collection, error) {
-	row := c.PreparedStatements[GetCollectionByAlias].QueryRow(alias)
+	row := c.Db.QueryRow(context.Background(), GetCollectionByAlias, alias)
 	collection := models.Collection{}
 	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
 		&collection.Quality, &collection.TenantId, &collection.Id)
 	if err != nil {
-		return collection, errors.Wrapf(err, "Could not execute query: %v", c.PreparedStatements[GetCollectionByAlias])
+		return collection, errors.Wrapf(err, "Could not execute query in method: %v", GetCollectionByAlias)
 	}
 	return collection, nil
 }
@@ -185,11 +187,11 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 		secondCondition = secondCondition + " and"
 	}
 
-	query := strings.Replace(fmt.Sprintf("SELECT *, count(*) over() FROM _schema.mat_coll_obj_file"+
+	query := fmt.Sprintf("SELECT *, count(*) over() FROM mat_coll_obj_file"+
 		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForCollection(pagination.SearchField),
-		pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", c.Schema, -1)
+		pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 
-	rows, err := c.Db.Query(query)
+	rows, err := c.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -197,12 +199,18 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 	var totalItems int
 	for rows.Next() {
 		var collection models.Collection
+		var totalFileSize sql.NullInt64
+		var totalFileCount sql.NullInt64
+		var totalObjectCount sql.NullInt64
 		err = rows.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
-			&collection.Quality, &collection.TenantId, &collection.Id, &collection.TotalFileSize, &collection.TotalFileCount, &collection.TotalObjectCount, &totalItems)
+			&collection.Quality, &collection.TenantId, &collection.Id, &totalFileSize, &totalFileCount, &totalObjectCount, &totalItems)
 
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		collection.TotalFileSize = totalFileSize.Int64
+		collection.TotalFileCount = totalFileCount.Int64
+		collection.TotalObjectCount = totalObjectCount.Int64
 		collections = append(collections, collection)
 	}
 	return collections, totalItems, nil

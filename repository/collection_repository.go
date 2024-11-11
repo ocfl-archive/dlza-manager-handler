@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/ocfl-archive/dlza-manager-handler/models"
+	"github.com/ocfl-archive/dlza-manager/models"
 )
 
 type CollectionRepository interface {
@@ -14,6 +14,5 @@ type CollectionRepository interface {
 	GetCollectionsByTenantId(tenantId string) ([]models.Collection, error)
 	GetCollectionById(id string) (models.Collection, error)
 	GetCollectionByIdFromMv(id string) (models.Collection, error)
-	CreateCollectionPreparedStatements() error
 	GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error)
 }
