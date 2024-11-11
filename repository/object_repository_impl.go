@@ -21,6 +21,7 @@ const (
 	GetObjectsByCollectionAlias
 	GetResultingQualityForObject
 	GetNeededQualityForObject
+	GetObjectByIdMv
 )
 
 type ObjectRepositoryImpl struct {
@@ -33,6 +34,8 @@ func (o *ObjectRepositoryImpl) CreateObjectPreparedStatements() error {
 
 	preparedStatement := map[objectPrepareStmt]string{
 		GetObjectById: fmt.Sprintf("SELECT * FROM %s.OBJECT o WHERE ID = $1", o.Schema),
+		GetObjectByIdMv: fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
+			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM %s.mat_coll_obj o WHERE ID = $1", o.Schema),
 		CreateObject: fmt.Sprintf("INSERT INTO %s.OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\","+
 			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, expiration, holding)"+
 			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id", o.Schema),
@@ -79,6 +82,18 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	err := o.PreparedStatement[GetObjectById].QueryRow(id).Scan(&object.Signature, pq.Array(&object.Sets), pq.Array(&object.Identifiers), &object.Title,
 		pq.Array(&object.AlternativeTitles), &object.Description, pq.Array(&object.Keywords), pq.Array(&object.References), &object.IngestWorkflow, &object.User,
 		&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, pq.Array(&object.Authors), &object.Expiration, &object.Holding)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object by id")
+	}
+	return object, nil
+}
+
+func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error) {
+	var object models.Object
+
+	err := o.PreparedStatement[GetObjectByIdMv].QueryRow(id).Scan(&object.Signature, pq.Array(&object.Sets), pq.Array(&object.Identifiers), &object.Title,
+		pq.Array(&object.AlternativeTitles), &object.Description, pq.Array(&object.Keywords), pq.Array(&object.References), &object.IngestWorkflow, &object.User,
+		&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, pq.Array(&object.Authors), &object.Expiration, &object.Holding, &object.TotalFileSize, &object.TotalFileCount)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object by id")
 	}

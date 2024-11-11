@@ -207,7 +207,7 @@ func (c *ClerkHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, 
 }
 
 func (c *ClerkHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.Object, error) {
-	object, err := c.ObjectRepository.GetObjectById(id.Id)
+	object, err := c.ObjectRepository.GetObjectByIdMv(id.Id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not GetObjectById with id: '%s'", id.Id)
 	}
