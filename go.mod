@@ -1,15 +1,18 @@
 module github.com/ocfl-archive/dlza-manager-handler
 
-go 1.23.0
+go 1.23.2
 
 require (
 	emperror.dev/errors v0.8.1
 	github.com/BurntSushi/toml v1.4.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/je4/filesystem/v2 v2.0.15
-	github.com/je4/trustutil/v2 v2.0.26
-	github.com/je4/utils/v2 v2.0.51
+	github.com/je4/utils/v2 v2.0.52
+	github.com/jinzhu/configor v1.2.2
 	github.com/lib/pq v1.10.9
+	github.com/ocfl-archive/dlza-manager v0.0.8
+	github.com/pkg/errors v0.9.1
+	github.com/rs/zerolog v1.33.0
 	github.com/ocfl-archive/dlza-manager v0.0.8
 	github.com/stretchr/testify v1.9.0
 	gitlab.switch.ch/ub-unibas/go-ublogger/v2 v2.0.1

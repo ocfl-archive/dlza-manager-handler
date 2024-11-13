@@ -23,6 +23,7 @@ const (
 	GetObjectsByCollectionAlias  = "GetObjectsByCollectionAlias"
 	GetResultingQualityForObject = "GetResultingQualityForObject"
 	GetNeededQualityForObject    = "GetNeededQualityForObject"
+	GetObjectByIdMv = "GetObjectByIdMv"
 	Layout                       = "2006-01-02 15:04:05"
 )
 
@@ -33,7 +34,10 @@ type ObjectRepositoryImpl struct {
 func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
-		GetObjectById: "SELECT * FROM OBJECT o WHERE ID = $1",
+		GetObjectById: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
+       address, created, last_changed, "size", id, collection_id, checksum, authors, expiration, holding FROM OBJECT o WHERE ID = $1`,
+		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
+			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
 		CreateObject: "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
 			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration)" +
 			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
@@ -101,6 +105,18 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	return object, nil
 }
 
+func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error) {
+	var object models.Object
+
+	err := o.PreparedStatement[GetObjectByIdMv].QueryRow(id).Scan(&object.Signature, pq.Array(&object.Sets), pq.Array(&object.Identifiers), &object.Title,
+		pq.Array(&object.AlternativeTitles), &object.Description, pq.Array(&object.Keywords), pq.Array(&object.References), &object.IngestWorkflow, &object.User,
+		&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, pq.Array(&object.Authors), &object.Expiration, &object.Holding, &object.TotalFileSize, &object.TotalFileCount)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object by id")
+	}
+	return object, nil
+}
+
 func (o *ObjectRepositoryImpl) UpdateObject(object models.Object) error {
 	_, err := o.Db.Exec(context.Background(), UpdateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
 		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, time.Now(), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Expiration, object.Holding, object.Id)
@@ -135,7 +151,8 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 }
 
 func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.Object, error) {
-	query := fmt.Sprintf("SELECT * FROM OBJECT where checksum like "+"'%s%s'", "%", checksum)
+	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
+		"\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, expiration, holding FROM OBJECT where checksum like "+"'%s%s'", "%", checksum)
 	var objects []models.Object
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {

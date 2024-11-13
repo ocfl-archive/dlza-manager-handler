@@ -14,6 +14,11 @@ type StoragePartitionRepositoryMock struct {
 	mock.Mock
 }
 
+func (s *StoragePartitionRepositoryMock) DeleteStoragePartitionById(id string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (s *StoragePartitionRepositoryMock) GetStoragePartitionById(id string) (models.StoragePartition, error) {
 	//TODO implement me
 	panic("implement me")

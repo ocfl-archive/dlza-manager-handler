@@ -7,6 +7,8 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/pkg/errors"
+	"golang.org/x/exp/maps"
 )
 
 func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository) *DispatcherHandlerServer {
@@ -16,29 +18,21 @@ func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherReposi
 type DispatcherHandlerServer struct {
 	pbHandler.UnimplementedDispatcherHandlerServiceServer
 	DispatcherRepository repository.DispatcherRepository
-	//domains []string
 }
 
-func (d *DispatcherHandlerServer) GetLowQualityCollections(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
-	/*
-		domains := metadata.ValueFromIncomingContext(ctx, "domain")
-		domain := ""
-		if len(domains) > 0 {
-			domain = domains[0]
-		}
-		if !slices.Contains(d.domains, domain) {
-			return nil, status.Errorf(codes.PermissionDenied, "domain %s not supported", domain)
-		}
-
-	*/
-	collectionAliases, err := d.DispatcherRepository.GetCollectionsWithLowQuality()
+func (d *DispatcherHandlerServer) GetLowQualityCollectionsWithObjectIds(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
+	collectionsWithObjectIds, err := d.DispatcherRepository.GetLowQualityCollectionsWithObjectIds()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not get LowQualityCollections: %v", err)
 	}
-	collectionAliasesPb := make([]*pb.CollectionAlias, 0)
 
-	for _, collectionAlias := range collectionAliases {
-		collectionAliasPb := pb.CollectionAlias{CollectionAlias: collectionAlias}
+	collectionAliasesPb := make([]*pb.CollectionAlias, 0)
+	for _, collectionAlias := range maps.Keys(collectionsWithObjectIds) {
+		idsPb := make([]*pb.Id, 0)
+		for _, id := range collectionsWithObjectIds[collectionAlias] {
+			idsPb = append(idsPb, &pb.Id{Id: id})
+		}
+		collectionAliasPb := pb.CollectionAlias{CollectionAlias: collectionAlias, Ids: idsPb}
 		collectionAliasesPb = append(collectionAliasesPb, &collectionAliasPb)
 	}
 

@@ -1,5 +1,6 @@
 package repository
 
 type DispatcherRepository interface {
-	GetCollectionsWithLowQuality() ([]string, error)
+	GetLowQualityCollectionsWithObjectIds() (map[string][]string, error)
+	CreateDispatcherPreparedStatements() error
 }

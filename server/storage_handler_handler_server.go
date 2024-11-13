@@ -199,3 +199,12 @@ func (c *StorageHandlerHandlerServer) AlterStatus(ctx context.Context, statusPb 
 	}
 	return &pb.Status{Ok: true}, nil
 }
+
+func (c *StorageHandlerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.Object, error) {
+	object, err := c.ObjectRepository.GetObjectById(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not GetObjectById with id: '%s'", id.Id)
+	}
+	objectPb := mapper.ConvertToObjectPb(object)
+	return objectPb, nil
+}

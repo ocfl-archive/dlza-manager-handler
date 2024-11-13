@@ -53,17 +53,23 @@ func (d *DispatcherRepositoryImpl) GetCollectionsWithLowQuality() ([]string, err
 
 	rows, err := d.Db.Query(context.Background(), GetCollectionsWithLowQuality)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot get collections")
+		return nil, errors.Wrapf(err, "cannot get GetLowQualityCollectionsWithObjectIds")
 	}
-	collectionAliases := make([]string, 0)
+	collectionsWithObjectIds := make(map[string][]string)
 	for rows.Next() {
-		var collectionAlias string
-
-		err := rows.Scan(&collectionAlias)
+		var objectId string
+		var alias string
+		err := rows.Scan(&objectId, &alias)
 		if err != nil {
-			return nil, errors.Wrapf(err, "cannot map collectionAlias")
+			return nil, errors.Wrapf(err, "cannot map low quality collections and objects")
 		}
-		collectionAliases = append(collectionAliases, collectionAlias)
+		if len(collectionsWithObjectIds[alias]) != 0 {
+			ids := collectionsWithObjectIds[alias]
+			ids = append(ids, objectId)
+			collectionsWithObjectIds[alias] = ids
+		} else {
+			collectionsWithObjectIds[alias] = []string{objectId}
+		}
 	}
-	return collectionAliases, nil
+	return collectionsWithObjectIds, nil
 }
