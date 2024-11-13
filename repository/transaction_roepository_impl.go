@@ -4,7 +4,6 @@ import (
 	"context"
 	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 )
 
@@ -37,8 +36,8 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id"
 	objectIns := instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Object
 	var objectId string
-	err = tx.QueryRow(ctx, queryCreateObject, objectIns.Signature, pq.Array(objectIns.Sets), pq.Array(objectIns.Identifiers), objectIns.Title, pq.Array(objectIns.AlternativeTitles), objectIns.Description,
-		pq.Array(objectIns.Keywords), pq.Array(objectIns.References), objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, pq.Array(objectIns.Authors), time, objectIns.Holding).Scan(&objectId)
+	err = tx.QueryRow(ctx, queryCreateObject, objectIns.Signature, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
+		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, time, objectIns.Holding).Scan(&objectId)
 	if err != nil {
 		tx.Rollback(ctx)
 		return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateObject)
@@ -49,7 +48,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 
 	for _, file := range instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Files {
 		file.ObjectId = objectId
-		_, err = tx.Exec(ctx, queryCreateFile, file.Checksum, pq.Array(file.Name), file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
+		_, err = tx.Exec(ctx, queryCreateFile, file.Checksum, file.Name, file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
 		if err != nil {
 			tx.Rollback(ctx)
 			return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateFile)

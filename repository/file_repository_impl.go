@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
@@ -50,7 +49,7 @@ func (f *FileRepositoryImpl) GetFileById(id string) (models.File, error) {
 	var width sql.NullInt64
 	var height sql.NullInt64
 	var duration sql.NullInt64
-	err := f.Db.QueryRow(context.Background(), GetFileById, id).Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
+	err := f.Db.QueryRow(context.Background(), GetFileById, id).Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 		&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 	if err != nil {
 		return file, errors.Wrapf(err, "Could not execute query for method: %v", GetFileById)
@@ -70,7 +69,7 @@ func (f *FileRepositoryImpl) DeleteFile(id string) error {
 }
 
 func (f *FileRepositoryImpl) CreateFile(file models.File) error {
-	_, err := f.Db.Exec(context.Background(), CreateFile, file.Checksum, pq.Array(file.Name), file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
+	_, err := f.Db.Exec(context.Background(), CreateFile, file.Checksum, file.Name, file.Size, file.MimeType, file.Pronom, file.Width, file.Height, file.Duration, file.ObjectId)
 	if err != nil {
 		return errors.Wrapf(err, "Could not execute query for method: %v", CreateFile)
 	}
@@ -121,7 +120,7 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 		var width sql.NullInt64
 		var height sql.NullInt64
 		var duration sql.NullInt64
-		err := rows.Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
+		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
@@ -190,7 +189,7 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 		var width sql.NullInt64
 		var height sql.NullInt64
 		var duration sql.NullInt64
-		err := rows.Scan(&file.Checksum, pq.Array(&file.Name), &file.Size, &file.MimeType,
+		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)

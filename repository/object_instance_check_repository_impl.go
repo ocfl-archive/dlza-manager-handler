@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -50,10 +51,12 @@ func (o *ObjectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInst
 
 func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceCheckById(id string) (models.ObjectInstanceCheck, error) {
 	objectInstanceCheck := models.ObjectInstanceCheck{}
-	err := o.Db.QueryRow(context.Background(), GetObjectInstanceCheckById, id).Scan(&objectInstanceCheck.CheckTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+	var checkTime time.Time
+	err := o.Db.QueryRow(context.Background(), GetObjectInstanceCheckById, id).Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
 	if err != nil {
 		return models.ObjectInstanceCheck{}, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceCheckById)
 	}
+	objectInstanceCheck.CheckTime = checkTime.Format(Layout)
 	return objectInstanceCheck, err
 }
 
@@ -100,10 +103,12 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 
 	for rows.Next() {
 		var objectInstanceCheck models.ObjectInstanceCheck
-		err := rows.Scan(&objectInstanceCheck.CheckTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+		var checkTime time.Time
+		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		objectInstanceCheck.CheckTime = checkTime.Format(Layout)
 		objectInstanceChecks = append(objectInstanceChecks, objectInstanceCheck)
 	}
 	countQuery := fmt.Sprintf("SELECT count(*) as total_items FROM OBJECT_INSTANCE_CHECK oic"+

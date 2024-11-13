@@ -196,17 +196,15 @@ func main() {
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(conn)
 	transactionRepository := repository.NewTransactionRepository(conn)
 
-	object, _ := objectRepository.GetObjectById("e63d033c-fe4c-432e-b1e5-c8b7c6bcebda")
+	object, _ := objectRepository.GetObjectById("8bd06a6b-4a06-4e01-bb6c-170ad521a69e")
 
 	_ = object
 
-	object.Expiration = "2025-01-02 15:04:05"
 	object.Holding = ""
 	object.Title = "test"
 	object.Id = ""
 
-	objectRepository.CreateObject(object)
-	err = refreshMaterializedViewRepository.RefreshMaterializedViews()
+	//objectRepository.CreateObject(object)
 
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 

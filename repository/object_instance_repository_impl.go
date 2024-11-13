@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -78,11 +79,13 @@ func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectI
 
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
-		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for in method: %v", GetObjectInstancesByObjectId)
 		}
+		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, nil
@@ -109,10 +112,12 @@ func (o *objectInstanceRepositoryImpl) DeleteObjectInstance(id string) error {
 
 func (o *objectInstanceRepositoryImpl) GetObjectInstanceById(id string) (models.ObjectInstance, error) {
 	objectInstance := models.ObjectInstance{}
-	err := o.Db.QueryRow(context.Background(), GetObjectInstance, id).Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	var created time.Time
+	err := o.Db.QueryRow(context.Background(), GetObjectInstance, id).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 	if err != nil {
 		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
 	}
+	objectInstance.Created = created.Format(Layout)
 	return objectInstance, err
 }
 
@@ -125,11 +130,13 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) (
 
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
-		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetObjectInstancesByObjectId)
 		}
+		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, nil
@@ -144,11 +151,13 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByName(name string) ([]
 	}
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
-		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, nil
@@ -196,11 +205,13 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPaginated(pag
 	var totalItems int
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
-		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, totalItems, nil
@@ -248,11 +259,13 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 	var totalItems int
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
-		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &objectInstance.Created, &objectInstance.Status,
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, totalItems, nil
