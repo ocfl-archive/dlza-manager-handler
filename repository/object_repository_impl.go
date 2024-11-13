@@ -34,7 +34,7 @@ func (o *ObjectRepositoryImpl) CreateObjectPreparedStatements() error {
 
 	preparedStatement := map[objectPrepareStmt]string{
 		GetObjectById: fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
-       address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding FROM %s.OBJECT o WHERE ID = $1`, o.Schema),
+       address, created, last_changed, "size", id, collection_id, checksum, authors, expiration, holding FROM %s.OBJECT o WHERE ID = $1`, o.Schema),
 		GetObjectByIdMv: fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM %s.mat_coll_obj o WHERE ID = $1", o.Schema),
 		CreateObject: fmt.Sprintf("INSERT INTO %s.OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\","+
@@ -45,7 +45,8 @@ func (o *ObjectRepositoryImpl) CreateObjectPreparedStatements() error {
 			" \"user\" = $10, address = $11, last_changed = $12, size = $13,"+
 			" collection_id = $14, checksum = $15, authors = $16, expiration = $17, holding = $18"+
 			" where id =$19", o.Schema),
-		GetObjectsByCollectionAlias: fmt.Sprintf("SELECT * FROM %s.OBJECT where collection_id = $1", o.Schema),
+		GetObjectsByCollectionAlias: fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, "references", ingest_workflow,"user",
+       address, created, last_changed, "size", id, collection_id, checksum, authors, expiration, holding FROM %s.OBJECT where collection_id = $1`, o.Schema),
 		GetResultingQualityForObject: strings.Replace("select sum(quality) from %s.object o "+
 			" inner join %s.object_instance oi on oi.object_id = o.id "+
 			" inner join %s.storage_partition sp on sp.id = oi.storage_partition_id"+
@@ -131,7 +132,8 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 }
 
 func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.Object, error) {
-	query := strings.Replace(fmt.Sprintf("SELECT * FROM _schema.OBJECT where checksum like "+"'%s%s'", "%", checksum), "_schema", o.Schema, -1)
+	query := strings.Replace(fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,\"user\", address, created, last_changed,"+
+		" \"size\", id, collection_id, checksum, authors, expiration, holding FROM _schema.OBJECT where checksum like "+"'%s%s'", "%", checksum), "_schema", o.Schema, -1)
 	var objects []models.Object
 	rows, err := o.Db.Query(query)
 	if err != nil {
