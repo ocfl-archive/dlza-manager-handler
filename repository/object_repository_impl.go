@@ -33,7 +33,8 @@ type ObjectRepositoryImpl struct {
 func (o *ObjectRepositoryImpl) CreateObjectPreparedStatements() error {
 
 	preparedStatement := map[objectPrepareStmt]string{
-		GetObjectById: fmt.Sprintf("SELECT * FROM %s.OBJECT o WHERE ID = $1", o.Schema),
+		GetObjectById: fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
+       address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding FROM %s.OBJECT o WHERE ID = $1`, o.Schema),
 		GetObjectByIdMv: fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM %s.mat_coll_obj o WHERE ID = $1", o.Schema),
 		CreateObject: fmt.Sprintf("INSERT INTO %s.OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\","+
