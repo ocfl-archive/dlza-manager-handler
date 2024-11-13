@@ -49,7 +49,7 @@ func CreateDispatcherPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 	return nil
 }
 
-func (d *DispatcherRepositoryImpl) GetCollectionsWithLowQuality() ([]string, error) {
+func (d *DispatcherRepositoryImpl) GetLowQualityCollectionsWithObjectIds() (map[string][]string, error) {
 
 	rows, err := d.Db.Query(context.Background(), GetCollectionsWithLowQuality)
 	if err != nil {

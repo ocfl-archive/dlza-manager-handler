@@ -3,9 +3,9 @@ package tests
 import (
 	"testing"
 
-	"github.com/ocfl-archive/dlza-manager-handler/models"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	"github.com/ocfl-archive/dlza-manager/models"
 
 	"github.com/stretchr/testify/mock"
 )

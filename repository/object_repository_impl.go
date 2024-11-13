@@ -23,7 +23,7 @@ const (
 	GetObjectsByCollectionAlias  = "GetObjectsByCollectionAlias"
 	GetResultingQualityForObject = "GetResultingQualityForObject"
 	GetNeededQualityForObject    = "GetNeededQualityForObject"
-	GetObjectByIdMv = "GetObjectByIdMv"
+	GetObjectByIdMv              = "GetObjectByIdMv"
 	Layout                       = "2006-01-02 15:04:05"
 )
 
@@ -36,7 +36,7 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 	preparedStatements := map[string]string{
 		GetObjectById: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
        address, created, last_changed, "size", id, collection_id, checksum, authors, expiration, holding FROM OBJECT o WHERE ID = $1`,
-		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
+		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
 			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
 		CreateObject: "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
 			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration)" +
@@ -107,13 +107,26 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 
 func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error) {
 	var object models.Object
+	var expiration pgtype.Date
+	var holding zeronull.Text
+	var lastChanged time.Time
+	var created time.Time
 
-	err := o.PreparedStatement[GetObjectByIdMv].QueryRow(id).Scan(&object.Signature, pq.Array(&object.Sets), pq.Array(&object.Identifiers), &object.Title,
-		pq.Array(&object.AlternativeTitles), &object.Description, pq.Array(&object.Keywords), pq.Array(&object.References), &object.IngestWorkflow, &object.User,
-		&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, pq.Array(&object.Authors), &object.Expiration, &object.Holding, &object.TotalFileSize, &object.TotalFileCount)
+	err := o.Db.QueryRow(context.Background(), GetObjectByIdMv, id).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &expiration, &holding, &object.TotalFileSize, &object.TotalFileCount)
 	if err != nil {
-		return object, errors.Wrapf(err, "cannot get object by id")
+		return object, errors.Wrapf(err, "cannot GetObjectByIdMv")
 	}
+	object.Holding = string(holding)
+	if expiration.Valid {
+		object.Expiration = expiration.Time.Format(Layout)
+	} else {
+		object.Expiration = ""
+	}
+	object.Expiration = expiration.Time.Format(Layout)
+	object.LastChanged = lastChanged.Format(Layout)
+	object.Created = created.Format(Layout)
 	return object, nil
 }
 
@@ -151,7 +164,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 }
 
 func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.Object, error) {
-	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
+	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 		"\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, expiration, holding FROM OBJECT where checksum like "+"'%s%s'", "%", checksum)
 	var objects []models.Object
 	rows, err := o.Db.Query(context.Background(), query)

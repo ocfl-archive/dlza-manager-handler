@@ -5,10 +5,9 @@ import (
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
+	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/pkg/errors"
-	"golang.org/x/exp/maps"
 )
 
 func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository) *DispatcherHandlerServer {
