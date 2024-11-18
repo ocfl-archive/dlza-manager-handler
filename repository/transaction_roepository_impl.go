@@ -35,12 +35,12 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 
 	//////// CREATE OBJECT
 	queryCreateObject := fmt.Sprintf("INSERT INTO %s.OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\","+
-		" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, expiration, holding)"+
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id", t.Schema)
+		" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, expiration, holding, head, versions)"+
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id", t.Schema)
 	object := instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Object
 	var objectId string
 	err = tx.QueryRow(queryCreateObject, object.Signature, pq.Array(object.Sets), pq.Array(object.Identifiers), object.Title, pq.Array(object.AlternativeTitles), object.Description,
-		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, pq.Array(object.Authors), time, object.Holding).Scan(&objectId)
+		pq.Array(object.Keywords), pq.Array(object.References), object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, pq.Array(object.Authors), time, object.Holding, object.Head, object.Versions).Scan(&objectId)
 	if err != nil {
 		tx.Rollback()
 		return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateObject)

@@ -13,6 +13,6 @@ type Collection struct {
 	TenantId    string `json:"tenantId"`
 	//virtual columns
 	TotalFileSize    sql.NullInt64 `json:"totalFileSize"`
-	TotalFileCount   sql.NullInt32 `json:"totalFileCount"`
-	TotalObjectCount sql.NullInt32 `json:"totalObjectCount"`
+	TotalFileCount   sql.NullInt64 `json:"totalFileCount"`
+	TotalObjectCount sql.NullInt64 `json:"totalObjectCount"`
 }

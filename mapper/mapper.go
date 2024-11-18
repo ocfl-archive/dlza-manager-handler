@@ -37,8 +37,8 @@ func ConvertToCollection(collectionPb *pb.Collection) models.Collection {
 	collection.OwnerMail = collectionPb.OwnerMail
 	collection.Quality = int(collectionPb.Quality)
 	collection.TenantId = collectionPb.TenantId
-	collection.TotalObjectCount.Int32 = collectionPb.TotalObjectCount
-	collection.TotalFileCount.Int32 = collectionPb.TotalFileCount
+	collection.TotalObjectCount.Int64 = collectionPb.TotalObjectCount
+	collection.TotalFileCount.Int64 = collectionPb.TotalFileCount
 	collection.TotalFileSize.Int64 = collectionPb.TotalFileSize
 	return collection
 }
@@ -53,8 +53,8 @@ func ConvertToCollectionPb(collection models.Collection) *pb.Collection {
 	collectionPb.Quality = int32(collection.Quality)
 	collectionPb.TenantId = collection.TenantId
 	collectionPb.Id = collection.Id
-	collectionPb.TotalObjectCount = collection.TotalObjectCount.Int32
-	collectionPb.TotalFileCount = collection.TotalFileCount.Int32
+	collectionPb.TotalObjectCount = collection.TotalObjectCount.Int64
+	collectionPb.TotalFileCount = collection.TotalFileCount.Int64
 	collectionPb.TotalFileSize = collection.TotalFileSize.Int64
 	return collectionPb
 }
@@ -119,7 +119,7 @@ func ConvertToObject(objectPb *pb.Object) models.Object {
 	object.Expiration.String = objectPb.Expiration
 	object.Authors = objectPb.Authors
 	object.Holding.String = objectPb.Holding
-	object.TotalFileCount.Int32 = objectPb.TotalFileCount
+	object.TotalFileCount.Int64 = objectPb.TotalFileCount
 	object.TotalFileSize.Int64 = objectPb.TotalFileSize
 	return object
 }
@@ -146,7 +146,9 @@ func ConvertToObjectPb(object models.Object) *pb.Object {
 	objectPb.Holding = object.Holding.String
 	objectPb.CollectionId = object.CollectionId
 	objectPb.Checksum = object.Checksum
-	objectPb.TotalFileCount = object.TotalFileCount.Int32
+	objectPb.Head = object.Head
+	objectPb.Versions = object.Versions
+	objectPb.TotalFileCount = object.TotalFileCount.Int64
 	objectPb.TotalFileSize = object.TotalFileSize.Int64
 	return objectPb
 }

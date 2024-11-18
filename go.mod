@@ -8,13 +8,13 @@ require (
 	github.com/je4/utils/v2 v2.0.52
 	github.com/jinzhu/configor v1.2.2
 	github.com/lib/pq v1.10.9
-	github.com/ocfl-archive/dlza-manager v0.0.8
+	github.com/ocfl-archive/dlza-manager v0.0.10
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	google.golang.org/grpc v1.67.1
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.35.2
 )
 
 require (

@@ -24,7 +24,9 @@ type Object struct {
 	Holding           sql.NullString `json:"holding"`
 	Authors           []string       `json:"authors"`
 	Expiration        sql.NullString `json:"expiration"`
+	Head              string         `json:"head"`
+	Versions          string         `json:"versions"`
 	//virtual columns
 	TotalFileSize  sql.NullInt64 `json:"totalFileSize"`
-	TotalFileCount sql.NullInt32 `json:"totalFileCount"`
+	TotalFileCount sql.NullInt64 `json:"totalFileCount"`
 }
