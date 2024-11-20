@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"strconv"
@@ -58,12 +58,12 @@ func CreateCollectionPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 
 func (c *CollectionRepositoryImpl) GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error) {
 	row := c.Db.QueryRow(context.Background(), GetSizeForAllObjectInstancesByCollectionId, id)
-	var size sql.NullInt64
+	var size zeronull.Int8
 	err := row.Scan(&size)
 	if err != nil {
 		return 0, errors.Wrapf(err, "Could not execute query for method: %v", GetSizeForAllObjectInstancesByCollectionId)
 	}
-	return size.Int64, nil
+	return int64(size), nil
 }
 
 func (c *CollectionRepositoryImpl) CreateCollection(collection models.Collection) (string, error) {
@@ -141,17 +141,17 @@ func (c *CollectionRepositoryImpl) GetCollectionById(id string) (models.Collecti
 func (c *CollectionRepositoryImpl) GetCollectionByIdFromMv(id string) (models.Collection, error) {
 	row := c.Db.QueryRow(context.Background(), GetCollectionByIdFromMv, id)
 	collection := models.Collection{}
-	var totalFileSize sql.NullInt64
-	var totalFileCount sql.NullInt64
-	var totalObjectCount sql.NullInt64
+	var totalFileSize zeronull.Int8
+	var totalFileCount zeronull.Int8
+	var totalObjectCount zeronull.Int8
 	err := row.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
 		&collection.Quality, &collection.TenantId, &collection.Id, &totalFileSize, &totalFileCount, &totalObjectCount)
 	if err != nil {
 		return collection, errors.Wrapf(err, "Could not execute query in method: %v", GetCollectionByIdFromMv)
 	}
-	collection.TotalFileSize = totalFileSize.Int64
-	collection.TotalFileCount = totalFileCount.Int64
-	collection.TotalObjectCount = totalObjectCount.Int64
+	collection.TotalFileSize = int64(totalFileSize)
+	collection.TotalFileCount = int64(totalFileCount)
+	collection.TotalObjectCount = int64(totalObjectCount)
 	return collection, nil
 }
 
@@ -199,18 +199,18 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 	var totalItems int
 	for rows.Next() {
 		var collection models.Collection
-		var totalFileSize sql.NullInt64
-		var totalFileCount sql.NullInt64
-		var totalObjectCount sql.NullInt64
+		var totalFileSize zeronull.Int8
+		var totalFileCount zeronull.Int8
+		var totalObjectCount zeronull.Int8
 		err = rows.Scan(&collection.Alias, &collection.Description, &collection.Owner, &collection.OwnerMail, &collection.Name,
 			&collection.Quality, &collection.TenantId, &collection.Id, &totalFileSize, &totalFileCount, &totalObjectCount, &totalItems)
 
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		collection.TotalFileSize = totalFileSize.Int64
-		collection.TotalFileCount = totalFileCount.Int64
-		collection.TotalObjectCount = totalObjectCount.Int64
+		collection.TotalFileSize = int64(totalFileSize)
+		collection.TotalFileCount = int64(totalFileCount)
+		collection.TotalObjectCount = int64(totalObjectCount)
 		collections = append(collections, collection)
 	}
 	return collections, totalItems, nil

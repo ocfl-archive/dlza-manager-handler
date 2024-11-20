@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"strconv"
@@ -57,13 +57,13 @@ func CreateTenantPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 func (t *TenantRepositoryImpl) GetAmountOfObjectsAndTotalSizeByTenantId(id string) (int64, int64, error) {
 	row := t.Db.QueryRow(context.Background(), GetAmountOfObjectsAndTotalSizeByTenantId, id)
-	var amount sql.NullInt64
-	var size sql.NullInt64
+	var amount zeronull.Int8
+	var size zeronull.Int8
 	err := row.Scan(&amount, &size)
 	if err != nil {
 		return 0, 0, errors.Wrapf(err, "Could not execute query: %v", GetAmountOfObjectsAndTotalSizeByTenantId)
 	}
-	return amount.Int64, size.Int64, nil
+	return int64(amount), int64(size), nil
 }
 
 func (t *TenantRepositoryImpl) UpdateTenant(tenant models.Tenant) error {

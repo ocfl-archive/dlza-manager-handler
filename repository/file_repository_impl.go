@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
@@ -46,17 +46,17 @@ func CreateFilePreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 func (f *FileRepositoryImpl) GetFileById(id string) (models.File, error) {
 	var file models.File
-	var width sql.NullInt64
-	var height sql.NullInt64
-	var duration sql.NullInt64
+	var width zeronull.Int8
+	var height zeronull.Int8
+	var duration zeronull.Int8
 	err := f.Db.QueryRow(context.Background(), GetFileById, id).Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 		&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 	if err != nil {
 		return file, errors.Wrapf(err, "Could not execute query for method: %v", GetFileById)
 	}
-	file.Width = width.Int64
-	file.Height = height.Int64
-	file.Duration = duration.Int64
+	file.Width = int64(width)
+	file.Height = int64(height)
+	file.Duration = int64(duration)
 	return file, nil
 }
 
@@ -117,17 +117,17 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 	var files []models.File
 	for rows.Next() {
 		var file models.File
-		var width sql.NullInt64
-		var height sql.NullInt64
-		var duration sql.NullInt64
+		var width zeronull.Int8
+		var height zeronull.Int8
+		var duration zeronull.Int8
 		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		file.Width = width.Int64
-		file.Height = height.Int64
-		file.Duration = duration.Int64
+		file.Width = int64(width)
+		file.Height = int64(height)
+		file.Duration = int64(duration)
 		files = append(files, file)
 	}
 
@@ -186,17 +186,17 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 	var files []models.File
 	for rows.Next() {
 		var file models.File
-		var width sql.NullInt64
-		var height sql.NullInt64
-		var duration sql.NullInt64
+		var width zeronull.Int8
+		var height zeronull.Int8
+		var duration zeronull.Int8
 		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		file.Width = width.Int64
-		file.Height = height.Int64
-		file.Duration = duration.Int64
+		file.Width = int64(width)
+		file.Height = int64(height)
+		file.Duration = int64(duration)
 		files = append(files, file)
 	}
 
@@ -249,12 +249,12 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 	mimeTypes := make([]models.MimeType, 0)
 	for rows.Next() {
 		mimeType := models.MimeType{}
-		var id sql.NullString
+		var id zeronull.Text
 		err := rows.Scan(&id, &mimeType.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		mimeType.Id = id.String
+		mimeType.Id = string(id)
 		mimeTypes = append(mimeTypes, mimeType)
 	}
 	return mimeTypes, totalItems, nil
@@ -295,12 +295,12 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 	pronoms := make([]models.Pronom, 0)
 	for rows.Next() {
 		pronom := models.Pronom{}
-		var id sql.NullString
+		var id zeronull.Text
 		err := rows.Scan(&id, &pronom.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		pronomWithoutSpaces := strings.Replace(id.String, " ", "", -1)
+		pronomWithoutSpaces := strings.Replace(string(id), " ", "", -1)
 		pronom.Id = pronomWithoutSpaces
 		pronoms = append(pronoms, pronom)
 	}

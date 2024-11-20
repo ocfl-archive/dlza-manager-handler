@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"strconv"
@@ -81,13 +81,13 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantId(tenantId s
 
 	for rows.Next() {
 		var storageLocation models.StorageLocation
-		var vault sql.NullString
+		var vault zeronull.Text
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetStorageLocationsByTenantId)
 		}
-		storageLocation.Vault = vault.String
+		storageLocation.Vault = string(vault)
 		storageLocations = append(storageLocations, storageLocation)
 	}
 	return storageLocations, nil
@@ -131,17 +131,17 @@ func (s *StorageLocationRepositoryImpl) UpdateStorageLocation(storageLocation mo
 
 func (s *StorageLocationRepositoryImpl) GetStorageLocationById(id string) (models.StorageLocation, error) {
 	var storageLocation models.StorageLocation
-	var vault sql.NullString
-	var totalExistingVolume sql.NullInt64
-	var totalFilesSize sql.NullInt64
+	var vault zeronull.Text
+	var totalExistingVolume zeronull.Int8
+	var totalFilesSize zeronull.Int8
 	err := s.Db.QueryRow(context.Background(), GetStorageLocationById, id).Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &totalFilesSize, &totalExistingVolume)
 	if err != nil {
 		return models.StorageLocation{}, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationById)
 	}
-	storageLocation.TotalFilesSize = totalFilesSize.Int64
-	storageLocation.TotalExistingVolume = totalExistingVolume.Int64
-	storageLocation.Vault = vault.String
+	storageLocation.TotalFilesSize = int64(totalFilesSize)
+	storageLocation.TotalExistingVolume = int64(totalExistingVolume)
+	storageLocation.Vault = string(vault)
 	return storageLocation, nil
 }
 
@@ -154,13 +154,13 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByObjectId(id string)
 	var storageLocations []models.StorageLocation
 	for rows.Next() {
 		var storageLocation models.StorageLocation
-		var vault sql.NullString
+		var vault zeronull.Text
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", GetStorageLocationsByObjectId)
 		}
-		storageLocation.Vault = vault.String
+		storageLocation.Vault = string(vault)
 		storageLocations = append(storageLocations, storageLocation)
 	}
 	return storageLocations, nil
@@ -223,9 +223,9 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantIdPaginated(p
 	var totalItems int
 	for rows.Next() {
 		var storageLocation models.StorageLocation
-		var vault sql.NullString
-		var totalExistingVolume sql.NullInt64
-		var totalFilesSize sql.NullInt64
+		var vault zeronull.Text
+		var totalExistingVolume zeronull.Int8
+		var totalFilesSize zeronull.Int8
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId,
 			&storageLocation.Id, &storageLocation.NumberOfThreads,
@@ -233,9 +233,9 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantIdPaginated(p
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		storageLocation.Vault = vault.String
-		storageLocation.TotalFilesSize = totalFilesSize.Int64
-		storageLocation.TotalExistingVolume = totalExistingVolume.Int64
+		storageLocation.TotalFilesSize = int64(totalFilesSize)
+		storageLocation.TotalExistingVolume = int64(totalExistingVolume)
+		storageLocation.Vault = string(vault)
 		storageLocations = append(storageLocations, storageLocation)
 	}
 	return storageLocations, totalItems, nil
@@ -264,13 +264,13 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByCollectionIdPaginat
 	storageLocations := make([]models.StorageLocation, 0)
 	for rows.Next() {
 		storageLocation := models.StorageLocation{}
-		var vault sql.NullString
+		var vault zeronull.Text
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		storageLocation.Vault = vault.String
+		storageLocation.Vault = string(vault)
 		storageLocations = append(storageLocations, storageLocation)
 	}
 	return storageLocations, totalItems, nil
@@ -278,13 +278,13 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByCollectionIdPaginat
 
 func (s *StorageLocationRepositoryImpl) GetStorageLocationByObjectInstanceId(id string) (models.StorageLocation, error) {
 	var storageLocation models.StorageLocation
-	var vault sql.NullString
+	var vault zeronull.Text
 	err := s.Db.QueryRow(context.Background(), GetStorageLocationByObjectInstanceId, id).Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
 	if err != nil {
 		return models.StorageLocation{}, errors.Wrapf(err, "Could not execute query: %v", GetStorageLocationByObjectInstanceId)
 	}
-	storageLocation.Vault = vault.String
+	storageLocation.Vault = string(vault)
 	return storageLocation, nil
 }
 

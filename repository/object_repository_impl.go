@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -149,16 +148,16 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 
 	for rows.Next() {
 		var object models.Object
-		var expiration sql.NullString
-		var holding sql.NullString
+		var expiration zeronull.Text
+		var holding zeronull.Text
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %v", GetObjectsByCollectionAlias)
 		}
-		object.Holding = holding.String
-		object.Expiration = expiration.String
+		object.Holding = string(holding)
+		object.Expiration = string(expiration)
 		objects = append(objects, object)
 	}
 	return objects, nil
@@ -174,16 +173,16 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 	}
 	for rows.Next() {
 		var object models.Object
-		var expiration sql.NullString
-		var holding sql.NullString
+		var expiration zeronull.Text
+		var holding zeronull.Text
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		object.Holding = holding.String
-		object.Expiration = expiration.String
+		object.Holding = string(holding)
+		object.Expiration = string(expiration)
 		objects = append(objects, object)
 	}
 	return objects, nil
@@ -246,20 +245,20 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 	var totalItems int
 	for rows.Next() {
 		var object models.Object
-		var expiration sql.NullString
-		var holding sql.NullString
-		var totalFileSize sql.NullInt64
-		var totalFileCount sql.NullInt64
+		var expiration zeronull.Text
+		var holding zeronull.Text
+		var totalFileSize zeronull.Int8
+		var totalFileCount zeronull.Int8
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
-		object.Holding = holding.String
-		object.Expiration = expiration.String
-		object.TotalFileSize = totalFileSize.Int64
-		object.TotalFileCount = totalFileCount.Int64
+		object.Holding = string(holding)
+		object.Expiration = string(expiration)
+		object.TotalFileSize = int64(totalFileSize)
+		object.TotalFileCount = int64(totalFileCount)
 		objects = append(objects, object)
 	}
 
