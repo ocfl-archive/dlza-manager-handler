@@ -35,18 +35,18 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
 		GetObjectById: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
-       address, created, last_changed, "size", id, collection_id, checksum, authors, expiration, holding FROM OBJECT o WHERE ID = $1`,
+       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT o WHERE ID = $1`,
 		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
-			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, expiration, holding, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
+			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, holding, expiration, head, versions, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
 		CreateObject: "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
-			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration)" +
-			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id",
+			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions)" +
+			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id",
 		UpdateObject: "UPDATE OBJECT set signature = $1, sets = $2, identifiers = $3, title = $4," +
 			" alternative_titles = $5, description = $6, keywords = $7, \"references\" = $8, ingest_workflow = $9," +
 			" \"user\" = $10, address = $11, last_changed = $12, size = $13," +
-			" collection_id = $14, checksum = $15, authors = $16, expiration = $17, holding = $18" +
-			" where id =$19",
-		GetObjectsByCollectionAlias: "SELECT * FROM OBJECT where collection_id = $1",
+			" collection_id = $14, checksum = $15, authors = $16, holding = $17, expiration = $18, head = $19, versions = $20" +
+			" where id =$21",
+		GetObjectsByCollectionAlias: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT where collection_id = $1",
 		GetResultingQualityForObject: "select sum(quality) from object o " +
 			" inner join object_instance oi on oi.object_id = o.id " +
 			" inner join storage_partition sp on sp.id = oi.storage_partition_id" +
@@ -65,6 +65,7 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 }
 
 func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error) {
+
 	var id string
 	expiration, err := time.Parse(Layout, object.Expiration)
 	date := pgtype.Date{Time: expiration}
@@ -74,7 +75,7 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 		date.Valid = true
 	}
 	err = o.Db.QueryRow(context.Background(), CreateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
-		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, date).Scan(&id)
+		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, date, object.Head, object.Versions).Scan(&id)
 	if err != nil {
 		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObject)
 	}
@@ -89,7 +90,7 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	var created time.Time
 	err := o.Db.QueryRow(context.Background(), GetObjectById, id).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration)
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object by id")
 	}
@@ -114,7 +115,7 @@ func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error)
 
 	err := o.Db.QueryRow(context.Background(), GetObjectByIdMv, id).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &expiration, &holding, &object.TotalFileSize, &object.TotalFileCount)
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.TotalFileSize, &object.TotalFileCount)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot GetObjectByIdMv")
 	}
@@ -132,7 +133,7 @@ func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error)
 
 func (o *ObjectRepositoryImpl) UpdateObject(object models.Object) error {
 	_, err := o.Db.Exec(context.Background(), UpdateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
-		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, time.Now(), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Expiration, object.Holding, object.Id)
+		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, time.Now(), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, object.Expiration, object.Head, object.Versions, object.Id)
 	if err != nil {
 		return errors.Wrapf(err, "cannot update object")
 	}
@@ -152,7 +153,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 		var holding sql.NullString
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &expiration, &holding)
+			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %v", GetObjectsByCollectionAlias)
 		}
@@ -165,7 +166,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 
 func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.Object, error) {
 	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
-		"\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, expiration, holding FROM OBJECT where checksum like "+"'%s%s'", "%", checksum)
+		"\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT where checksum like "+"'%s%s'", "%", checksum)
 	var objects []models.Object
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
@@ -177,7 +178,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 		var holding sql.NullString
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &expiration, &holding)
+			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
@@ -235,7 +236,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		secondCondition = secondCondition + " and"
 	}
 	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
-		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, expiration, holding, count(*) over() FROM mat_coll_obj"+
+		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
 		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
@@ -251,7 +252,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		var totalFileCount sql.NullInt64
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &expiration, &holding, &totalItems)
+			&object.Address, &object.Created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}

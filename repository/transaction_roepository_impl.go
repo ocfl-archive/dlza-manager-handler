@@ -32,12 +32,12 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 
 	//////// CREATE OBJECT
 	queryCreateObject := "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
-		" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, expiration, holding)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id"
+		" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions)" +
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id"
 	objectIns := instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Object
 	var objectId string
 	err = tx.QueryRow(ctx, queryCreateObject, objectIns.Signature, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, time, objectIns.Holding).Scan(&objectId)
+		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, time, object.Head, object.Versions).Scan(&objectId)
 	if err != nil {
 		tx.Rollback(ctx)
 		return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateObject)

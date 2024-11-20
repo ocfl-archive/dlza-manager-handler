@@ -420,7 +420,7 @@ func (c *ClerkHandlerServer) GetMimeTypesForCollectionId(ctx context.Context, pa
 
 	mimeTypesPb := make([]*pb.MimeType, 0)
 	for _, mimeType := range mimeTypes {
-		mimeTypePb := &pb.MimeType{Id: mimeType.Id, FileCount: mimeType.FileCount}
+		mimeTypePb := &pb.MimeType{Id: mimeType.Id.String, FileCount: int64(mimeType.FileCount)}
 		mimeTypesPb = append(mimeTypesPb, mimeTypePb)
 	}
 
@@ -435,7 +435,7 @@ func (c *ClerkHandlerServer) GetPronomsForCollectionId(ctx context.Context, pagi
 
 	pronomsPb := make([]*pb.Pronom, 0)
 	for _, pronom := range pronoms {
-		pronomPb := &pb.Pronom{Id: pronom.Id, FileCount: pronom.FileCount}
+		pronomPb := &pb.Pronom{Id: pronom.Id.String, FileCount: int64(pronom.FileCount)}
 		pronomsPb = append(pronomsPb, pronomPb)
 	}
 
