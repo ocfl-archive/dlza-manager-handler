@@ -1249,8 +1249,7 @@ const (
 	ClerkHandlerService_GetFilesByObjectIdPaginated_FullMethodName                        = "/handlerproto.ClerkHandlerService/GetFilesByObjectIdPaginated"
 	ClerkHandlerService_GetObjectInstanceChecksByObjectInstanceIdPaginated_FullMethodName = "/handlerproto.ClerkHandlerService/GetObjectInstanceChecksByObjectInstanceIdPaginated"
 	ClerkHandlerService_GetObjectInstancesByName_FullMethodName                           = "/handlerproto.ClerkHandlerService/GetObjectInstancesByName"
-	ClerkHandlerService_GetStorageLocationsByTenantIdPaginated_FullMethodName             = "/handlerproto.ClerkHandlerService/GetStorageLocationsByTenantIdPaginated"
-	ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_FullMethodName         = "/handlerproto.ClerkHandlerService/GetStorageLocationsByCollectionIdPaginated"
+	ClerkHandlerService_GetStorageLocationsByTenantOrCollectionIdPaginated_FullMethodName = "/handlerproto.ClerkHandlerService/GetStorageLocationsByTenantOrCollectionIdPaginated"
 	ClerkHandlerService_GetStoragePartitionsByLocationIdPaginated_FullMethodName          = "/handlerproto.ClerkHandlerService/GetStoragePartitionsByLocationIdPaginated"
 	ClerkHandlerService_GetObjectInstancesByStoragePartitionIdPaginated_FullMethodName    = "/handlerproto.ClerkHandlerService/GetObjectInstancesByStoragePartitionIdPaginated"
 	ClerkHandlerService_GetStorageLocationsStatusForCollectionAlias_FullMethodName        = "/handlerproto.ClerkHandlerService/GetStorageLocationsStatusForCollectionAlias"
@@ -1306,8 +1305,7 @@ type ClerkHandlerServiceClient interface {
 	GetFilesByObjectIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.Files, error)
 	GetObjectInstanceChecksByObjectInstanceIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	GetObjectInstancesByName(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
-	GetStorageLocationsByTenantIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
-	GetStorageLocationsByCollectionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
+	GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionsByLocationIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartitions, error)
 	GetObjectInstancesByStoragePartitionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	GetStorageLocationsStatusForCollectionAlias(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
@@ -1647,18 +1645,9 @@ func (c *clerkHandlerServiceClient) GetObjectInstancesByName(ctx context.Context
 	return out, nil
 }
 
-func (c *clerkHandlerServiceClient) GetStorageLocationsByTenantIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
+func (c *clerkHandlerServiceClient) GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
 	out := new(dlzamanagerproto.StorageLocations)
-	err := c.cc.Invoke(ctx, ClerkHandlerService_GetStorageLocationsByTenantIdPaginated_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *clerkHandlerServiceClient) GetStorageLocationsByCollectionIdPaginated(ctx context.Context, in *dlzamanagerproto.Pagination, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
-	out := new(dlzamanagerproto.StorageLocations)
-	err := c.cc.Invoke(ctx, ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetStorageLocationsByTenantOrCollectionIdPaginated_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1830,8 +1819,7 @@ type ClerkHandlerServiceServer interface {
 	GetFilesByObjectIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.Files, error)
 	GetObjectInstanceChecksByObjectInstanceIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	GetObjectInstancesByName(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
-	GetStorageLocationsByTenantIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error)
-	GetStorageLocationsByCollectionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error)
+	GetStorageLocationsByTenantOrCollectionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionsByLocationIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StoragePartitions, error)
 	GetObjectInstancesByStoragePartitionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.ObjectInstances, error)
 	GetStorageLocationsStatusForCollectionAlias(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.Id, error)
@@ -1958,11 +1946,8 @@ func (UnimplementedClerkHandlerServiceServer) GetObjectInstanceChecksByObjectIns
 func (UnimplementedClerkHandlerServiceServer) GetObjectInstancesByName(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstancesByName not implemented")
 }
-func (UnimplementedClerkHandlerServiceServer) GetStorageLocationsByTenantIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByTenantIdPaginated not implemented")
-}
-func (UnimplementedClerkHandlerServiceServer) GetStorageLocationsByCollectionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByCollectionIdPaginated not implemented")
+func (UnimplementedClerkHandlerServiceServer) GetStorageLocationsByTenantOrCollectionIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StorageLocations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByTenantOrCollectionIdPaginated not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) GetStoragePartitionsByLocationIdPaginated(context.Context, *dlzamanagerproto.Pagination) (*dlzamanagerproto.StoragePartitions, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionsByLocationIdPaginated not implemented")
@@ -2649,38 +2634,20 @@ func _ClerkHandlerService_GetObjectInstancesByName_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClerkHandlerService_GetStorageLocationsByTenantIdPaginated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClerkHandlerService_GetStorageLocationsByTenantOrCollectionIdPaginated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.Pagination)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByTenantIdPaginated(ctx, in)
+		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByTenantOrCollectionIdPaginated(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ClerkHandlerService_GetStorageLocationsByTenantIdPaginated_FullMethodName,
+		FullMethod: ClerkHandlerService_GetStorageLocationsByTenantOrCollectionIdPaginated_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByTenantIdPaginated(ctx, req.(*dlzamanagerproto.Pagination))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.Pagination)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByCollectionIdPaginated(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByCollectionIdPaginated(ctx, req.(*dlzamanagerproto.Pagination))
+		return srv.(ClerkHandlerServiceServer).GetStorageLocationsByTenantOrCollectionIdPaginated(ctx, req.(*dlzamanagerproto.Pagination))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3085,12 +3052,8 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClerkHandlerService_GetObjectInstancesByName_Handler,
 		},
 		{
-			MethodName: "GetStorageLocationsByTenantIdPaginated",
-			Handler:    _ClerkHandlerService_GetStorageLocationsByTenantIdPaginated_Handler,
-		},
-		{
-			MethodName: "GetStorageLocationsByCollectionIdPaginated",
-			Handler:    _ClerkHandlerService_GetStorageLocationsByCollectionIdPaginated_Handler,
+			MethodName: "GetStorageLocationsByTenantOrCollectionIdPaginated",
+			Handler:    _ClerkHandlerService_GetStorageLocationsByTenantOrCollectionIdPaginated_Handler,
 		},
 		{
 			MethodName: "GetStoragePartitionsByLocationIdPaginated",

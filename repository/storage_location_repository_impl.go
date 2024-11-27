@@ -160,7 +160,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByObjectId(id string)
 	return storageLocations, nil
 }
 
-func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantIdPaginated(pagination models.Pagination) ([]models.StorageLocation, int, error) {
+func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionIdPaginated(pagination models.Pagination) ([]models.StorageLocation, int, error) {
 	tenantStatement := ""
 	likeStatement := getLikeQueryForStorageLocation(pagination.SearchField)
 	collectionStatement := ""
@@ -221,39 +221,6 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantIdPaginated(p
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId,
 			&storageLocation.Id, &storageLocation.NumberOfThreads,
 			&storageLocation.TotalExistingVolume, &storageLocation.TotalFilesSize, &totalItems)
-		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
-		}
-		storageLocations = append(storageLocations, storageLocation)
-	}
-	return storageLocations, totalItems, nil
-}
-
-func (s *StorageLocationRepositoryImpl) GetStorageLocationsByCollectionIdPaginated(pagination models.Pagination) ([]models.StorageLocation, int, error) {
-
-	query := strings.Replace(fmt.Sprintf("select sl.* from _schema.collection c,"+
-		" _schema.object o,"+
-		" _schema.object_instance oi,"+
-		" _schema.storage_partition sp,"+
-		" _schema.storage_location sl"+
-		" where c.id = o.collection_id"+
-		" and o.id = oi.object_id"+
-		" and oi.storage_partition_id = sp.id"+
-		" and sl.id = sp.storage_location_id"+
-		" and c.id = $1"+
-		" group by sl.id"+
-		" order by %s %s limit %s OFFSET %s ", pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip)), "_schema", s.Schema, -1)
-	rows, err := s.Db.Query(query, pagination.SecondId)
-	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
-	}
-
-	var totalItems int
-	storageLocations := make([]models.StorageLocation, 0)
-	for rows.Next() {
-		storageLocation := models.StorageLocation{}
-		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &storageLocation.Vault, &storageLocation.Connection, &storageLocation.Quality,
-			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
