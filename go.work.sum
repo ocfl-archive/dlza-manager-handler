@@ -2287,6 +2287,8 @@ github.com/ocfl-archive/dlza-manager v0.0.3 h1:KEN7DnrRmr7sMc5lHiuHeUVOFgO7Z2UWP
 github.com/ocfl-archive/dlza-manager v0.0.3/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
 github.com/ocfl-archive/dlza-manager v0.0.5 h1:fMtdQNfWRy/aDIeBkKk3Nd7fNqRuyVUmx/SCUVPjrxI=
 github.com/ocfl-archive/dlza-manager v0.0.5/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
+github.com/ocfl-archive/dlza-manager v0.0.11 h1:B9A2mNJ020aycWxZznjznuVIYsTnwR9LqE2BntN7m/0=
+github.com/ocfl-archive/dlza-manager v0.0.11/go.mod h1:ZZON7RP9G52eFVOho9dqZOZoXi4RhhszXzLCrQfvzMo=
 github.com/oklog/oklog v0.3.2/go.mod h1:FCV+B7mhrz4o+ueLpx+KqkyXRGMWOYEvfiXtdGtbWGs=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
@@ -3864,7 +3866,6 @@ google.golang.org/protobuf v1.32.0/go.mod h1:c6P6GXX6sHbq/GpV6MGZEdwhWPcYBgnhAHh
 google.golang.org/protobuf v1.33.0/go.mod h1:c6P6GXX6sHbq/GpV6MGZEdwhWPcYBgnhAHhKbcUYpos=
 google.golang.org/protobuf v1.34.1/go.mod h1:c6P6GXX6sHbq/GpV6MGZEdwhWPcYBgnhAHhKbcUYpos=
 google.golang.org/protobuf v1.34.2/go.mod h1:qYOHts0dSfpeUzUFpOMr/WGzszTmLH+DiWniOlNbLDw=
-google.golang.org/protobuf v1.35.2 h1:8Ar7bF+apOIoThw1EdZl0p1oWvMqTHmpA2fRTyZO8io=
 gopkg.in/DataDog/dd-trace-go.v1 v1.27.1 h1:9BJfwtuCUrUiNB3WCTXHuaP5E/J/zfMPUUaRJoEQfdc=
 gopkg.in/DataDog/dd-trace-go.v1 v1.27.1/go.mod h1:Sp1lku8WJMvNV0kjDI4Ni/T7J/U3BO5ct5kEaoVU8+I=
 gopkg.in/DataDog/dd-trace-go.v1 v1.47.0 h1:w3mHEgOR1o52mkyCbkTM+El8DG732+Fnug4FAGhIpsk=

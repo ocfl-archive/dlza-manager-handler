@@ -37,7 +37,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	objectIns := instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Object
 	var objectId string
 	err = tx.QueryRow(ctx, queryCreateObject, objectIns.Signature, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, time, object.Head, object.Versions).Scan(&objectId)
+		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, time, objectIns.Head, objectIns.Versions).Scan(&objectId)
 	if err != nil {
 		tx.Rollback(ctx)
 		return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateObject)
