@@ -290,22 +290,8 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantIdPaginated(ctx context.Conte
 	return &pb.Collections{Collections: collectionsPb, TotalItems: int32(totalItems)}, nil
 }
 
-func (c *ClerkHandlerServer) GetStorageLocationsByTenantIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
-	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByTenantIdPaginated(mapper.ConvertToPagination(pagination))
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%s'", pagination.Id)
-	}
-	var storageLocationsPb []*pb.StorageLocation
-
-	for _, storageLocation := range storageLocations {
-		storageLocationsPb = append(storageLocationsPb, mapper.ConvertToStorageLocationPb(storageLocation))
-	}
-
-	return &pb.StorageLocations{StorageLocations: storageLocationsPb, TotalItems: int32(totalItems)}, nil
-}
-
-func (c *ClerkHandlerServer) GetStorageLocationsByCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
-	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByCollectionIdPaginated(mapper.ConvertToPagination(pagination))
+func (c *ClerkHandlerServer) GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
+	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByTenantOrCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get storageLocations by collection with id: '%s'", pagination.Id)
 	}

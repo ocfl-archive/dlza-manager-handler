@@ -84,8 +84,7 @@ service ClerkHandlerService {
   rpc GetObjectInstanceChecksByObjectInstanceIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.ObjectInstanceChecks){}
   rpc GetObjectInstancesByName(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances){}
 
-  rpc GetStorageLocationsByTenantIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StorageLocations){}
-  rpc GetStorageLocationsByCollectionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StorageLocations){}
+  rpc GetStorageLocationsByTenantOrCollectionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StorageLocations){}
   rpc GetStoragePartitionsByLocationIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StoragePartitions){}
   rpc GetObjectInstancesByStoragePartitionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.ObjectInstances){}
   rpc GetStorageLocationsStatusForCollectionAlias(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.Id){}

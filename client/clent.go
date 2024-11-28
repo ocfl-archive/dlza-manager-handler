@@ -7,8 +7,10 @@ import (
 	"io"
 )
 
+const maxMsgSize = 1024 * 1024 * 12
+
 func NewClerkHandlerClient(target string, opt grpc.DialOption) (pb.ClerkHandlerServiceClient, io.Closer, error) {
-	connection, err := grpc.Dial(target, opt)
+	connection, err := grpc.NewClient(target, opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -16,7 +18,7 @@ func NewClerkHandlerClient(target string, opt grpc.DialOption) (pb.ClerkHandlerS
 }
 
 func NewStorageHandlerHandlerClient(target string, opt grpc.DialOption) (pb.StorageHandlerHandlerServiceClient, io.Closer, error) {
-	connection, err := grpc.Dial(target, opt)
+	connection, err := grpc.NewClient(target, opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -24,7 +26,7 @@ func NewStorageHandlerHandlerClient(target string, opt grpc.DialOption) (pb.Stor
 }
 
 func NewUploaderHandlerClient(target string, opt grpc.DialOption) (pb.UploaderHandlerServiceClient, io.Closer, error) {
-	connection, err := grpc.Dial(target, opt)
+	connection, err := grpc.NewClient(target, opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -32,7 +34,7 @@ func NewUploaderHandlerClient(target string, opt grpc.DialOption) (pb.UploaderHa
 }
 
 func NewCheckerHandlerClient(target string, opt grpc.DialOption) (pb.CheckerHandlerServiceClient, io.Closer, error) {
-	connection, err := grpc.Dial(target, opt)
+	connection, err := grpc.NewClient(target, opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -40,7 +42,7 @@ func NewCheckerHandlerClient(target string, opt grpc.DialOption) (pb.CheckerHand
 }
 
 func NewDispatcherHandlerClient(target string, opt grpc.DialOption) (pb.DispatcherHandlerServiceClient, io.Closer, error) {
-	connection, err := grpc.Dial(target, opt)
+	connection, err := grpc.NewClient(target, opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
