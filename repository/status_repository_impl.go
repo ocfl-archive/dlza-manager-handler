@@ -49,7 +49,7 @@ func (s *StatusRepositoryImpl) CreateStatus(status models.ArchivingStatus) (stri
 }
 
 func (s *StatusRepositoryImpl) AlterStatus(status models.ArchivingStatus) error {
-	_, err := s.Db.Exec(context.Background(), AlterStatus, time.Now().Format("2006-01-02 15:04:05.000000"), status.Status, status.Id)
+	_, err := s.Db.Exec(context.Background(), AlterStatus, time.Now(), status.Status, status.Id)
 	if err != nil {
 		return errors.Wrapf(err, "cannot update archiving status")
 	}
@@ -58,11 +58,11 @@ func (s *StatusRepositoryImpl) AlterStatus(status models.ArchivingStatus) error 
 
 func (s *StatusRepositoryImpl) CheckStatus(id string) (models.ArchivingStatus, error) {
 	var archivingStatus models.ArchivingStatus
-
-	err := s.Db.QueryRow(context.Background(), CheckStatus, id).Scan(&archivingStatus.Id, &archivingStatus.LastChanged, &archivingStatus.Status)
+	var lastChanged time.Time
+	err := s.Db.QueryRow(context.Background(), CheckStatus, id).Scan(&archivingStatus.Id, &lastChanged, &archivingStatus.Status)
 	if err != nil {
 		return archivingStatus, errors.Wrapf(err, "cannot get archiving status by id")
 	}
-
+	archivingStatus.LastChanged = lastChanged.Format(Layout)
 	return archivingStatus, nil
 }

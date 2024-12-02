@@ -196,16 +196,6 @@ func main() {
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(conn)
 	transactionRepository := repository.NewTransactionRepository(conn)
 
-	object, _ := objectRepository.GetObjectById("8bd06a6b-4a06-4e01-bb6c-170ad521a69e")
-
-	_ = object
-
-	object.Holding = ""
-	object.Title = "test"
-	object.Id = ""
-
-	//objectRepository.CreateObject(object)
-
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 
 	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository}
