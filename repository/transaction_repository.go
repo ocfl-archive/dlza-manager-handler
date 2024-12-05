@@ -5,5 +5,5 @@ import (
 )
 
 type TransactionRepository interface {
-	SaveAllTableObjectsAfterCopying(*pb.InstanceWithPartitionAndObjectWithFiles) error
+	SaveAllTableObjectsAfterCopying([]*pb.InstanceWithPartitionAndObjectWithFile) error
 }

@@ -38,7 +38,7 @@ service StorageHandlerHandlerService {
   rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
-  rpc SaveAllTableObjectsAfterCopying(dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles) returns (dlzamanagerproto.Status);
+  rpc SaveAllTableObjectsAfterCopyingStream(stream dlzamanagerproto.InstanceWithPartitionAndObjectWithFile) returns (dlzamanagerproto.Status);
   rpc GetStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation);
   rpc GetAndSaveStoragePartitionWithRelevantAlias(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.StoragePartition);
   rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status);
