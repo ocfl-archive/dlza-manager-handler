@@ -46,7 +46,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	//////// CREATE FILES
 	queryCreateFile := "insert into File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 
-	for _, file := range instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Files {
+	for _, file := range instanceWithPartitionAndObjectWithFiles {
 		file.File.ObjectId = objectId
 		_, err = tx.Exec(ctx, queryCreateFile, file.File.Checksum, file.File.Name, file.File.Size, file.File.MimeType, file.File.Pronom, file.File.Width, file.File.Height, file.File.Duration, file.File.ObjectId)
 		if err != nil {
@@ -65,7 +65,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	}
 	//////// CREATE OBJECT INSTANCE
 	queryCreateObjectInstance := "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-	instanceWithPartitionAndObjectWithFiles[0].ObjectInstance
+	objectInstance := instanceWithPartitionAndObjectWithFiles[0].ObjectInstance
 	var objectInstanceId string
 	err = tx.QueryRow(ctx, queryCreateObjectInstance, objectInstance.Path, objectInstance.Size, objectInstance.Status, objectInstance.StoragePartitionId, objectId).Scan(&objectInstanceId)
 	if err != nil {
