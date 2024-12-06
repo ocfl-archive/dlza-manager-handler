@@ -10,6 +10,7 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"io"
 	"log"
 )
 
@@ -36,25 +37,36 @@ func (c *StorageHandlerHandlerServer) TenantHasAccess(ctx context.Context, objec
 	return &status, nil
 }
 
-func (c *StorageHandlerHandlerServer) SaveAllTableObjectsAfterCopying(ctx context.Context, instanceWithPartitionAndObjectWithFiles *pb.InstanceWithPartitionAndObjectWithFiles) (*pb.Status, error) {
-	collectionId, err := c.CollectionRepository.GetCollectionIdByAlias(instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.CollectionAlias)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.CollectionAlias, err)
-		return nil, errors.Wrapf(err, "Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.CollectionAlias)
+func (c *StorageHandlerHandlerServer) SaveAllTableObjectsAfterCopyingStream(stream pbHandler.StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer) error {
+	var instanceWithPartitionAndObjectWithFiles []*pb.InstanceWithPartitionAndObjectWithFile
+	for {
+		instanceWithPartitionAndObjectWithFile, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		instanceWithPartitionAndObjectWithFiles = append(instanceWithPartitionAndObjectWithFiles, instanceWithPartitionAndObjectWithFile)
 	}
-	instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.Object.CollectionId = collectionId
+	collectionId, err := c.CollectionRepository.GetCollectionIdByAlias(instanceWithPartitionAndObjectWithFiles[0].CollectionAlias)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias, err)
+		return errors.Wrapf(err, "Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias)
+	}
+	instanceWithPartitionAndObjectWithFiles[0].Object.CollectionId = collectionId
 	err = c.TransactionRepository.SaveAllTableObjectsAfterCopying(instanceWithPartitionAndObjectWithFiles)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.CollectionAlias, err)
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles.ObjectAndFiles.CollectionAlias,
-			instanceWithPartitionAndObjectWithFiles.ObjectInstance.Path)
+		c.Logger.Error().Msgf("Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias, err)
+		return errors.Wrapf(err, "Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias,
+			instanceWithPartitionAndObjectWithFiles[0].ObjectInstance.Path)
 	}
 	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViews()
 	if err != nil {
 		c.Logger.Error().Msgf("couldn't create refresh mat. views, err: %v", err)
 		log.Printf("couldn't create refresh mat. views, err: %v", err)
 	}
-	return &pb.Status{Ok: true}, nil
+	return nil
 }
 
 func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx context.Context, collectionAlias *pb.CollectionAlias) (*pb.StorageLocations, error) {

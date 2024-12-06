@@ -265,7 +265,7 @@ const (
 	StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByCollectionAlias"
 	StorageHandlerHandlerService_GetStorageLocationsByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByObjectId"
 	StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName              = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionForLocation"
-	StorageHandlerHandlerService_SaveAllTableObjectsAfterCopying_FullMethodName             = "/handlerproto.StorageHandlerHandlerService/SaveAllTableObjectsAfterCopying"
+	StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_FullMethodName       = "/handlerproto.StorageHandlerHandlerService/SaveAllTableObjectsAfterCopyingStream"
 	StorageHandlerHandlerService_GetStorageLocationById_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationById"
 	StorageHandlerHandlerService_GetAndSaveStoragePartitionWithRelevantAlias_FullMethodName = "/handlerproto.StorageHandlerHandlerService/GetAndSaveStoragePartitionWithRelevantAlias"
 	StorageHandlerHandlerService_UpdateStoragePartition_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/UpdateStoragePartition"
@@ -287,7 +287,7 @@ type StorageHandlerHandlerServiceClient interface {
 	GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
-	SaveAllTableObjectsAfterCopying(ctx context.Context, in *dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	SaveAllTableObjectsAfterCopyingStream(ctx context.Context, opts ...grpc.CallOption) (StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamClient, error)
 	GetStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 	GetAndSaveStoragePartitionWithRelevantAlias(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
@@ -353,13 +353,38 @@ func (c *storageHandlerHandlerServiceClient) GetStoragePartitionForLocation(ctx 
 	return out, nil
 }
 
-func (c *storageHandlerHandlerServiceClient) SaveAllTableObjectsAfterCopying(ctx context.Context, in *dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_SaveAllTableObjectsAfterCopying_FullMethodName, in, out, opts...)
+func (c *storageHandlerHandlerServiceClient) SaveAllTableObjectsAfterCopyingStream(ctx context.Context, opts ...grpc.CallOption) (StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StorageHandlerHandlerService_ServiceDesc.Streams[0], StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamClient{stream}
+	return x, nil
+}
+
+type StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamClient interface {
+	Send(*dlzamanagerproto.InstanceWithPartitionAndObjectWithFile) error
+	CloseAndRecv() (*dlzamanagerproto.Status, error)
+	grpc.ClientStream
+}
+
+type storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamClient) Send(m *dlzamanagerproto.InstanceWithPartitionAndObjectWithFile) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamClient) CloseAndRecv() (*dlzamanagerproto.Status, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(dlzamanagerproto.Status)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *storageHandlerHandlerServiceClient) GetStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error) {
@@ -461,7 +486,7 @@ type StorageHandlerHandlerServiceServer interface {
 	GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
-	SaveAllTableObjectsAfterCopying(context.Context, *dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles) (*dlzamanagerproto.Status, error)
+	SaveAllTableObjectsAfterCopyingStream(StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer) error
 	GetStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	GetAndSaveStoragePartitionWithRelevantAlias(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.StoragePartition, error)
 	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
@@ -494,8 +519,8 @@ func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationsByObje
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
 }
-func (UnimplementedStorageHandlerHandlerServiceServer) SaveAllTableObjectsAfterCopying(context.Context, *dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveAllTableObjectsAfterCopying not implemented")
+func (UnimplementedStorageHandlerHandlerServiceServer) SaveAllTableObjectsAfterCopyingStream(StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method SaveAllTableObjectsAfterCopyingStream not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationById not implemented")
@@ -631,22 +656,30 @@ func _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler(srv in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StorageHandlerHandlerService_SaveAllTableObjectsAfterCopying_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles)
-	if err := dec(in); err != nil {
+func _StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StorageHandlerHandlerServiceServer).SaveAllTableObjectsAfterCopyingStream(&storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamServer{stream})
+}
+
+type StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer interface {
+	SendAndClose(*dlzamanagerproto.Status) error
+	Recv() (*dlzamanagerproto.InstanceWithPartitionAndObjectWithFile, error)
+	grpc.ServerStream
+}
+
+type storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamServer) SendAndClose(m *dlzamanagerproto.Status) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamServer) Recv() (*dlzamanagerproto.InstanceWithPartitionAndObjectWithFile, error) {
+	m := new(dlzamanagerproto.InstanceWithPartitionAndObjectWithFile)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(StorageHandlerHandlerServiceServer).SaveAllTableObjectsAfterCopying(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: StorageHandlerHandlerService_SaveAllTableObjectsAfterCopying_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageHandlerHandlerServiceServer).SaveAllTableObjectsAfterCopying(ctx, req.(*dlzamanagerproto.InstanceWithPartitionAndObjectWithFiles))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 func _StorageHandlerHandlerService_GetStorageLocationById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -857,10 +890,6 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler,
 		},
 		{
-			MethodName: "SaveAllTableObjectsAfterCopying",
-			Handler:    _StorageHandlerHandlerService_SaveAllTableObjectsAfterCopying_Handler,
-		},
-		{
 			MethodName: "GetStorageLocationById",
 			Handler:    _StorageHandlerHandlerService_GetStorageLocationById_Handler,
 		},
@@ -901,7 +930,13 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StorageHandlerHandlerService_GetObjectById_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SaveAllTableObjectsAfterCopyingStream",
+			Handler:       _StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "handler_proto.proto",
 }
 
