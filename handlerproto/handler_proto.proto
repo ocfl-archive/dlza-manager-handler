@@ -14,6 +14,7 @@ import "dlza_proto.proto";
 import "defaultResponse.proto";
 
 service CheckerHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
   rpc getAllObjectInstances(dlzamanagerproto.NoParam) returns (dlzamanagerproto.ObjectInstances) {};
   rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
   rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};

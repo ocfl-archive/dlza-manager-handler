@@ -22,6 +22,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	CheckerHandlerService_Ping_FullMethodName                                 = "/handlerproto.CheckerHandlerService/Ping"
 	CheckerHandlerService_GetAllObjectInstances_FullMethodName                = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
 	CheckerHandlerService_UpdateObjectInstance_FullMethodName                 = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
 	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName            = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
@@ -33,6 +34,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CheckerHandlerServiceClient interface {
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
 	GetAllObjectInstances(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	UpdateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
 	CreateObjectInstanceCheck(ctx context.Context, in *dlzamanagerproto.ObjectInstanceCheck, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
@@ -46,6 +48,15 @@ type checkerHandlerServiceClient struct {
 
 func NewCheckerHandlerServiceClient(cc grpc.ClientConnInterface) CheckerHandlerServiceClient {
 	return &checkerHandlerServiceClient{cc}
+}
+
+func (c *checkerHandlerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error) {
+	out := new(proto.DefaultResponse)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_Ping_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *checkerHandlerServiceClient) GetAllObjectInstances(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error) {
@@ -97,6 +108,7 @@ func (c *checkerHandlerServiceClient) GetObjectById(ctx context.Context, in *dlz
 // All implementations must embed UnimplementedCheckerHandlerServiceServer
 // for forward compatibility
 type CheckerHandlerServiceServer interface {
+	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
 	GetAllObjectInstances(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.ObjectInstances, error)
 	UpdateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.NoParam, error)
 	CreateObjectInstanceCheck(context.Context, *dlzamanagerproto.ObjectInstanceCheck) (*dlzamanagerproto.NoParam, error)
@@ -109,6 +121,9 @@ type CheckerHandlerServiceServer interface {
 type UnimplementedCheckerHandlerServiceServer struct {
 }
 
+func (UnimplementedCheckerHandlerServiceServer) Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedCheckerHandlerServiceServer) GetAllObjectInstances(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.ObjectInstances, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllObjectInstances not implemented")
 }
@@ -135,6 +150,24 @@ type UnsafeCheckerHandlerServiceServer interface {
 
 func RegisterCheckerHandlerServiceServer(s grpc.ServiceRegistrar, srv CheckerHandlerServiceServer) {
 	s.RegisterService(&CheckerHandlerService_ServiceDesc, srv)
+}
+
+func _CheckerHandlerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).Ping(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CheckerHandlerService_GetAllObjectInstances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -234,6 +267,10 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "handlerproto.CheckerHandlerService",
 	HandlerType: (*CheckerHandlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _CheckerHandlerService_Ping_Handler,
+		},
 		{
 			MethodName: "getAllObjectInstances",
 			Handler:    _CheckerHandlerService_GetAllObjectInstances_Handler,
