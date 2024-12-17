@@ -22,12 +22,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CheckerHandlerService_Ping_FullMethodName                                 = "/handlerproto.CheckerHandlerService/Ping"
-	CheckerHandlerService_GetAllObjectInstances_FullMethodName                = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
-	CheckerHandlerService_UpdateObjectInstance_FullMethodName                 = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
-	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName            = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
-	CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName = "/handlerproto.CheckerHandlerService/GetStorageLocationByObjectInstanceId"
-	CheckerHandlerService_GetObjectById_FullMethodName                        = "/handlerproto.CheckerHandlerService/GetObjectById"
+	CheckerHandlerService_Ping_FullMethodName                                      = "/handlerproto.CheckerHandlerService/Ping"
+	CheckerHandlerService_GetAllObjectInstances_FullMethodName                     = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
+	CheckerHandlerService_UpdateObjectInstance_FullMethodName                      = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
+	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName                 = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
+	CheckerHandlerService_GetObjectById_FullMethodName                             = "/handlerproto.CheckerHandlerService/GetObjectById"
+	CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName = "/handlerproto.CheckerHandlerService/GetObjectInstanceChecksByObjectInstanceId"
 )
 
 // CheckerHandlerServiceClient is the client API for CheckerHandlerService service.
@@ -38,8 +38,8 @@ type CheckerHandlerServiceClient interface {
 	GetAllObjectInstances(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	UpdateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
 	CreateObjectInstanceCheck(ctx context.Context, in *dlzamanagerproto.ObjectInstanceCheck, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
-	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
+	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 }
 
 type checkerHandlerServiceClient struct {
@@ -86,18 +86,18 @@ func (c *checkerHandlerServiceClient) CreateObjectInstanceCheck(ctx context.Cont
 	return out, nil
 }
 
-func (c *checkerHandlerServiceClient) GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error) {
-	out := new(dlzamanagerproto.StorageLocation)
-	err := c.cc.Invoke(ctx, CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName, in, out, opts...)
+func (c *checkerHandlerServiceClient) GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
+	out := new(dlzamanagerproto.Object)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectById_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *checkerHandlerServiceClient) GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
-	out := new(dlzamanagerproto.Object)
-	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectById_FullMethodName, in, out, opts...)
+func (c *checkerHandlerServiceClient) GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error) {
+	out := new(dlzamanagerproto.ObjectInstanceChecks)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +112,8 @@ type CheckerHandlerServiceServer interface {
 	GetAllObjectInstances(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.ObjectInstances, error)
 	UpdateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.NoParam, error)
 	CreateObjectInstanceCheck(context.Context, *dlzamanagerproto.ObjectInstanceCheck) (*dlzamanagerproto.NoParam, error)
-	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
+	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	mustEmbedUnimplementedCheckerHandlerServiceServer()
 }
 
@@ -133,11 +133,11 @@ func (UnimplementedCheckerHandlerServiceServer) UpdateObjectInstance(context.Con
 func (UnimplementedCheckerHandlerServiceServer) CreateObjectInstanceCheck(context.Context, *dlzamanagerproto.ObjectInstanceCheck) (*dlzamanagerproto.NoParam, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectInstanceCheck not implemented")
 }
-func (UnimplementedCheckerHandlerServiceServer) GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationByObjectInstanceId not implemented")
-}
 func (UnimplementedCheckerHandlerServiceServer) GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectById not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstanceChecksByObjectInstanceId not implemented")
 }
 func (UnimplementedCheckerHandlerServiceServer) mustEmbedUnimplementedCheckerHandlerServiceServer() {}
 
@@ -224,24 +224,6 @@ func _CheckerHandlerService_CreateObjectInstanceCheck_Handler(srv interface{}, c
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CheckerHandlerService_GetStorageLocationByObjectInstanceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.Id)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CheckerHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CheckerHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, req.(*dlzamanagerproto.Id))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _CheckerHandlerService_GetObjectById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.Id)
 	if err := dec(in); err != nil {
@@ -256,6 +238,24 @@ func _CheckerHandlerService_GetObjectById_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CheckerHandlerServiceServer).GetObjectById(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetObjectInstanceChecksByObjectInstanceId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetObjectInstanceChecksByObjectInstanceId(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -284,12 +284,12 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CheckerHandlerService_CreateObjectInstanceCheck_Handler,
 		},
 		{
-			MethodName: "GetStorageLocationByObjectInstanceId",
-			Handler:    _CheckerHandlerService_GetStorageLocationByObjectInstanceId_Handler,
-		},
-		{
 			MethodName: "GetObjectById",
 			Handler:    _CheckerHandlerService_GetObjectById_Handler,
+		},
+		{
+			MethodName: "GetObjectInstanceChecksByObjectInstanceId",
+			Handler:    _CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -313,6 +313,7 @@ const (
 	StorageHandlerHandlerService_DeleteObjectInstance_FullMethodName                        = "/handlerproto.StorageHandlerHandlerService/DeleteObjectInstance"
 	StorageHandlerHandlerService_AlterStatus_FullMethodName                                 = "/handlerproto.StorageHandlerHandlerService/AlterStatus"
 	StorageHandlerHandlerService_GetObjectById_FullMethodName                               = "/handlerproto.StorageHandlerHandlerService/GetObjectById"
+	StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationByObjectInstanceId"
 )
 
 // StorageHandlerHandlerServiceClient is the client API for StorageHandlerHandlerService service.
@@ -335,6 +336,7 @@ type StorageHandlerHandlerServiceClient interface {
 	DeleteObjectInstance(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
+	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 }
 
 type storageHandlerHandlerServiceClient struct {
@@ -514,6 +516,15 @@ func (c *storageHandlerHandlerServiceClient) GetObjectById(ctx context.Context, 
 	return out, nil
 }
 
+func (c *storageHandlerHandlerServiceClient) GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error) {
+	out := new(dlzamanagerproto.StorageLocation)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StorageHandlerHandlerServiceServer is the server API for StorageHandlerHandlerService service.
 // All implementations must embed UnimplementedStorageHandlerHandlerServiceServer
 // for forward compatibility
@@ -534,6 +545,7 @@ type StorageHandlerHandlerServiceServer interface {
 	DeleteObjectInstance(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Status, error)
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
+	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	mustEmbedUnimplementedStorageHandlerHandlerServiceServer()
 }
 
@@ -588,6 +600,9 @@ func (UnimplementedStorageHandlerHandlerServiceServer) AlterStatus(context.Conte
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectById not implemented")
+}
+func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationByObjectInstanceId not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) mustEmbedUnimplementedStorageHandlerHandlerServiceServer() {
 }
@@ -899,6 +914,24 @@ func _StorageHandlerHandlerService_GetObjectById_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StorageHandlerHandlerService_ServiceDesc is the grpc.ServiceDesc for StorageHandlerHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -965,6 +998,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectById",
 			Handler:    _StorageHandlerHandlerService_GetObjectById_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationByObjectInstanceId",
+			Handler:    _StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

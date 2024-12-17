@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
@@ -10,18 +11,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository) *DispatcherHandlerServer {
-	return &DispatcherHandlerServer{DispatcherRepository: dispatcherRepository}
+func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository, logger zLogger.ZLogger) *DispatcherHandlerServer {
+	return &DispatcherHandlerServer{DispatcherRepository: dispatcherRepository, Logger: logger}
 }
 
 type DispatcherHandlerServer struct {
 	pbHandler.UnimplementedDispatcherHandlerServiceServer
 	DispatcherRepository repository.DispatcherRepository
+	Logger               zLogger.ZLogger
 }
 
 func (d *DispatcherHandlerServer) GetLowQualityCollectionsWithObjectIds(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
 	collectionsWithObjectIds, err := d.DispatcherRepository.GetLowQualityCollectionsWithObjectIds()
 	if err != nil {
+		d.Logger.Error().Msgf("Could not get LowQualityCollections", err)
 		return nil, status.Errorf(codes.Internal, "Could not get LowQualityCollections: %v", err)
 	}
 

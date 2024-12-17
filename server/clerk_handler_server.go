@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"emperror.dev/errors"
+	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
@@ -26,12 +27,14 @@ type ClerkHandlerServer struct {
 	TenantRepository                   repository.TenantRepository
 	StorageLocationService             service.StorageLocationService
 	RefreshMaterializedViewsRepository repository.RefreshMaterializedViewsRepository
+	Logger                             zLogger.ZLogger
 }
 
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
 	tenant, err := c.TenantService.FindTenantById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get tenant with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not get tenant with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get tenant with id: '%v'", id.Id)
 	}
 	tenantPb := mapper.ConvertToTenantPb(tenant)
 	return tenantPb, nil
@@ -40,7 +43,8 @@ func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb
 func (c *ClerkHandlerServer) GetCollectionByIdFromMv(ctx context.Context, id *pb.Id) (*pb.Collection, error) {
 	collection, err := c.CollectionRepository.GetCollectionByIdFromMv(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get collection from materialized view with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not get collection from materialized view with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collection from materialized view with id: '%v'", id.Id)
 	}
 	collectionPb := mapper.ConvertToCollectionPb(collection)
 	return collectionPb, nil
@@ -49,7 +53,8 @@ func (c *ClerkHandlerServer) GetCollectionByIdFromMv(ctx context.Context, id *pb
 func (c *ClerkHandlerServer) GetCollectionById(ctx context.Context, id *pb.Id) (*pb.Collection, error) {
 	collection, err := c.CollectionRepository.GetCollectionById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get collection with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not get collection with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collection with id: '%v'", id.Id)
 	}
 	collectionPb := mapper.ConvertToCollectionPb(collection)
 	return collectionPb, nil
@@ -58,7 +63,8 @@ func (c *ClerkHandlerServer) GetCollectionById(ctx context.Context, id *pb.Id) (
 func (c *ClerkHandlerServer) DeleteTenant(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.TenantService.DeleteTenant(id.Id)
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete tenant with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not delete tenant with id: '%v'", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete tenant with id: '%v'", id.Id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -66,7 +72,8 @@ func (c *ClerkHandlerServer) DeleteTenant(ctx context.Context, id *pb.Id) (*pb.S
 func (c *ClerkHandlerServer) SaveTenant(ctx context.Context, tenantPb *pb.Tenant) (*pb.Status, error) {
 	err := c.TenantService.SaveTenant(mapper.ConvertToTenant(tenantPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not save tenant '%s'", tenantPb.Name)
+		c.Logger.Error().Msgf("Could not save tenant '%v'", tenantPb.Name, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not save tenant '%v'", tenantPb.Name)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -74,7 +81,8 @@ func (c *ClerkHandlerServer) SaveTenant(ctx context.Context, tenantPb *pb.Tenant
 func (c *ClerkHandlerServer) UpdateTenant(ctx context.Context, tenantPb *pb.Tenant) (*pb.Status, error) {
 	err := c.TenantService.UpdateTenant(mapper.ConvertToTenant(tenantPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not save tenant '%s'", tenantPb.Name)
+		c.Logger.Error().Msgf("Could not save tenant '%v'", tenantPb.Name, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not save tenant '%v'", tenantPb.Name)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -82,6 +90,7 @@ func (c *ClerkHandlerServer) UpdateTenant(ctx context.Context, tenantPb *pb.Tena
 func (c *ClerkHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoParam) (*pb.Tenants, error) {
 	tenants, err := c.TenantService.FindAllTenants()
 	if err != nil {
+		c.Logger.Error().Msgf("Could not get all tenants")
 		return nil, errors.Wrapf(err, "Could not get all tenants")
 	}
 	var tenantsPb []*pb.Tenant
@@ -96,11 +105,13 @@ func (c *ClerkHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoPa
 func (c *ClerkHandlerServer) CreateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Id, error) {
 	id, err := c.CollectionRepository.CreateCollection(mapper.ConvertToCollection(collectionPb))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create collection '%s'", collectionPb.Name)
+		c.Logger.Error().Msgf("Could not create collection '%v'", collectionPb.Name, err)
+		return nil, errors.Wrapf(err, "Could not create collection '%v'", collectionPb.Name)
 	}
 	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%s'", collectionPb.Name)
+		c.Logger.Error().Msgf("Could not RefreshMaterializedViewsFromCollectionToFile for collection '%v'", collectionPb.Name, err)
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%v'", collectionPb.Name)
 	}
 	return &pb.Id{Id: id}, nil
 
@@ -109,11 +120,13 @@ func (c *ClerkHandlerServer) CreateCollection(ctx context.Context, collectionPb 
 func (c *ClerkHandlerServer) UpdateCollection(ctx context.Context, collectionPb *pb.Collection) (*pb.Status, error) {
 	err := c.CollectionRepository.UpdateCollection(mapper.ConvertToCollection(collectionPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update collection '%s'", collectionPb.Name)
+		c.Logger.Error().Msgf("Could not update collection '%v'", collectionPb.Name, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update collection '%v'", collectionPb.Name)
 	}
 	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%s'", collectionPb.Name)
+		c.Logger.Error().Msgf("Could not RefreshMaterializedViewsFromCollectionToFile for collection '%v'", collectionPb.Name, err)
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile for collection '%v'", collectionPb.Name)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -121,11 +134,13 @@ func (c *ClerkHandlerServer) UpdateCollection(ctx context.Context, collectionPb 
 func (c *ClerkHandlerServer) DeleteCollectionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.CollectionRepository.DeleteCollectionById(id.Id)
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete collectiom with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not delete collection with id: '%v'", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete collection with id: '%v'", id.Id)
 	}
 	err = c.RefreshMaterializedViewsRepository.RefreshMaterializedViewsFromCollectionToFile()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile after deleting collection with id '%s'", id)
+		c.Logger.Error().Msgf("Could not RefreshMaterializedViewsFromCollectionToFile after deleting collection with id '%v'", id, err)
+		return nil, errors.Wrapf(err, "Could not RefreshMaterializedViewsFromCollectionToFile after deleting collection with id '%v'", id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -133,7 +148,8 @@ func (c *ClerkHandlerServer) DeleteCollectionById(ctx context.Context, id *pb.Id
 func (c *ClerkHandlerServer) GetCollectionsByTenantId(ctx context.Context, id *pb.Id) (*pb.Collections, error) {
 	collections, err := c.CollectionRepository.GetCollectionsByTenantId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not get collections by tenant with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%v'", id.Id)
 	}
 	var collectionsPb []*pb.Collection
 
@@ -147,7 +163,8 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantId(ctx context.Context, id *p
 func (c *ClerkHandlerServer) SaveStorageLocation(ctx context.Context, storageLocationPb *pb.StorageLocation) (*pb.Id, error) {
 	id, err := c.StorageLocationRepository.SaveStorageLocation(mapper.ConvertToStorageLocation(storageLocationPb))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create storageLocation '%s'", storageLocationPb.Alias)
+		c.Logger.Error().Msgf("Could not create storageLocation '%v'", storageLocationPb.Alias, err)
+		return nil, errors.Wrapf(err, "Could not create storageLocation '%v'", storageLocationPb.Alias)
 	}
 	return &pb.Id{Id: id}, nil
 }
@@ -155,7 +172,8 @@ func (c *ClerkHandlerServer) SaveStorageLocation(ctx context.Context, storageLoc
 func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageLocationPb *pb.StorageLocation) (*pb.Status, error) {
 	err := c.StorageLocationRepository.UpdateStorageLocation(mapper.ConvertToStorageLocation(storageLocationPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storageLocation '%s'", storageLocationPb.Alias)
+		c.Logger.Error().Msgf("Could not update storageLocation '%v'", storageLocationPb.Alias, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storageLocation '%v'", storageLocationPb.Alias)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -163,7 +181,8 @@ func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageL
 func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Id, error) {
 	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
+		c.Logger.Error().Msgf("Could not create storagePartition '%v'", storagePartitionPb.Alias, err)
+		return nil, errors.Wrapf(err, "Could not create storagePartition '%v'", storagePartitionPb.Alias)
 	}
 	return &pb.Id{Id: id}, nil
 }
@@ -171,7 +190,8 @@ func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storage
 func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Status, error) {
 	err := c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%s'", storagePartitionPb.Alias)
+		c.Logger.Error().Msgf("Could not update storagePartition '%v'", storagePartitionPb.Alias, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%v'", storagePartitionPb.Alias)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -179,7 +199,8 @@ func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storage
 func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.StoragePartitionRepository.DeleteStoragePartitionById(id.Id)
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not delete storagePartition with id: '%v'", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with id: '%v'", id.Id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -187,7 +208,8 @@ func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id 
 func (c *ClerkHandlerServer) DeleteStorageLocationById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.StorageLocationRepository.DeleteStorageLocationById(id.Id)
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storageLocation with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not delete storageLocation with id: '%v'", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storageLocation with id: '%v'", id.Id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -195,7 +217,8 @@ func (c *ClerkHandlerServer) DeleteStorageLocationById(ctx context.Context, id *
 func (c *ClerkHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, tenantId *pb.Id) (*pb.StorageLocations, error) {
 	storageLocations, err := c.StorageLocationRepository.GetStorageLocationsByTenantId(tenantId.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%s'", tenantId.Id)
+		c.Logger.Error().Msgf("Could not get storageLocations by tenant with id: '%v'", tenantId.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%v'", tenantId.Id)
 	}
 	var storageLocationsPb []*pb.StorageLocation
 
@@ -209,7 +232,8 @@ func (c *ClerkHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, 
 func (c *ClerkHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.Object, error) {
 	object, err := c.ObjectRepository.GetObjectByIdMv(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetObjectById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetObjectById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectById with id: '%v'", id.Id)
 	}
 	objectPb := mapper.ConvertToObjectPb(object)
 	return objectPb, nil
@@ -218,7 +242,8 @@ func (c *ClerkHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.
 func (c *ClerkHandlerServer) GetObjectInstanceById(ctx context.Context, id *pb.Id) (*pb.ObjectInstance, error) {
 	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstanceById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetObjectInstanceById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetObjectInstanceById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectInstanceById with id: '%v'", id.Id)
 	}
 	objectInstancePb := mapper.ConvertToObjectInstancePb(objectInstance)
 	return objectInstancePb, nil
@@ -227,7 +252,8 @@ func (c *ClerkHandlerServer) GetObjectInstanceById(ctx context.Context, id *pb.I
 func (c *ClerkHandlerServer) GetFileById(ctx context.Context, id *pb.Id) (*pb.File, error) {
 	file, err := c.FileRepository.GetFileById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetFileById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetFileById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetFileById with id: '%v'", id.Id)
 	}
 	filePb := mapper.ConvertToFilePb(file)
 	return filePb, nil
@@ -236,7 +262,8 @@ func (c *ClerkHandlerServer) GetFileById(ctx context.Context, id *pb.Id) (*pb.Fi
 func (c *ClerkHandlerServer) GetObjectInstanceCheckById(ctx context.Context, id *pb.Id) (*pb.ObjectInstanceCheck, error) {
 	objectInstanceCheck, err := c.ObjectInstanceCheckRepository.GetObjectInstanceCheckById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetObjectInstanceCheckById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetObjectInstanceCheckById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectInstanceCheckById with id: '%v'", id.Id)
 	}
 	objectInstanceCheckPb := mapper.ConvertToObjectInstanceCheckPb(objectInstanceCheck)
 	return objectInstanceCheckPb, nil
@@ -245,7 +272,8 @@ func (c *ClerkHandlerServer) GetObjectInstanceCheckById(ctx context.Context, id 
 func (c *ClerkHandlerServer) GetStorageLocationById(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
 	storageLocation, err := c.StorageLocationRepository.GetStorageLocationById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetStorageLocationById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetStorageLocationById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetStorageLocationById with id: '%v'", id.Id)
 	}
 	storageLocationPb := mapper.ConvertToStorageLocationPb(storageLocation)
 	return storageLocationPb, nil
@@ -254,7 +282,8 @@ func (c *ClerkHandlerServer) GetStorageLocationById(ctx context.Context, id *pb.
 func (c *ClerkHandlerServer) GetStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.StoragePartition, error) {
 	storagePartition, err := c.StoragePartitionRepository.GetStoragePartitionById(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetStoragePartitionById with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetStoragePartitionById with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetStoragePartitionById with id: '%v'", id.Id)
 	}
 	storagePartitionPb := mapper.ConvertToStoragePartitionPb(storagePartition)
 	return storagePartitionPb, nil
@@ -265,6 +294,7 @@ func (c *ClerkHandlerServer) GetStoragePartitionById(ctx context.Context, id *pb
 func (c *ClerkHandlerServer) FindAllTenantsPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Tenants, error) {
 	tenants, totalItems, err := c.TenantService.FindAllTenantsPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
+		c.Logger.Error().Msgf("Could not get all tenants", err)
 		return nil, errors.Wrapf(err, "Could not get all tenants")
 	}
 	var tenantsPb []*pb.Tenant
@@ -279,7 +309,8 @@ func (c *ClerkHandlerServer) FindAllTenantsPaginated(ctx context.Context, pagina
 func (c *ClerkHandlerServer) GetCollectionsByTenantIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Collections, error) {
 	collections, totalItems, err := c.CollectionRepository.GetCollectionsByTenantIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get collections by tenant with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%v'", pagination.Id)
 	}
 	var collectionsPb []*pb.Collection
 
@@ -293,7 +324,8 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantIdPaginated(ctx context.Conte
 func (c *ClerkHandlerServer) GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
 	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByTenantOrCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get storageLocations by collection with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get storageLocations by collection with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocations by collection with id: '%v'", pagination.Id)
 	}
 	var storageLocationsPb []*pb.StorageLocation
 
@@ -307,7 +339,8 @@ func (c *ClerkHandlerServer) GetStorageLocationsByTenantOrCollectionIdPaginated(
 func (c *ClerkHandlerServer) GetStoragePartitionsByLocationIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StoragePartitions, error) {
 	storagePartitions, totalItems, err := c.StoragePartitionRepository.GetStoragePartitionsByLocationIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get GetStoragePartitionsByLocationIdPaginated by storage location with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get GetStoragePartitionsByLocationIdPaginated by storage location with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get GetStoragePartitionsByLocationIdPaginated by storage location with id: '%v'", pagination.Id)
 	}
 	var storagePartitionsPb []*pb.StoragePartition
 
@@ -321,7 +354,8 @@ func (c *ClerkHandlerServer) GetStoragePartitionsByLocationIdPaginated(ctx conte
 func (c *ClerkHandlerServer) GetObjectsByCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Objects, error) {
 	objects, totalItems, err := c.ObjectRepository.GetObjectsByCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated objects by collection with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated objects by collection with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated objects by collection with id: '%v'", pagination.Id)
 	}
 	var objectsPb []*pb.Object
 
@@ -334,7 +368,8 @@ func (c *ClerkHandlerServer) GetObjectsByCollectionIdPaginated(ctx context.Conte
 func (c *ClerkHandlerServer) GetFilesByCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Files, error) {
 	files, totalItems, err := c.FileRepository.GetFilesByCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated files by collection with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated files by collection with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated files by collection with id: '%v'", pagination.Id)
 	}
 	var filesPb []*pb.File
 
@@ -347,7 +382,8 @@ func (c *ClerkHandlerServer) GetFilesByCollectionIdPaginated(ctx context.Context
 func (c *ClerkHandlerServer) GetObjectInstancesByObjectIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.ObjectInstances, error) {
 	objectInstances, totalItems, err := c.ObjectInstanceRepository.GetObjectInstancesByObjectIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated objectInstances by object with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated objectInstances by object with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated objectInstances by object with id: '%v'", pagination.Id)
 	}
 	objectInstancesPb := make([]*pb.ObjectInstance, 0)
 
@@ -360,7 +396,8 @@ func (c *ClerkHandlerServer) GetObjectInstancesByObjectIdPaginated(ctx context.C
 func (c *ClerkHandlerServer) GetFilesByObjectIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Files, error) {
 	files, totalItems, err := c.FileRepository.GetFilesByObjectIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated files by object with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated files by object with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated files by object with id: '%v'", pagination.Id)
 	}
 	filesPb := make([]*pb.File, 0)
 
@@ -373,7 +410,8 @@ func (c *ClerkHandlerServer) GetFilesByObjectIdPaginated(ctx context.Context, pa
 func (c *ClerkHandlerServer) GetObjectInstanceChecksByObjectInstanceIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.ObjectInstanceChecks, error) {
 	objectInstanceChecks, totalItems, err := c.ObjectInstanceCheckRepository.GetObjectInstanceChecksByObjectInstanceIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated objectInstanceChecks by objectInstance with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated objectInstanceChecks by objectInstance with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated objectInstanceChecks by objectInstance with id: '%v'", pagination.Id)
 	}
 	objectInstanceChecksPb := make([]*pb.ObjectInstanceCheck, 0)
 
@@ -386,7 +424,8 @@ func (c *ClerkHandlerServer) GetObjectInstanceChecksByObjectInstanceIdPaginated(
 func (c *ClerkHandlerServer) GetObjectInstancesByStoragePartitionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.ObjectInstances, error) {
 	objectInstances, totalItems, err := c.ObjectInstanceRepository.GetObjectInstancesByPartitionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated objectInstances by object with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated objectInstances by object with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated objectInstances by object with id: '%v'", pagination.Id)
 	}
 	objectInstancesPb := make([]*pb.ObjectInstance, 0)
 
@@ -401,7 +440,8 @@ func (c *ClerkHandlerServer) GetObjectInstancesByStoragePartitionIdPaginated(ctx
 func (c *ClerkHandlerServer) GetMimeTypesForCollectionId(ctx context.Context, pagination *pb.Pagination) (*pb.MimeTypes, error) {
 	mimeTypes, totalItems, err := c.FileRepository.GetMimeTypesForCollectionId(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated mimeTypes by collection with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated mimeTypes by collection with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated mimeTypes by collection with id: '%v'", pagination.Id)
 	}
 
 	mimeTypesPb := make([]*pb.MimeType, 0)
@@ -416,7 +456,8 @@ func (c *ClerkHandlerServer) GetMimeTypesForCollectionId(ctx context.Context, pa
 func (c *ClerkHandlerServer) GetPronomsForCollectionId(ctx context.Context, pagination *pb.Pagination) (*pb.Pronoms, error) {
 	pronoms, totalItems, err := c.FileRepository.GetPronomsForCollectionId(mapper.ConvertToPagination(pagination))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get paginated pronoms by collection with id: '%s'", pagination.Id)
+		c.Logger.Error().Msgf("Could not get paginated pronoms by collection with id: '%v'", pagination.Id, err)
+		return nil, errors.Wrapf(err, "Could not get paginated pronoms by collection with id: '%v'", pagination.Id)
 	}
 
 	pronomsPb := make([]*pb.Pronom, 0)
@@ -431,7 +472,8 @@ func (c *ClerkHandlerServer) GetPronomsForCollectionId(ctx context.Context, pagi
 func (c *ClerkHandlerServer) CheckStatus(ctx context.Context, id *pb.Id) (*pb.StatusObject, error) {
 	status, err := c.StatusRepository.CheckStatus(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not CheckStatus with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not CheckStatus with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not CheckStatus with id: '%v'", id.Id)
 	}
 	statusPb := pb.StatusObject{Status: status.Status, LastChanged: status.LastChanged, Id: status.Id}
 
@@ -440,7 +482,8 @@ func (c *ClerkHandlerServer) CheckStatus(ctx context.Context, id *pb.Id) (*pb.St
 func (c *ClerkHandlerServer) GetResultingQualityForObject(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	quality, err := c.ObjectRepository.GetResultingQualityForObject(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetResultingQualityForObject with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetResultingQualityForObject with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetResultingQualityForObject with id: '%v'", id.Id)
 	}
 	qualityPb := pb.SizeAndId{Size: int64(quality)}
 
@@ -449,7 +492,8 @@ func (c *ClerkHandlerServer) GetResultingQualityForObject(ctx context.Context, i
 func (c *ClerkHandlerServer) GetNeededQualityForObject(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	quality, err := c.ObjectRepository.GetNeededQualityForObject(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetNeededQualityForObject with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetNeededQualityForObject with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetNeededQualityForObject with id: '%v'", id.Id)
 	}
 	qualityPb := pb.SizeAndId{Size: int64(quality)}
 
@@ -460,7 +504,8 @@ func (c *ClerkHandlerServer) AlterStatus(ctx context.Context, statusPb *pb.Statu
 	status := models.ArchivingStatus{Status: statusPb.Status, LastChanged: statusPb.LastChanged, Id: statusPb.Id}
 	err := c.StatusRepository.AlterStatus(status)
 	if err != nil {
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not AlterStatus with id: '%s'", statusPb.Id)
+		c.Logger.Error().Msgf("Could not AlterStatus with id: '%v'", statusPb.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not AlterStatus with id: '%v'", statusPb.Id)
 	}
 	return &pb.Status{Ok: true}, nil
 }
@@ -469,7 +514,8 @@ func (c *ClerkHandlerServer) CreateStatus(ctx context.Context, statusPb *pb.Stat
 	status := models.ArchivingStatus{Status: statusPb.Status, LastChanged: statusPb.LastChanged}
 	id, err := c.StatusRepository.CreateStatus(status)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not AlterStatus with id: '%s'", statusPb.Id)
+		c.Logger.Error().Msgf("Could not AlterStatus with id: '%v'", statusPb.Id, err)
+		return nil, errors.Wrapf(err, "Could not AlterStatus with id: '%v'", statusPb.Id)
 	}
 	return &pb.Id{Id: id}, nil
 }
@@ -477,7 +523,8 @@ func (c *ClerkHandlerServer) CreateStatus(ctx context.Context, statusPb *pb.Stat
 func (c *ClerkHandlerServer) GetObjectInstancesByName(ctx context.Context, objectInstanceName *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := c.ObjectInstanceRepository.GetObjectInstancesByName(objectInstanceName.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not check whether ObjectInstanceWithNameExists with name: '%s' exists", objectInstanceName.Id)
+		c.Logger.Error().Msgf("Could not check whether ObjectInstanceWithNameExists with name: '%v' exists", objectInstanceName.Id, err)
+		return nil, errors.Wrapf(err, "Could not check whether ObjectInstanceWithNameExists with name: '%v' exists", objectInstanceName.Id)
 	}
 	var objectInstancesPb []*pb.ObjectInstance
 	for _, objectInstance := range objectInstances {
@@ -490,7 +537,8 @@ func (c *ClerkHandlerServer) GetObjectInstancesByName(ctx context.Context, objec
 func (c *ClerkHandlerServer) GetObjectsByChecksum(ctx context.Context, checksum *pb.Id) (*pb.Objects, error) {
 	objects, err := c.ObjectRepository.GetObjectsByChecksum(checksum.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get objects with checksum: '%s'", checksum.Id)
+		c.Logger.Error().Msgf("Could not get objects with checksum: '%v'", checksum.Id, err)
+		return nil, errors.Wrapf(err, "Could not get objects with checksum: '%v'", checksum.Id)
 	}
 	var objectsPb []*pb.Object
 	for _, object := range objects {
@@ -503,7 +551,8 @@ func (c *ClerkHandlerServer) GetObjectsByChecksum(ctx context.Context, checksum 
 func (c *ClerkHandlerServer) GetStatusForObjectId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	status, err := c.ObjectInstanceService.GetStatusForObjectId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetStatusForObjectId for object with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetStatusForObjectId for object with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetStatusForObjectId for object with id: '%v'", id.Id)
 	}
 	statusPb := pb.SizeAndId{Size: int64(status)}
 
@@ -513,7 +562,8 @@ func (c *ClerkHandlerServer) GetStatusForObjectId(ctx context.Context, id *pb.Id
 func (c *ClerkHandlerServer) GetAmountOfErrorsByCollectionId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	amount, err := c.ObjectInstanceRepository.GetAmountOfErrorsByCollectionId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id)
 	}
 	amountPb := pb.SizeAndId{Size: int64(amount)}
 
@@ -523,7 +573,8 @@ func (c *ClerkHandlerServer) GetAmountOfErrorsByCollectionId(ctx context.Context
 func (c *ClerkHandlerServer) GetAmountOfErrorsForStorageLocationId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	amount, err := c.StorageLocationRepository.GetAmountOfErrorsForStorageLocationId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id)
 	}
 	amountPb := pb.SizeAndId{Size: int64(amount)}
 	return &amountPb, nil
@@ -532,7 +583,8 @@ func (c *ClerkHandlerServer) GetAmountOfErrorsForStorageLocationId(ctx context.C
 func (c *ClerkHandlerServer) GetAmountOfObjectsForStorageLocationId(ctx context.Context, id *pb.Id) (*pb.SizeAndId, error) {
 	amount, err := c.StorageLocationRepository.GetAmountOfObjectsForStorageLocationId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetAmountOfErrorsByCollectionId for collection with id: '%v'", id.Id)
 	}
 	amountPb := pb.SizeAndId{Size: int64(amount)}
 	return &amountPb, nil
@@ -541,7 +593,8 @@ func (c *ClerkHandlerServer) GetAmountOfObjectsForStorageLocationId(ctx context.
 func (c *ClerkHandlerServer) GetAmountOfObjectsAndTotalSizeByTenantId(ctx context.Context, id *pb.Id) (*pb.AmountAndSize, error) {
 	amount, size, err := c.TenantRepository.GetAmountOfObjectsAndTotalSizeByTenantId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetAmountOfObjectsAndTotalSizeByTenantId for tenant with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetAmountOfObjectsAndTotalSizeByTenantId for tenant with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetAmountOfObjectsAndTotalSizeByTenantId for tenant with id: '%v'", id.Id)
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size, Amount: amount}
 	return &amountAndSizePb, nil
@@ -550,7 +603,8 @@ func (c *ClerkHandlerServer) GetAmountOfObjectsAndTotalSizeByTenantId(ctx contex
 func (c *ClerkHandlerServer) GetStorageLocationsStatusForCollectionAlias(ctx context.Context, sizeAndCollectionAlias *pb.SizeAndId) (*pb.Id, error) {
 	status, err := c.StorageLocationService.GetStorageLocationsStatusForCollectionAlias(sizeAndCollectionAlias.Id, sizeAndCollectionAlias.Size)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%s'", sizeAndCollectionAlias.Id)
+		c.Logger.Error().Msgf("Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%v'", sizeAndCollectionAlias.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%v'", sizeAndCollectionAlias.Id)
 	}
 	locationStatusPb := pb.Id{Id: status}
 	return &locationStatusPb, nil
@@ -559,7 +613,8 @@ func (c *ClerkHandlerServer) GetStorageLocationsStatusForCollectionAlias(ctx con
 func (c *ClerkHandlerServer) GetSizeForAllObjectInstancesByCollectionId(ctx context.Context, id *pb.Id) (*pb.AmountAndSize, error) {
 	size, err := c.CollectionRepository.GetSizeForAllObjectInstancesByCollectionId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not GetSizeForAllObjectInstancesByCollectionId for collection with id: '%s'", id.Id)
+		c.Logger.Error().Msgf("Could not GetSizeForAllObjectInstancesByCollectionId for collection with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetSizeForAllObjectInstancesByCollectionId for collection with id: '%v'", id.Id)
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size}
 	return &amountAndSizePb, nil

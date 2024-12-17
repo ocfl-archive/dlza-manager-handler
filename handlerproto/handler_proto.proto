@@ -18,8 +18,8 @@ service CheckerHandlerService {
   rpc getAllObjectInstances(dlzamanagerproto.NoParam) returns (dlzamanagerproto.ObjectInstances) {};
   rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
   rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
-  rpc GetStorageLocationByObjectInstanceId (dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
+  rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
 }
 
 service StorageHandlerHandlerService {
@@ -39,6 +39,7 @@ service StorageHandlerHandlerService {
   rpc DeleteObjectInstance(dlzamanagerproto.Id) returns (dlzamanagerproto.Status);
   rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
+  rpc GetStorageLocationByObjectInstanceId (dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
 }
 
 service ClerkHandlerService {

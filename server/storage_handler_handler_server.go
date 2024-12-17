@@ -73,13 +73,13 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx c
 
 	collection, err := c.CollectionRepository.GetCollectionByAlias(collectionAlias.CollectionAlias)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%s'", collectionAlias.CollectionAlias, err)
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%v'", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get collectionId for collection with alias '%s'", collectionAlias.CollectionAlias)
 	}
 	storageLocations, err := c.StorageLocationRepository.GetStorageLocationsByTenantId(collection.TenantId)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storageLocations for collection with alias '%s'", collectionAlias.CollectionAlias, err)
-		return nil, errors.Wrapf(err, "Could not get storageLocations for collection with alias '%s'", collectionAlias.CollectionAlias)
+		c.Logger.Error().Msgf("Could not get storageLocations for collection with alias '%v'", collectionAlias.CollectionAlias, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocations for collection with alias '%v'", collectionAlias.CollectionAlias)
 	}
 	storageLocations = service.GetCheapestStorageLocationsForQuality(storageLocations, collection.Quality)
 	storageLocationsPb := make([]*pb.StorageLocation, 0)
@@ -219,4 +219,12 @@ func (c *StorageHandlerHandlerServer) GetObjectById(ctx context.Context, id *pb.
 	}
 	objectPb := mapper.ConvertToObjectPb(object)
 	return objectPb, nil
+}
+
+func (c *StorageHandlerHandlerServer) GetStorageLocationByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
+	storageLocation, err := c.StorageLocationRepository.GetStorageLocationByObjectInstanceId(id.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get storage location by id object instance id: %v", id.Id)
+	}
+	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }

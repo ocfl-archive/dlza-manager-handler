@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	GetObjectInstanceCheckById = "GetObjectInstanceCheckById"
-	CreateObjectInstanceCheck  = "CreateObjectInstanceCheck"
+	GetObjectInstanceCheckById                = "GetObjectInstanceCheckById"
+	CreateObjectInstanceCheck                 = "CreateObjectInstanceCheck"
+	GetObjectInstanceChecksByObjectInstanceId = "GetObjectInstanceChecksByObjectInstanceId"
 )
 
 type ObjectInstanceCheckRepositoryImpl struct {
@@ -28,6 +29,7 @@ func CreateObjectInstanceCheckPreparedStatements(ctx context.Context, conn *pgx.
 		GetObjectInstanceCheckById: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE ID = $1",
 		CreateObjectInstanceCheck: "INSERT INTO OBJECT_INSTANCE_CHECK(error, message, object_instance_id)" +
 			" VALUES ($1, $2, $3) RETURNING id",
+		GetObjectInstanceChecksByObjectInstanceId: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE OBJECT_INSTANCE_ID = $1",
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -58,6 +60,29 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceCheckById(id string
 	}
 	objectInstanceCheck.CheckTime = checkTime.Format(Layout)
 	return objectInstanceCheck, err
+}
+
+func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInstanceId(id string) ([]models.ObjectInstanceCheck, error) {
+
+	rows, err := o.Db.Query(context.Background(), GetObjectInstanceChecksByObjectInstanceId, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceChecksByObjectInstanceId)
+	}
+
+	var objectInstanceChecks []models.ObjectInstanceCheck
+
+	for rows.Next() {
+		var objectInstanceCheck models.ObjectInstanceCheck
+		var checkTime time.Time
+		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not scan rows for method: %v", GetObjectInstanceChecksByObjectInstanceId)
+		}
+		objectInstanceCheck.CheckTime = checkTime.Format(Layout)
+		objectInstanceChecks = append(objectInstanceChecks, objectInstanceCheck)
+	}
+
+	return objectInstanceChecks, nil
 }
 
 func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInstanceIdPaginated(pagination models.Pagination) ([]models.ObjectInstanceCheck, int, error) {
