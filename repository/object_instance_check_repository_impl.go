@@ -29,7 +29,13 @@ func CreateObjectInstanceCheckPreparedStatements(ctx context.Context, conn *pgx.
 		GetObjectInstanceCheckById: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE ID = $1",
 		CreateObjectInstanceCheck: "INSERT INTO OBJECT_INSTANCE_CHECK(error, message, object_instance_id)" +
 			" VALUES ($1, $2, $3) RETURNING id",
-		GetObjectInstanceChecksByObjectInstanceId: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE OBJECT_INSTANCE_ID = $1",
+		GetObjectInstanceChecksByObjectInstanceId: `SELECT oic.checktime, oic.error, oic.message, oic.id, oic.object_instance_id
+													FROM (
+													SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
+													FROM object_instance_check
+													) AS oic 
+													WHERE OBJECT_INSTANCE_ID = $1
+													AND oic.number_of_row <= 3`,
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
