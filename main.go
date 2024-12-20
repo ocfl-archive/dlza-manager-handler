@@ -214,7 +214,7 @@ func main() {
 		ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
 
 	pb.RegisterCheckerHandlerServiceServer(grpcServer, &server.CheckerHandlerServer{ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository,
-		StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, Logger: logger})
+		StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, CollectionRepository: collectionRepository, Logger: logger})
 
 	grpcServer.Startup()
 	done := make(chan os.Signal, 1)

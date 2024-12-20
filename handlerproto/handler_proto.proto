@@ -20,6 +20,9 @@ service CheckerHandlerService {
   rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
+  rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
+  rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
+  rpc GetRelevantStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations) {};
 }
 
 service StorageHandlerHandlerService {
