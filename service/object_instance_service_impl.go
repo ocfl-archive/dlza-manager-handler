@@ -5,6 +5,14 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 )
 
+const (
+	errorStatus  = "error"
+	okStatus     = "ok"
+	deleteStatus = "to delete"
+	notAvailable = "not available"
+	newStatus    = "new"
+)
+
 func NewObjectInstanceService(objectInstanceRepository repository.ObjectInstanceRepository) ObjectInstanceService {
 	return &ObjectInstanceServiceImpl{ObjectInstanceRepository: objectInstanceRepository}
 }
@@ -21,9 +29,13 @@ func (o ObjectInstanceServiceImpl) GetStatusForObjectId(id string) (int, error) 
 
 	var numberWithErrors int
 	var numberWithoutErrors int
-
+	var numberToDelete int
 	for _, objectInstance := range objectInstances {
-		if objectInstance.Status == "error" {
+		if objectInstance.Status == deleteStatus {
+			numberToDelete++
+			continue
+		}
+		if objectInstance.Status == errorStatus || objectInstance.Status == notAvailable {
 			numberWithErrors++
 		} else {
 			numberWithoutErrors++
@@ -33,7 +45,7 @@ func (o ObjectInstanceServiceImpl) GetStatusForObjectId(id string) (int, error) 
 	if numberWithErrors == 0 {
 		return 0, nil
 	} else {
-		if numberWithErrors == len(objectInstances) {
+		if numberWithErrors == len(objectInstances)-numberToDelete {
 			return 2, nil
 		} else {
 			return 1, nil

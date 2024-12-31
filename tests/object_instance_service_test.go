@@ -7,6 +7,14 @@ import (
 	"testing"
 )
 
+const (
+	errorStatus  = "error"
+	okStatus     = "ok"
+	deleteStatus = "to delete"
+	notAvailable = "not available"
+	newStatus    = "new"
+)
+
 type ObjectInstanceRepositoryMock struct {
 	mock.Mock
 }
@@ -34,9 +42,9 @@ func (o ObjectInstanceRepositoryMock) GetObjectInstanceById(id string) (models.O
 func (o ObjectInstanceRepositoryMock) GetObjectInstancesByObjectId(id string) ([]models.ObjectInstance, error) {
 	args := o.Called(id)
 
-	objectInstances0 := []models.ObjectInstance{{Status: "new"}, {Status: "new"}, {Status: "new"}}
-	objectInstances1 := []models.ObjectInstance{{Status: "error"}, {Status: "new"}, {Status: "new"}}
-	objectInstances2 := []models.ObjectInstance{{Status: "error"}, {Status: "error"}, {Status: "error"}}
+	objectInstances0 := []models.ObjectInstance{{Status: newStatus}, {Status: newStatus}, {Status: newStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
+	objectInstances1 := []models.ObjectInstance{{Status: errorStatus}, {Status: newStatus}, {Status: newStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
+	objectInstances2 := []models.ObjectInstance{{Status: errorStatus}, {Status: errorStatus}, {Status: errorStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
 
 	switch id {
 	case "1":
