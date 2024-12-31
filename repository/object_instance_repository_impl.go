@@ -41,7 +41,7 @@ func (o *objectInstanceRepositoryImpl) CreateObjectInstancePreparedStatements() 
 			" %s.object o, %s.object_instance oi"+
 			" where c.id = o.collection_id"+
 			" and o.id = oi.object_id"+
-			" and oi.status = 'error'"+
+			" and (oi.status = 'error' or oi.status = 'not available')"+
 			" and o.collection_id = $1", "%s", o.Schema, -1),
 	}
 	var err error
