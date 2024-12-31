@@ -40,7 +40,7 @@ func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn)
 			" object o, object_instance oi" +
 			" where c.id = o.collection_id" +
 			" and o.id = oi.object_id" +
-			" and oi.status = 'error'" +
+			" and (oi.status = 'error' or oi.status = 'not available')" +
 			" and o.collection_id = $1",
 	}
 	for name, sqlStm := range preparedStatements {
