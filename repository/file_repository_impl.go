@@ -311,7 +311,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		if pronomWithoutSpaces == "" {
 			pronom.Id.String = UNKNOWN
 		}
-		if pronomWithoutSpaces == UNKNOWN {
+		if pronom.Id.String == UNKNOWN {
 			if emptyPronom.Id.String == "" {
 				emptyPronom = pronom
 			} else {

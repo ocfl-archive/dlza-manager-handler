@@ -5,6 +5,7 @@ import (
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/ocfl-archive/dlza-manager-handler/config"
 	pb "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
+	"github.com/ocfl-archive/dlza-manager-handler/models"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager-handler/server"
 	"github.com/ocfl-archive/dlza-manager-handler/service"
@@ -114,6 +115,11 @@ func main() {
 	}
 	uploadService := service.UploaderServiceImpl{CollectionRepository: collectionRepository, TenantRepository: tenantRepository}
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
+
+	obje, cou, err := fileRepository.GetPronomsForCollectionId(models.Pagination{Id: "ad5cee64-9e64-4690-a87e-9058483c7db9", SortDirection: "ID", Take: 10})
+
+	_ = obje
+	_ = cou
 
 	transactionRepository := repository.NewTransactionRepository(db, conf.Handler.Database.Schema)
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(db, conf.Handler.Database.Schema)
