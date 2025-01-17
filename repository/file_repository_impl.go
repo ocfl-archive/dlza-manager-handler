@@ -17,6 +17,7 @@ const (
 	CreateFile  = "CreateFile"
 	DeleteFile  = "DeleteFile"
 	GetFileById = "GetFileById"
+	UNKNOWN     = "UNKNOWN"
 )
 
 type FileRepositoryImpl struct {
@@ -247,7 +248,9 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 
 	var totalItems int
 	mimeTypes := make([]models.MimeType, 0)
-	for rows.Next() {
+	emptyMimeType := models.MimeType{}
+	notLast := rows.Next()
+	for notLast {
 		mimeType := models.MimeType{}
 		var id zeronull.Text
 		err := rows.Scan(&id, &mimeType.FileCount, &totalItems)
@@ -255,7 +258,22 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
 		mimeType.Id = string(id)
-		mimeTypes = append(mimeTypes, mimeType)
+		if mimeType.Id == "" {
+			mimeType.Id = UNKNOWN
+		}
+		if mimeType.Id == UNKNOWN {
+			if emptyMimeType.Id == "" {
+				emptyMimeType = mimeType
+			} else {
+				emptyMimeType.FileCount = mimeType.FileCount + emptyMimeType.FileCount
+			}
+		}
+		if mimeType.Id != UNKNOWN {
+			mimeTypes = append(mimeTypes, mimeType)
+		}
+		if !rows.Next() && emptyMimeType.Id != "" {
+			mimeTypes = append(mimeTypes, emptyMimeType)
+		}
 	}
 	return mimeTypes, totalItems, nil
 }
@@ -293,7 +311,9 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 
 	var totalItems int
 	pronoms := make([]models.Pronom, 0)
-	for rows.Next() {
+	emptyPronom := models.Pronom{}
+	notLast := rows.Next()
+	for notLast {
 		pronom := models.Pronom{}
 		var id zeronull.Text
 		err := rows.Scan(&id, &pronom.FileCount, &totalItems)
@@ -302,7 +322,22 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		}
 		pronomWithoutSpaces := strings.Replace(string(id), " ", "", -1)
 		pronom.Id = pronomWithoutSpaces
-		pronoms = append(pronoms, pronom)
+		if pronom.Id == "" {
+			pronom.Id = UNKNOWN
+		}
+		if pronom.Id == UNKNOWN {
+			if emptyPronom.Id == "" {
+				emptyPronom = pronom
+			} else {
+				emptyPronom.FileCount = pronom.FileCount + emptyPronom.FileCount
+			}
+		}
+		if pronom.Id != UNKNOWN {
+			pronoms = append(pronoms, pronom)
+		}
+		if !rows.Next() && emptyPronom.Id != "" {
+			pronoms = append(pronoms, emptyPronom)
+		}
 	}
 	return pronoms, totalItems, nil
 }
