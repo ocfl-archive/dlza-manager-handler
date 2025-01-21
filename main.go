@@ -197,6 +197,7 @@ func main() {
 	transactionRepository := repository.NewTransactionRepository(conn)
 
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
+	tenantService := service.NewTenantService(tenantRepository)
 
 	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository}
 
@@ -208,13 +209,13 @@ func main() {
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,
 		RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, UploaderService: uploadService, Logger: logger})
-	pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: service.NewTenantService(tenantRepository),
+	pb.RegisterClerkHandlerServiceServer(grpcServer, &server.ClerkHandlerServer{TenantService: tenantService,
 		CollectionRepository: collectionRepository, StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, ObjectInstanceRepository: objectInstanceRepository,
 		FileRepository: fileRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, StoragePartitionRepository: storagePartitionRepository, StatusRepository: statusRepository,
 		ObjectInstanceService: objectInstanceService, TenantRepository: tenantRepository, StorageLocationService: storageLocationService, RefreshMaterializedViewsRepository: refreshMaterializedViewRepository, Logger: logger})
 
 	pb.RegisterCheckerHandlerServiceServer(grpcServer, &server.CheckerHandlerServer{ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository,
-		StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, CollectionRepository: collectionRepository, Logger: logger})
+		StorageLocationRepository: storageLocationRepository, ObjectRepository: objectRepository, CollectionRepository: collectionRepository, TenantService: tenantService, Logger: logger})
 
 	grpcServer.Startup()
 	done := make(chan os.Signal, 1)

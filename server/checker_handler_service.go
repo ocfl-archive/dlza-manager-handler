@@ -18,6 +18,7 @@ type CheckerHandlerServer struct {
 	CollectionRepository          repository.CollectionRepository
 	ObjectInstanceCheckRepository repository.ObjectInstanceCheckRepository
 	StorageLocationRepository     repository.StorageLocationRepository
+	TenantService                 service.TenantService
 	Logger                        zLogger.ZLogger
 }
 
@@ -124,4 +125,70 @@ func (c *CheckerHandlerServer) GetRelevantStorageLocationsByObjectId(ctx context
 		storageLocationsPb = append(storageLocationsPb, storageLocationPb)
 	}
 	return &pb.StorageLocations{StorageLocations: storageLocationsPb}, nil
+}
+
+func (c *CheckerHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, tenantId *pb.Id) (*pb.StorageLocations, error) {
+	storageLocations, err := c.StorageLocationRepository.GetStorageLocationsByTenantId(tenantId.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get storageLocations by tenant with id: '%v'", tenantId.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%v'", tenantId.Id)
+	}
+	var storageLocationsPb []*pb.StorageLocation
+
+	for _, storageLocation := range storageLocations {
+		storageLocationsPb = append(storageLocationsPb, mapper.ConvertToStorageLocationPb(storageLocation))
+	}
+
+	return &pb.StorageLocations{StorageLocations: storageLocationsPb}, nil
+}
+
+func (c *CheckerHandlerServer) GetCollectionsByTenantId(ctx context.Context, id *pb.Id) (*pb.Collections, error) {
+	collections, err := c.CollectionRepository.GetCollectionsByTenantId(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get collections by tenant with id: '%v'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%v'", id.Id)
+	}
+	var collectionsPb []*pb.Collection
+
+	for _, collection := range collections {
+		collectionsPb = append(collectionsPb, mapper.ConvertToCollectionPb(collection))
+	}
+
+	return &pb.Collections{Collections: collectionsPb}, nil
+}
+
+func (c *CheckerHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoParam) (*pb.Tenants, error) {
+	tenants, err := c.TenantService.FindAllTenants()
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get all tenants")
+		return nil, errors.Wrapf(err, "Could not get all tenants")
+	}
+	var tenantsPb []*pb.Tenant
+
+	for _, tenant := range tenants {
+		tenantsPb = append(tenantsPb, mapper.ConvertToTenantPb(tenant))
+	}
+
+	return &pb.Tenants{Tenants: tenantsPb}, nil
+}
+
+func (c *CheckerHandlerServer) GetObjectsByCollectionAlias(ctx context.Context, collectionAlias *pb.CollectionAlias) (*pb.Objects, error) {
+
+	id, err := c.CollectionRepository.GetCollectionIdByAlias(collectionAlias.CollectionAlias)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%s'", err)
+		return nil, errors.Wrapf(err, "Could not get collectionId for collection with alias '%s'", collectionAlias.CollectionAlias)
+	}
+
+	objects, err := c.ObjectRepository.GetObjectsByCollectionId(id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get objects for collection with alias '%s'", err)
+		return nil, errors.Wrapf(err, "Could not get objects for collection with alias '%s'", collectionAlias.CollectionAlias)
+	}
+	objectsPb := make([]*pb.Object, 0)
+	for _, object := range objects {
+		objectPb := mapper.ConvertToObjectPb(object)
+		objectsPb = append(objectsPb, objectPb)
+	}
+	return &pb.Objects{Objects: objectsPb}, nil
 }

@@ -23,6 +23,10 @@ service CheckerHandlerService {
   rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
   rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
   rpc GetRelevantStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations) {};
+  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
+  rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
+  rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
+  rpc GetObjectsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.Objects);
 }
 
 service StorageHandlerHandlerService {

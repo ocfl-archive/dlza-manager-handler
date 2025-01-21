@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	"github.com/ocfl-archive/dlza-manager/models"
-	"log"
 )
 
 type TenantServiceImpl struct {
@@ -16,19 +15,15 @@ func NewTenantService(tenantRepository repository.TenantRepository) TenantServic
 
 func (t *TenantServiceImpl) UpdateTenant(tenant models.Tenant) error {
 	_, err := t.TenantRepository.FindTenantById(tenant.Id)
-
 	if err != nil {
-		log.Printf("err message: %v", err)
 		return err
 	}
-
 	return t.TenantRepository.UpdateTenant(tenant)
 }
 
 func (t *TenantServiceImpl) DeleteTenant(id string) error {
 	_, err := t.TenantRepository.FindTenantById(id)
 	if err != nil {
-		log.Printf("err message: %v", err)
 		return err
 	}
 	return t.TenantRepository.DeleteTenant(id)

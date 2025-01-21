@@ -31,6 +31,10 @@ const (
 	CheckerHandlerService_GetObjectsInstancesByObjectId_FullMethodName             = "/handlerproto.CheckerHandlerService/GetObjectsInstancesByObjectId"
 	CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName      = "/handlerproto.CheckerHandlerService/GetStorageLocationByObjectInstanceId"
 	CheckerHandlerService_GetRelevantStorageLocationsByObjectId_FullMethodName     = "/handlerproto.CheckerHandlerService/GetRelevantStorageLocationsByObjectId"
+	CheckerHandlerService_FindAllTenants_FullMethodName                            = "/handlerproto.CheckerHandlerService/FindAllTenants"
+	CheckerHandlerService_GetCollectionsByTenantId_FullMethodName                  = "/handlerproto.CheckerHandlerService/GetCollectionsByTenantId"
+	CheckerHandlerService_GetStorageLocationsByTenantId_FullMethodName             = "/handlerproto.CheckerHandlerService/GetStorageLocationsByTenantId"
+	CheckerHandlerService_GetObjectsByCollectionAlias_FullMethodName               = "/handlerproto.CheckerHandlerService/GetObjectsByCollectionAlias"
 )
 
 // CheckerHandlerServiceClient is the client API for CheckerHandlerService service.
@@ -46,6 +50,10 @@ type CheckerHandlerServiceClient interface {
 	GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 	GetRelevantStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
+	FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error)
+	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
+	GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
+	GetObjectsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
 }
 
 type checkerHandlerServiceClient struct {
@@ -137,6 +145,42 @@ func (c *checkerHandlerServiceClient) GetRelevantStorageLocationsByObjectId(ctx 
 	return out, nil
 }
 
+func (c *checkerHandlerServiceClient) FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error) {
+	out := new(dlzamanagerproto.Tenants)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_FindAllTenants_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkerHandlerServiceClient) GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error) {
+	out := new(dlzamanagerproto.Collections)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetCollectionsByTenantId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkerHandlerServiceClient) GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
+	out := new(dlzamanagerproto.StorageLocations)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetStorageLocationsByTenantId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkerHandlerServiceClient) GetObjectsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error) {
+	out := new(dlzamanagerproto.Objects)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectsByCollectionAlias_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CheckerHandlerServiceServer is the server API for CheckerHandlerService service.
 // All implementations must embed UnimplementedCheckerHandlerServiceServer
 // for forward compatibility
@@ -150,6 +194,10 @@ type CheckerHandlerServiceServer interface {
 	GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
 	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	GetRelevantStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
+	FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error)
+	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
+	GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
+	GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error)
 	mustEmbedUnimplementedCheckerHandlerServiceServer()
 }
 
@@ -183,6 +231,18 @@ func (UnimplementedCheckerHandlerServiceServer) GetStorageLocationByObjectInstan
 }
 func (UnimplementedCheckerHandlerServiceServer) GetRelevantStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRelevantStorageLocationsByObjectId not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindAllTenants not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionsByTenantId not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByTenantId not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsByCollectionAlias not implemented")
 }
 func (UnimplementedCheckerHandlerServiceServer) mustEmbedUnimplementedCheckerHandlerServiceServer() {}
 
@@ -359,6 +419,78 @@ func _CheckerHandlerService_GetRelevantStorageLocationsByObjectId_Handler(srv in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckerHandlerService_FindAllTenants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.NoParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).FindAllTenants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_FindAllTenants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).FindAllTenants(ctx, req.(*dlzamanagerproto.NoParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetCollectionsByTenantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetCollectionsByTenantId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetCollectionsByTenantId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetCollectionsByTenantId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetStorageLocationsByTenantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetStorageLocationsByTenantId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetStorageLocationsByTenantId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetStorageLocationsByTenantId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetObjectsByCollectionAlias_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.CollectionAlias)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetObjectsByCollectionAlias(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetObjectsByCollectionAlias_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetObjectsByCollectionAlias(ctx, req.(*dlzamanagerproto.CollectionAlias))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CheckerHandlerService_ServiceDesc is the grpc.ServiceDesc for CheckerHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -401,6 +533,22 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRelevantStorageLocationsByObjectId",
 			Handler:    _CheckerHandlerService_GetRelevantStorageLocationsByObjectId_Handler,
+		},
+		{
+			MethodName: "FindAllTenants",
+			Handler:    _CheckerHandlerService_FindAllTenants_Handler,
+		},
+		{
+			MethodName: "GetCollectionsByTenantId",
+			Handler:    _CheckerHandlerService_GetCollectionsByTenantId_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationsByTenantId",
+			Handler:    _CheckerHandlerService_GetStorageLocationsByTenantId_Handler,
+		},
+		{
+			MethodName: "GetObjectsByCollectionAlias",
+			Handler:    _CheckerHandlerService_GetObjectsByCollectionAlias_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
