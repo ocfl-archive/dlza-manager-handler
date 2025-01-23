@@ -2045,6 +2045,8 @@ github.com/je4/certloader/v2 v2.0.2 h1:g57XQncugW60dVe5NWP5LSJSjkcFKr/+B2jGHQywS
 github.com/je4/certloader/v2 v2.0.2/go.mod h1:4rAX586yVLMJ/axqANfel2Yloju5DlgM8xicVeWf2fY=
 github.com/je4/certloader/v2 v2.0.8 h1:S433sXlpRlTlw7y3Ux5koyObmB7yhaHZYq4RMq0yxt4=
 github.com/je4/certloader/v2 v2.0.8/go.mod h1:H28UN8ctNEHevpBS0DyzOKst/5NNiySgOzDavlC/ZI4=
+github.com/je4/filesystem/v2 v2.0.4 h1:GjZdRkNgA3xBUrCO3kZhNNclMKQg+yT4vIHfXSNemqo=
+github.com/je4/filesystem/v2 v2.0.4/go.mod h1:3bKTjGHo8BlD6q6Znev9PLMAhTBpChONNFaR2JMytwI=
 github.com/je4/miniresolver/v2 v2.0.2 h1:TI0kogvS2JZp+aBd/SUJI157hb5XHQRWsUH31EnkeLE=
 github.com/je4/miniresolver/v2 v2.0.2/go.mod h1:HcHE671M6hxb31vCeyGx1WgBsqhHQvQsrN/Fijp+iPk=
 github.com/je4/trustutil/v2 v2.0.9 h1:f2hl/PRzA/9kPQUICePyBI1zh+Yp3KPYcBQRT0MgVkU=
@@ -2251,6 +2253,8 @@ github.com/minio/operator v0.0.0-20230228004026-ad024a9dffe5/go.mod h1:ZU+W2i3O3
 github.com/minio/pkg v1.5.4/go.mod h1:2MOaRFdmFKULD+uOLc3qHLGTQTuxCNPKNPfLBTxC8CA=
 github.com/minio/sha256-simd v0.1.1/go.mod h1:B5e1o+1/KgNmWrSQK08Y6Z1Vb5pwIktudl0J58iy0KM=
 github.com/minio/sha256-simd v1.0.0/go.mod h1:OuYzVNI5vcoYIAmbIvHPl3N3jUzVedXbKy5RFepssQM=
+github.com/minio/sha256-simd v1.0.1 h1:6kaan5IFmwTNynnKKpDHe6FWHohJOHhCPchzK49dzMM=
+github.com/minio/sha256-simd v1.0.1/go.mod h1:Pz6AKMiUdngCLpeTL/RJY1M9rUuPMYujV5xJjtbRSN8=
 github.com/mitchellh/cli v1.0.0 h1:iGBIsUe3+HZ/AD/Vd7DErOt5sU9fa8Uj7A2s1aggv1Y=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/copystructure v1.0.0 h1:Laisrj+bAB6b/yJwB5Bt3ITZhGJdqmxquMKeZ+mmkFQ=
@@ -2326,6 +2330,8 @@ github.com/ocfl-archive/dlza-manager v0.0.3 h1:KEN7DnrRmr7sMc5lHiuHeUVOFgO7Z2UWP
 github.com/ocfl-archive/dlza-manager v0.0.3/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
 github.com/ocfl-archive/dlza-manager v0.0.5 h1:fMtdQNfWRy/aDIeBkKk3Nd7fNqRuyVUmx/SCUVPjrxI=
 github.com/ocfl-archive/dlza-manager v0.0.5/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
+github.com/ocfl-archive/dlza-manager v0.0.6 h1:rDqLadXd1zi57z/FZaBWYyX5WO6iOU5e9I15Q5v2NC8=
+github.com/ocfl-archive/dlza-manager v0.0.6/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
 github.com/oklog/oklog v0.3.2/go.mod h1:FCV+B7mhrz4o+ueLpx+KqkyXRGMWOYEvfiXtdGtbWGs=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
