@@ -15,4 +15,6 @@ type CollectionRepository interface {
 	GetCollectionById(id string) (models.Collection, error)
 	GetCollectionByIdFromMv(id string) (models.Collection, error)
 	GetSizeForAllObjectInstancesByCollectionId(id string) (int64, error)
+	GetExistingStorageLocationsCombinationsForCollectionId(id string) ([]models.CollectionWithExistingStorageLocationsCombinations, error)
+	GetAmountOfObjectsInCollection(id string) (int64, error)
 }

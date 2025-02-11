@@ -105,6 +105,49 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	return object, nil
 }
 
+func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string, ids []string, timeBefore string) (models.Object, error) {
+	firstCondition := ""
+	if len(ids) != 0 {
+		firstCondition = fmt.Sprintf("and o.id not in ('%s')", strings.Join(ids, "','"))
+	}
+	var object models.Object
+	var holding zeronull.Text
+	var expiration pgtype.Date
+	var lastChanged time.Time
+	var created time.Time
+
+	query := fmt.Sprintf(`select signature, sets, identifiers, title, alternative_titles, description, keywords,
+"references", ingest_workflow, "user", address, o.created, last_changed, o."size",
+o.id, collection_id, checksum, authors, holding, expiration, head, versions from object o
+inner join object_instance oi on o.id = oi.object_id
+left join (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
+	FROM object_instance_check) oic
+	where oic.number_of_row = 1) oicf on oicf.object_instance_id = oi.id
+where o.collection_id = $1
+%s
+and oi.status not in ('to delete', 'error', 'not available')
+and (oicf.checktime < now() - interval %s
+or oicf.id is null)
+limit 1`, firstCondition, timeBefore)
+
+	err := o.Db.QueryRow(context.Background(), query, collectionId).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThan")
+	}
+	object.Holding = string(holding)
+	if expiration.Valid {
+		object.Expiration = expiration.Time.Format(Layout)
+	} else {
+		object.Expiration = ""
+	}
+	object.Expiration = expiration.Time.Format(Layout)
+	object.LastChanged = lastChanged.Format(Layout)
+	object.Created = created.Format(Layout)
+	return object, nil
+}
+
 func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error) {
 	var object models.Object
 	var expiration pgtype.Date

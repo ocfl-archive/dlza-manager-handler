@@ -78,6 +78,15 @@ func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*p
 	return mapper.ConvertToObjectPb(object), nil
 }
 
+func (c *CheckerHandlerServer) GetObjectExceptListOlderThan(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
+	object, err := c.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.Interval)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for ids: %v", idsWithInterval.Ids, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThan ids: %v", idsWithInterval.Ids)
+	}
+	return mapper.ConvertToObjectPb(object), nil
+}
+
 func (c *CheckerHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := c.ObjectInstanceRepository.GetObjectInstancesByObjectId(id.Id)
 	if err != nil {
@@ -191,4 +200,28 @@ func (c *CheckerHandlerServer) GetObjectsByCollectionAlias(ctx context.Context, 
 		objectsPb = append(objectsPb, objectPb)
 	}
 	return &pb.Objects{Objects: objectsPb}, nil
+}
+
+func (c *CheckerHandlerServer) GetAmountOfObjectsInCollection(ctx context.Context, id *pb.Id) (*pb.AmountAndSize, error) {
+	amountOfObjects, err := c.CollectionRepository.GetAmountOfObjectsInCollection(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get amount of objects for collection with id %s", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get amount of objects for collection with id %s", id.Id)
+	}
+
+	return &pb.AmountAndSize{Amount: amountOfObjects}, nil
+}
+
+func (c *CheckerHandlerServer) GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, id *pb.Id) (*pb.StorageLocationsCombinationsForCollections, error) {
+	collections, err := c.CollectionRepository.GetExistingStorageLocationsCombinationsForCollectionId(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not GetExistingStorageLocationsCombinationsForCollectionId for collection with ID: '%s'", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not GetExistingStorageLocationsCombinationsForCollectionId for collection with ID: '%s'", id.Id)
+	}
+	var collectionsPb []*pb.StorageLocationsCombinationsForCollection
+
+	for _, collection := range collections {
+		collectionsPb = append(collectionsPb, mapper.ConvertStorageLocationsCombinationsForCollection(collection))
+	}
+	return &pb.StorageLocationsCombinationsForCollections{StorageLocationsCombinationsForCollections: collectionsPb}, nil
 }

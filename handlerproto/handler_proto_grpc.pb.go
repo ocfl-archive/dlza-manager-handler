@@ -22,19 +22,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CheckerHandlerService_Ping_FullMethodName                                      = "/handlerproto.CheckerHandlerService/Ping"
-	CheckerHandlerService_GetAllObjectInstances_FullMethodName                     = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
-	CheckerHandlerService_UpdateObjectInstance_FullMethodName                      = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
-	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName                 = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
-	CheckerHandlerService_GetObjectById_FullMethodName                             = "/handlerproto.CheckerHandlerService/GetObjectById"
-	CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName = "/handlerproto.CheckerHandlerService/GetObjectInstanceChecksByObjectInstanceId"
-	CheckerHandlerService_GetObjectsInstancesByObjectId_FullMethodName             = "/handlerproto.CheckerHandlerService/GetObjectsInstancesByObjectId"
-	CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName      = "/handlerproto.CheckerHandlerService/GetStorageLocationByObjectInstanceId"
-	CheckerHandlerService_GetRelevantStorageLocationsByObjectId_FullMethodName     = "/handlerproto.CheckerHandlerService/GetRelevantStorageLocationsByObjectId"
-	CheckerHandlerService_FindAllTenants_FullMethodName                            = "/handlerproto.CheckerHandlerService/FindAllTenants"
-	CheckerHandlerService_GetCollectionsByTenantId_FullMethodName                  = "/handlerproto.CheckerHandlerService/GetCollectionsByTenantId"
-	CheckerHandlerService_GetStorageLocationsByTenantId_FullMethodName             = "/handlerproto.CheckerHandlerService/GetStorageLocationsByTenantId"
-	CheckerHandlerService_GetObjectsByCollectionAlias_FullMethodName               = "/handlerproto.CheckerHandlerService/GetObjectsByCollectionAlias"
+	CheckerHandlerService_Ping_FullMethodName                                                   = "/handlerproto.CheckerHandlerService/Ping"
+	CheckerHandlerService_GetAllObjectInstances_FullMethodName                                  = "/handlerproto.CheckerHandlerService/getAllObjectInstances"
+	CheckerHandlerService_UpdateObjectInstance_FullMethodName                                   = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
+	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName                              = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
+	CheckerHandlerService_GetObjectById_FullMethodName                                          = "/handlerproto.CheckerHandlerService/GetObjectById"
+	CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName              = "/handlerproto.CheckerHandlerService/GetObjectInstanceChecksByObjectInstanceId"
+	CheckerHandlerService_GetObjectsInstancesByObjectId_FullMethodName                          = "/handlerproto.CheckerHandlerService/GetObjectsInstancesByObjectId"
+	CheckerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName                   = "/handlerproto.CheckerHandlerService/GetStorageLocationByObjectInstanceId"
+	CheckerHandlerService_GetRelevantStorageLocationsByObjectId_FullMethodName                  = "/handlerproto.CheckerHandlerService/GetRelevantStorageLocationsByObjectId"
+	CheckerHandlerService_FindAllTenants_FullMethodName                                         = "/handlerproto.CheckerHandlerService/FindAllTenants"
+	CheckerHandlerService_GetCollectionsByTenantId_FullMethodName                               = "/handlerproto.CheckerHandlerService/GetCollectionsByTenantId"
+	CheckerHandlerService_GetStorageLocationsByTenantId_FullMethodName                          = "/handlerproto.CheckerHandlerService/GetStorageLocationsByTenantId"
+	CheckerHandlerService_GetObjectsByCollectionAlias_FullMethodName                            = "/handlerproto.CheckerHandlerService/GetObjectsByCollectionAlias"
+	CheckerHandlerService_GetAmountOfObjectsInCollection_FullMethodName                         = "/handlerproto.CheckerHandlerService/GetAmountOfObjectsInCollection"
+	CheckerHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName = "/handlerproto.CheckerHandlerService/GetExistingStorageLocationsCombinationsForCollectionId"
+	CheckerHandlerService_GetObjectExceptListOlderThan_FullMethodName                           = "/handlerproto.CheckerHandlerService/GetObjectExceptListOlderThan"
 )
 
 // CheckerHandlerServiceClient is the client API for CheckerHandlerService service.
@@ -54,6 +57,9 @@ type CheckerHandlerServiceClient interface {
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetObjectsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
+	GetAmountOfObjectsInCollection(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error)
+	GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
+	GetObjectExceptListOlderThan(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 }
 
 type checkerHandlerServiceClient struct {
@@ -181,6 +187,33 @@ func (c *checkerHandlerServiceClient) GetObjectsByCollectionAlias(ctx context.Co
 	return out, nil
 }
 
+func (c *checkerHandlerServiceClient) GetAmountOfObjectsInCollection(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error) {
+	out := new(dlzamanagerproto.AmountAndSize)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetAmountOfObjectsInCollection_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkerHandlerServiceClient) GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error) {
+	out := new(dlzamanagerproto.StorageLocationsCombinationsForCollections)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkerHandlerServiceClient) GetObjectExceptListOlderThan(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
+	out := new(dlzamanagerproto.Object)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectExceptListOlderThan_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CheckerHandlerServiceServer is the server API for CheckerHandlerService service.
 // All implementations must embed UnimplementedCheckerHandlerServiceServer
 // for forward compatibility
@@ -198,6 +231,9 @@ type CheckerHandlerServiceServer interface {
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
 	GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error)
+	GetAmountOfObjectsInCollection(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error)
+	GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
+	GetObjectExceptListOlderThan(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error)
 	mustEmbedUnimplementedCheckerHandlerServiceServer()
 }
 
@@ -243,6 +279,15 @@ func (UnimplementedCheckerHandlerServiceServer) GetStorageLocationsByTenantId(co
 }
 func (UnimplementedCheckerHandlerServiceServer) GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsByCollectionAlias not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetAmountOfObjectsInCollection(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAmountOfObjectsInCollection not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExistingStorageLocationsCombinationsForCollectionId not implemented")
+}
+func (UnimplementedCheckerHandlerServiceServer) GetObjectExceptListOlderThan(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectExceptListOlderThan not implemented")
 }
 func (UnimplementedCheckerHandlerServiceServer) mustEmbedUnimplementedCheckerHandlerServiceServer() {}
 
@@ -491,6 +536,60 @@ func _CheckerHandlerService_GetObjectsByCollectionAlias_Handler(srv interface{},
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckerHandlerService_GetAmountOfObjectsInCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetAmountOfObjectsInCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetAmountOfObjectsInCollection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetAmountOfObjectsInCollection(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetExistingStorageLocationsCombinationsForCollectionId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetExistingStorageLocationsCombinationsForCollectionId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckerHandlerService_GetObjectExceptListOlderThan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.IdsWithSQLInterval)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckerHandlerServiceServer).GetObjectExceptListOlderThan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckerHandlerService_GetObjectExceptListOlderThan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckerHandlerServiceServer).GetObjectExceptListOlderThan(ctx, req.(*dlzamanagerproto.IdsWithSQLInterval))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CheckerHandlerService_ServiceDesc is the grpc.ServiceDesc for CheckerHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -549,6 +648,18 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectsByCollectionAlias",
 			Handler:    _CheckerHandlerService_GetObjectsByCollectionAlias_Handler,
+		},
+		{
+			MethodName: "GetAmountOfObjectsInCollection",
+			Handler:    _CheckerHandlerService_GetAmountOfObjectsInCollection_Handler,
+		},
+		{
+			MethodName: "GetExistingStorageLocationsCombinationsForCollectionId",
+			Handler:    _CheckerHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_Handler,
+		},
+		{
+			MethodName: "GetObjectExceptListOlderThan",
+			Handler:    _CheckerHandlerService_GetObjectExceptListOlderThan_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -3214,8 +3325,17 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	DispatcherHandlerService_Ping_FullMethodName                                  = "/handlerproto.DispatcherHandlerService/Ping"
-	DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName = "/handlerproto.DispatcherHandlerService/GetLowQualityCollectionsWithObjectIds"
+	DispatcherHandlerService_Ping_FullMethodName                                                   = "/handlerproto.DispatcherHandlerService/Ping"
+	DispatcherHandlerService_FindAllTenants_FullMethodName                                         = "/handlerproto.DispatcherHandlerService/FindAllTenants"
+	DispatcherHandlerService_UpdateObjectInstance_FullMethodName                                   = "/handlerproto.DispatcherHandlerService/UpdateObjectInstance"
+	DispatcherHandlerService_GetObjectsInstancesByObjectId_FullMethodName                          = "/handlerproto.DispatcherHandlerService/GetObjectsInstancesByObjectId"
+	DispatcherHandlerService_CreateObjectInstanceCheck_FullMethodName                              = "/handlerproto.DispatcherHandlerService/CreateObjectInstanceCheck"
+	DispatcherHandlerService_GetStorageLocationsByTenantId_FullMethodName                          = "/handlerproto.DispatcherHandlerService/GetStorageLocationsByTenantId"
+	DispatcherHandlerService_GetObjectExceptListOlderThan_FullMethodName                           = "/handlerproto.DispatcherHandlerService/GetObjectExceptListOlderThan"
+	DispatcherHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName                   = "/handlerproto.DispatcherHandlerService/GetStorageLocationByObjectInstanceId"
+	DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName = "/handlerproto.DispatcherHandlerService/GetExistingStorageLocationsCombinationsForCollectionId"
+	DispatcherHandlerService_GetCollectionsByTenantId_FullMethodName                               = "/handlerproto.DispatcherHandlerService/GetCollectionsByTenantId"
+	DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName                  = "/handlerproto.DispatcherHandlerService/GetLowQualityCollectionsWithObjectIds"
 )
 
 // DispatcherHandlerServiceClient is the client API for DispatcherHandlerService service.
@@ -3223,6 +3343,15 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispatcherHandlerServiceClient interface {
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
+	FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error)
+	UpdateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
+	GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
+	CreateObjectInstanceCheck(ctx context.Context, in *dlzamanagerproto.ObjectInstanceCheck, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
+	GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
+	GetObjectExceptListOlderThan(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
+	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
+	GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
+	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error)
 }
 
@@ -3243,6 +3372,87 @@ func (c *dispatcherHandlerServiceClient) Ping(ctx context.Context, in *emptypb.E
 	return out, nil
 }
 
+func (c *dispatcherHandlerServiceClient) FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error) {
+	out := new(dlzamanagerproto.Tenants)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_FindAllTenants_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) UpdateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error) {
+	out := new(dlzamanagerproto.NoParam)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_UpdateObjectInstance_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error) {
+	out := new(dlzamanagerproto.ObjectInstances)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetObjectsInstancesByObjectId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) CreateObjectInstanceCheck(ctx context.Context, in *dlzamanagerproto.ObjectInstanceCheck, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error) {
+	out := new(dlzamanagerproto.NoParam)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_CreateObjectInstanceCheck_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
+	out := new(dlzamanagerproto.StorageLocations)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetStorageLocationsByTenantId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetObjectExceptListOlderThan(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
+	out := new(dlzamanagerproto.Object)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetObjectExceptListOlderThan_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error) {
+	out := new(dlzamanagerproto.StorageLocation)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error) {
+	out := new(dlzamanagerproto.StorageLocationsCombinationsForCollections)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error) {
+	out := new(dlzamanagerproto.Collections)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetCollectionsByTenantId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *dispatcherHandlerServiceClient) GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error) {
 	out := new(dlzamanagerproto.CollectionAliases)
 	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName, in, out, opts...)
@@ -3257,6 +3467,15 @@ func (c *dispatcherHandlerServiceClient) GetLowQualityCollectionsWithObjectIds(c
 // for forward compatibility
 type DispatcherHandlerServiceServer interface {
 	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
+	FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error)
+	UpdateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.NoParam, error)
+	GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
+	CreateObjectInstanceCheck(context.Context, *dlzamanagerproto.ObjectInstanceCheck) (*dlzamanagerproto.NoParam, error)
+	GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
+	GetObjectExceptListOlderThan(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error)
+	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
+	GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
+	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
@@ -3267,6 +3486,33 @@ type UnimplementedDispatcherHandlerServiceServer struct {
 
 func (UnimplementedDispatcherHandlerServiceServer) Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindAllTenants not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) UpdateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.NoParam, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectInstance not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsInstancesByObjectId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) CreateObjectInstanceCheck(context.Context, *dlzamanagerproto.ObjectInstanceCheck) (*dlzamanagerproto.NoParam, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectInstanceCheck not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByTenantId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetObjectExceptListOlderThan(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectExceptListOlderThan not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationByObjectInstanceId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExistingStorageLocationsCombinationsForCollectionId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionsByTenantId not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLowQualityCollectionsWithObjectIds not implemented")
@@ -3303,6 +3549,168 @@ func _DispatcherHandlerService_Ping_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DispatcherHandlerService_FindAllTenants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.NoParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).FindAllTenants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_FindAllTenants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).FindAllTenants(ctx, req.(*dlzamanagerproto.NoParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_UpdateObjectInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.ObjectInstance)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).UpdateObjectInstance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_UpdateObjectInstance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).UpdateObjectInstance(ctx, req.(*dlzamanagerproto.ObjectInstance))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetObjectsInstancesByObjectId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetObjectsInstancesByObjectId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetObjectsInstancesByObjectId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetObjectsInstancesByObjectId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_CreateObjectInstanceCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.ObjectInstanceCheck)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).CreateObjectInstanceCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_CreateObjectInstanceCheck_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).CreateObjectInstanceCheck(ctx, req.(*dlzamanagerproto.ObjectInstanceCheck))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetStorageLocationsByTenantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationsByTenantId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetStorageLocationsByTenantId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationsByTenantId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetObjectExceptListOlderThan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.IdsWithSQLInterval)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetObjectExceptListOlderThan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetObjectExceptListOlderThan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetObjectExceptListOlderThan(ctx, req.(*dlzamanagerproto.IdsWithSQLInterval))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetStorageLocationByObjectInstanceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationByObjectInstanceId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetExistingStorageLocationsCombinationsForCollectionId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetExistingStorageLocationsCombinationsForCollectionId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetCollectionsByTenantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetCollectionsByTenantId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetCollectionsByTenantId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetCollectionsByTenantId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.NoParam)
 	if err := dec(in); err != nil {
@@ -3331,6 +3739,42 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _DispatcherHandlerService_Ping_Handler,
+		},
+		{
+			MethodName: "FindAllTenants",
+			Handler:    _DispatcherHandlerService_FindAllTenants_Handler,
+		},
+		{
+			MethodName: "UpdateObjectInstance",
+			Handler:    _DispatcherHandlerService_UpdateObjectInstance_Handler,
+		},
+		{
+			MethodName: "GetObjectsInstancesByObjectId",
+			Handler:    _DispatcherHandlerService_GetObjectsInstancesByObjectId_Handler,
+		},
+		{
+			MethodName: "CreateObjectInstanceCheck",
+			Handler:    _DispatcherHandlerService_CreateObjectInstanceCheck_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationsByTenantId",
+			Handler:    _DispatcherHandlerService_GetStorageLocationsByTenantId_Handler,
+		},
+		{
+			MethodName: "GetObjectExceptListOlderThan",
+			Handler:    _DispatcherHandlerService_GetObjectExceptListOlderThan_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationByObjectInstanceId",
+			Handler:    _DispatcherHandlerService_GetStorageLocationByObjectInstanceId_Handler,
+		},
+		{
+			MethodName: "GetExistingStorageLocationsCombinationsForCollectionId",
+			Handler:    _DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_Handler,
+		},
+		{
+			MethodName: "GetCollectionsByTenantId",
+			Handler:    _DispatcherHandlerService_GetCollectionsByTenantId_Handler,
 		},
 		{
 			MethodName: "GetLowQualityCollectionsWithObjectIds",

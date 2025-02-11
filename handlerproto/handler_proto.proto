@@ -27,6 +27,9 @@ service CheckerHandlerService {
   rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
   rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
   rpc GetObjectsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.Objects);
+  rpc GetAmountOfObjectsInCollection(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){};
+  rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
+  rpc GetObjectExceptListOlderThan(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
 }
 
 service StorageHandlerHandlerService {
@@ -113,5 +116,14 @@ service ClerkHandlerService {
 
 service DispatcherHandlerService {
   rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
+  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
+  rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
+  rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
+  rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
+  rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
+  rpc GetObjectExceptListOlderThan(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
+  rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
+  rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
+  rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
   rpc GetLowQualityCollectionsWithObjectIds(dlzamanagerproto.NoParam) returns (dlzamanagerproto.CollectionAliases) {};
 }

@@ -14,4 +14,5 @@ type ObjectRepository interface {
 	GetObjectsByCollectionIdPaginated(pagination models.Pagination) ([]models.Object, int, error)
 	GetResultingQualityForObject(id string) (int, error)
 	GetNeededQualityForObject(id string) (int, error)
+	GetObjectExceptListOlderThan(collectionId string, ids []string, timeBefore string) (models.Object, error)
 }

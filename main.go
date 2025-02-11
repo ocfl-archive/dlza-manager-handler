@@ -203,8 +203,7 @@ func main() {
 
 	uploadService := service.NewUploaderService(tenantRepository, collectionRepository)
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
-
-	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository, logger))
+	pb.RegisterDispatcherHandlerServiceServer(grpcServer, server.NewDispatcherHandlerServer(dispatcherRepository, tenantService, objectInstanceRepository, objectRepository, collectionRepository, storageLocationRepository, objectInstanceCheckRepository, logger))
 	pb.RegisterStorageHandlerHandlerServiceServer(grpcServer, &server.StorageHandlerHandlerServer{CollectionRepository: collectionRepository,
 		ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository, ObjectInstanceRepository: objectInstanceRepository,
 		StoragePartitionService: storagePartitionService, FileRepository: fileRepository, StatusRepository: statusRepository, TransactionRepository: transactionRepository,

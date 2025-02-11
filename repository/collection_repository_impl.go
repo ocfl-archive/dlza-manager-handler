@@ -13,15 +13,17 @@ import (
 )
 
 const (
-	CreateCollection                           = "CreateCollection"
-	DeleteCollectionById                       = "DeleteCollectionById"
-	UpdateCollection                           = "UpdateCollection"
-	GetCollectionsByTenantId                   = "GetCollectionsByTenantId"
-	GetCollectionIdByAlias                     = "GetCollectionIdByAlias"
-	GetCollectionByAlias                       = "GetCollectionByAlias"
-	GetCollectionByIdFromMv                    = "GetCollectionByIdFromMv"
-	GetCollectionById                          = "GetCollectionById"
-	GetSizeForAllObjectInstancesByCollectionId = "GetSizeForAllObjectInstancesByCollectionId"
+	CreateCollection                                       = "CreateCollection"
+	DeleteCollectionById                                   = "DeleteCollectionById"
+	UpdateCollection                                       = "UpdateCollection"
+	GetCollectionsByTenantId                               = "GetCollectionsByTenantId"
+	GetCollectionIdByAlias                                 = "GetCollectionIdByAlias"
+	GetCollectionByAlias                                   = "GetCollectionByAlias"
+	GetCollectionByIdFromMv                                = "GetCollectionByIdFromMv"
+	GetCollectionById                                      = "GetCollectionById"
+	GetSizeForAllObjectInstancesByCollectionId             = "GetSizeForAllObjectInstancesByCollectionId"
+	GetAmountOfObjectsInCollection                         = "GetAmountOfObjectsInCollection"
+	GetExistingStorageLocationsCombinationsForCollectionId = "GetExistingStorageLocationsCombinationsForCollectionId"
 )
 
 type CollectionRepositoryImpl struct {
@@ -47,6 +49,17 @@ func CreateCollectionPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 			" left join  object_instance oi" +
 			" on o.id = oi.object_id" +
 			" where o.collection_id = $1",
+		GetAmountOfObjectsInCollection: `SELECT count(*) FROM object where collection_id = $1`,
+		GetExistingStorageLocationsCombinationsForCollectionId: `SELECT col.id, col.alias, ol.locations, ol.quality, ol.price, SUM(ol.size) AS size 
+		FROM 
+			collection col, 
+			obj_loc ol
+		WHERE 
+			col.id=ol.collection_id
+		AND
+		    col.id=$1
+		GROUP BY col.id, col.alias, ol.locations, ol.quality, ol.price
+		ORDER BY size DESC`,
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -109,6 +122,34 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantId(tenantId string) ([]
 			&collection.Quality, &collection.TenantId, &collection.Id)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetCollectionsByTenantId)
+		}
+		collections = append(collections, collection)
+	}
+	return collections, nil
+}
+
+func (c *CollectionRepositoryImpl) GetAmountOfObjectsInCollection(id string) (int64, error) {
+	row := c.Db.QueryRow(context.Background(), GetAmountOfObjectsInCollection, id)
+	var amount zeronull.Int8
+	err := row.Scan(&amount)
+	if err != nil {
+		return 0, errors.Wrapf(err, "Could not execute query for method: %v", GetAmountOfObjectsInCollection)
+	}
+	return int64(amount), nil
+}
+
+func (c *CollectionRepositoryImpl) GetExistingStorageLocationsCombinationsForCollectionId(id string) ([]models.CollectionWithExistingStorageLocationsCombinations, error) {
+	rows, err := c.Db.Query(context.Background(), GetExistingStorageLocationsCombinationsForCollectionId, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetExistingStorageLocationsCombinationsForCollectionId)
+	}
+	var collections []models.CollectionWithExistingStorageLocationsCombinations
+
+	for rows.Next() {
+		var collection models.CollectionWithExistingStorageLocationsCombinations
+		err := rows.Scan(&collection.Id, &collection.Alias, &collection.LocationsIds, &collection.Quality, &collection.Price, &collection.Size)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetExistingStorageLocationsCombinationsForCollectionId)
 		}
 		collections = append(collections, collection)
 	}

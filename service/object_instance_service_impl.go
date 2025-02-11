@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	errorStatus  = "error"
-	okStatus     = "ok"
-	deleteStatus = "to delete"
-	notAvailable = "not available"
-	newStatus    = "new"
+	ErrorStatus  = "error"
+	OkStatus     = "ok"
+	DeleteStatus = "to delete"
+	NotAvailable = "not available"
+	NewStatus    = "new"
 )
 
 func NewObjectInstanceService(objectInstanceRepository repository.ObjectInstanceRepository) ObjectInstanceService {
@@ -31,11 +31,11 @@ func (o ObjectInstanceServiceImpl) GetStatusForObjectId(id string) (int, error) 
 	var numberWithoutErrors int
 	var numberToDelete int
 	for _, objectInstance := range objectInstances {
-		if objectInstance.Status == deleteStatus {
+		if objectInstance.Status == DeleteStatus {
 			numberToDelete++
 			continue
 		}
-		if objectInstance.Status == errorStatus || objectInstance.Status == notAvailable {
+		if objectInstance.Status == ErrorStatus || objectInstance.Status == NotAvailable {
 			numberWithErrors++
 		} else {
 			numberWithoutErrors++
