@@ -3335,7 +3335,7 @@ const (
 	DispatcherHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName                   = "/handlerproto.DispatcherHandlerService/GetStorageLocationByObjectInstanceId"
 	DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName = "/handlerproto.DispatcherHandlerService/GetExistingStorageLocationsCombinationsForCollectionId"
 	DispatcherHandlerService_GetCollectionsByTenantId_FullMethodName                               = "/handlerproto.DispatcherHandlerService/GetCollectionsByTenantId"
-	DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName                  = "/handlerproto.DispatcherHandlerService/GetLowQualityCollectionsWithObjectIds"
+	DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName              = "/handlerproto.DispatcherHandlerService/GetObjectInstanceChecksByObjectInstanceId"
 )
 
 // DispatcherHandlerServiceClient is the client API for DispatcherHandlerService service.
@@ -3352,7 +3352,7 @@ type DispatcherHandlerServiceClient interface {
 	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 	GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
-	GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error)
+	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 }
 
 type dispatcherHandlerServiceClient struct {
@@ -3453,9 +3453,9 @@ func (c *dispatcherHandlerServiceClient) GetCollectionsByTenantId(ctx context.Co
 	return out, nil
 }
 
-func (c *dispatcherHandlerServiceClient) GetLowQualityCollectionsWithObjectIds(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.CollectionAliases, error) {
-	out := new(dlzamanagerproto.CollectionAliases)
-	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName, in, out, opts...)
+func (c *dispatcherHandlerServiceClient) GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error) {
+	out := new(dlzamanagerproto.ObjectInstanceChecks)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3476,7 +3476,7 @@ type DispatcherHandlerServiceServer interface {
 	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
-	GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error)
+	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
 
@@ -3514,8 +3514,8 @@ func (UnimplementedDispatcherHandlerServiceServer) GetExistingStorageLocationsCo
 func (UnimplementedDispatcherHandlerServiceServer) GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCollectionsByTenantId not implemented")
 }
-func (UnimplementedDispatcherHandlerServiceServer) GetLowQualityCollectionsWithObjectIds(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.CollectionAliases, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLowQualityCollectionsWithObjectIds not implemented")
+func (UnimplementedDispatcherHandlerServiceServer) GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstanceChecksByObjectInstanceId not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) mustEmbedUnimplementedDispatcherHandlerServiceServer() {
 }
@@ -3711,20 +3711,20 @@ func _DispatcherHandlerService_GetCollectionsByTenantId_Handler(srv interface{},
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.NoParam)
+func _DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollectionsWithObjectIds(ctx, in)
+		return srv.(DispatcherHandlerServiceServer).GetObjectInstanceChecksByObjectInstanceId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_FullMethodName,
+		FullMethod: DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatcherHandlerServiceServer).GetLowQualityCollectionsWithObjectIds(ctx, req.(*dlzamanagerproto.NoParam))
+		return srv.(DispatcherHandlerServiceServer).GetObjectInstanceChecksByObjectInstanceId(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3777,8 +3777,8 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DispatcherHandlerService_GetCollectionsByTenantId_Handler,
 		},
 		{
-			MethodName: "GetLowQualityCollectionsWithObjectIds",
-			Handler:    _DispatcherHandlerService_GetLowQualityCollectionsWithObjectIds_Handler,
+			MethodName: "GetObjectInstanceChecksByObjectInstanceId",
+			Handler:    _DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

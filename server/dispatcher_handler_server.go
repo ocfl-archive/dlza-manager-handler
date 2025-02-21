@@ -9,9 +9,6 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
-	"golang.org/x/exp/maps"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository, tenantService service.TenantService,
@@ -32,26 +29,6 @@ type DispatcherHandlerServer struct {
 	ObjectInstanceRepository      repository.ObjectInstanceRepository
 	DispatcherRepository          repository.DispatcherRepository
 	Logger                        zLogger.ZLogger
-}
-
-func (d *DispatcherHandlerServer) GetLowQualityCollectionsWithObjectIds(ctx context.Context, param *pb.NoParam) (*pb.CollectionAliases, error) {
-	collectionsWithObjectIds, err := d.DispatcherRepository.GetLowQualityCollectionsWithObjectIds()
-	if err != nil {
-		d.Logger.Error().Msgf("Could not get LowQualityCollections", err)
-		return nil, status.Errorf(codes.Internal, "Could not get LowQualityCollections: %v", err)
-	}
-
-	collectionAliasesPb := make([]*pb.CollectionAlias, 0)
-	for _, collectionAlias := range maps.Keys(collectionsWithObjectIds) {
-		idsPb := make([]*pb.Id, 0)
-		for _, id := range collectionsWithObjectIds[collectionAlias] {
-			idsPb = append(idsPb, &pb.Id{Id: id})
-		}
-		collectionAliasPb := pb.CollectionAlias{CollectionAlias: collectionAlias, Ids: idsPb}
-		collectionAliasesPb = append(collectionAliasesPb, &collectionAliasPb)
-	}
-
-	return &pb.CollectionAliases{CollectionAliases: collectionAliasesPb}, nil
 }
 
 func (d *DispatcherHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoParam) (*pb.Tenants, error) {
@@ -108,10 +85,10 @@ func (d *DispatcherHandlerServer) GetStorageLocationsByTenantId(ctx context.Cont
 }
 
 func (d *DispatcherHandlerServer) GetObjectExceptListOlderThan(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
-	object, err := d.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.Interval)
+	object, err := d.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.CollectionsIds, idsWithInterval.Interval)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for ids: %v", idsWithInterval.Ids, err)
-		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThan ids: %v", idsWithInterval.Ids)
+		d.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId)
 	}
 	return mapper.ConvertToObjectPb(object), nil
 }
@@ -161,4 +138,18 @@ func (d *DispatcherHandlerServer) CreateObjectInstanceCheck(ctx context.Context,
 		return &pb.NoParam{}, errors.Wrapf(err, "Could not create object instance check")
 	}
 	return &pb.NoParam{}, nil
+}
+
+func (d *DispatcherHandlerServer) GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.ObjectInstanceChecks, error) {
+	objectInstanceChecks, err := d.ObjectInstanceCheckRepository.GetObjectInstanceChecksByObjectInstanceId(id.Id)
+	if err != nil {
+		d.Logger.Error().Msgf("Could not get objectInstanceChecks for object instance ID", err)
+		return nil, errors.Wrapf(err, "Could not get objectInstances for object instance ID")
+	}
+	objectInstanceChecksPb := make([]*pb.ObjectInstanceCheck, 0)
+	for _, objectInstanceCheck := range objectInstanceChecks {
+		objectInstanceCheckPb := mapper.ConvertToObjectInstanceCheckPb(objectInstanceCheck)
+		objectInstanceChecksPb = append(objectInstanceChecksPb, objectInstanceCheckPb)
+	}
+	return &pb.ObjectInstanceChecks{ObjectInstanceChecks: objectInstanceChecksPb}, nil
 }

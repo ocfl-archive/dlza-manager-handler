@@ -125,5 +125,5 @@ service DispatcherHandlerService {
   rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
   rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
   rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
-  rpc GetLowQualityCollectionsWithObjectIds(dlzamanagerproto.NoParam) returns (dlzamanagerproto.CollectionAliases) {};
+  rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
 }
