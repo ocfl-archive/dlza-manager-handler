@@ -200,7 +200,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 		var created time.Time
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %v", GetObjectsByCollectionAlias)
 		}
@@ -229,7 +229,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 		var created time.Time
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
@@ -307,7 +307,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		var created time.Time
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &created, &object.LastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalItems)
+			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
