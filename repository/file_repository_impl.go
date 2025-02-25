@@ -271,7 +271,8 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 		if mimeType.Id != UNKNOWN {
 			mimeTypes = append(mimeTypes, mimeType)
 		}
-		if !rows.Next() && emptyMimeType.Id != "" {
+		notLast = rows.Next()
+		if !notLast && emptyMimeType.Id != "" {
 			mimeTypes = append(mimeTypes, emptyMimeType)
 		}
 	}
@@ -335,7 +336,8 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		if pronom.Id != UNKNOWN {
 			pronoms = append(pronoms, pronom)
 		}
-		if !rows.Next() && emptyPronom.Id != "" {
+		notLast = rows.Next()
+		if !notLast && emptyPronom.Id != "" {
 			pronoms = append(pronoms, emptyPronom)
 		}
 	}
