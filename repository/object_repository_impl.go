@@ -105,7 +105,7 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	return object, nil
 }
 
-func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string, ids []string, collectionsNeeded []string, timeBefore string) (models.Object, error) {
+func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string, ids []string, collectionsNeeded []string) (models.Object, error) {
 	firstCondition := ""
 	if len(ids) != 0 {
 		firstCondition = fmt.Sprintf("and objf.id not in ('%s')", strings.Join(ids, "','"))
@@ -122,16 +122,11 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string,
 	objf.id, collection_id, checksum, authors, holding, expiration, head, versions FROM quality_with_locations objf
 	INNER JOIN object_instance oi
 	ON objf.id = oi.object_id
-	LEFT JOIN (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
-		FROM object_instance_check) oic
-		WHERE oic.number_of_row = 1) oicf ON oicf.object_instance_id = oi.id
 	where objf.collection_id = $1
 	%s
 	AND (objf.ok IS false OR NOT ((objf.locations @> %s) AND (objf.locations <@ %s)))
 	AND oi.status NOT IN ('to delete', 'error', 'not available')
-	AND (oicf.checktime < now() - interval %s
-	OR oicf.id IS NULL)
-	limit 1`, firstCondition, collectionsNeededString, collectionsNeededString, timeBefore)
+	limit 1`, firstCondition, collectionsNeededString, collectionsNeededString)
 
 	err := o.Db.QueryRow(context.Background(), query, collectionId).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
