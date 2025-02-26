@@ -79,7 +79,7 @@ func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*p
 }
 
 func (c *CheckerHandlerServer) GetObjectExceptListOlderThan(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
-	object, err := c.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.CollectionsIds, idsWithInterval.Interval)
+	object, err := c.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.CollectionsIds)
 	if err != nil {
 		c.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId, err)
 		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId)
