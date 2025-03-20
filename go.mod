@@ -1,10 +1,10 @@
 module github.com/ocfl-archive/dlza-manager-handler
 
-go 1.23.5
+go 1.24.1
 
 require (
 	emperror.dev/errors v0.8.1
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/je4/trustutil/v2 v2.0.28
 	github.com/je4/utils/v2 v2.0.58
@@ -15,7 +15,7 @@ require (
 	go.ub.unibas.ch/cloud/certloader/v2 v2.0.18
 	go.ub.unibas.ch/cloud/genericproto/v2 v2.0.4
 	go.ub.unibas.ch/cloud/miniresolver/v2 v2.0.31
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.5
 )
 
