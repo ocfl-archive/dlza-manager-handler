@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	GetAllStorageLocations                 = "GetAllStorageLocations"
 	GetStorageLocationsByTenantId          = "GetStorageLocationsByTenantId"
 	DeleteStorageLocationForTenantIdById   = "DeleteStorageLocationForTenantIdById"
 	UpdateStorageLocation                  = "UpdateStorageLocation"
@@ -26,6 +27,7 @@ const (
 
 func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 	preparedStatements := map[string]string{
+		GetAllStorageLocations:        "SELECT * FROM storage_location",
 		GetStorageLocationsByTenantId: "SELECT * FROM storage_location where tenant_id = $1",
 		GetStorageLocationByObjectInstanceId: "select sl.* from object_instance oi " +
 			" inner join storage_partition sp" +
@@ -72,25 +74,20 @@ type StorageLocationRepositoryImpl struct {
 	Db *pgxpool.Pool
 }
 
+func (s *StorageLocationRepositoryImpl) GetAllStorageLocations() ([]models.StorageLocation, error) {
+	rows, err := s.Db.Query(context.Background(), GetAllStorageLocations)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetAllStorageLocations)
+	}
+	return getStorageLocationsFromRows(rows)
+}
+
 func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantId(tenantId string) ([]models.StorageLocation, error) {
 	rows, err := s.Db.Query(context.Background(), GetStorageLocationsByTenantId, tenantId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationsByTenantId)
 	}
-	var storageLocations []models.StorageLocation
-
-	for rows.Next() {
-		var storageLocation models.StorageLocation
-		var vault zeronull.Text
-		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
-			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetStorageLocationsByTenantId)
-		}
-		storageLocation.Vault = string(vault)
-		storageLocations = append(storageLocations, storageLocation)
-	}
-	return storageLocations, nil
+	return getStorageLocationsFromRows(rows)
 }
 
 func (s *StorageLocationRepositoryImpl) GetAmountOfErrorsForStorageLocationId(id string) (int, error) {
@@ -270,4 +267,20 @@ func (s *StorageLocationRepositoryImpl) getOneNumberParameterById(id string, pre
 		return amount, errors.Wrapf(err, "Could not execute query for prepared statement: %v", preparedStatement)
 	}
 	return amount, nil
+}
+
+func getStorageLocationsFromRows(rows pgx.Rows) ([]models.StorageLocation, error) {
+	var storageLocations []models.StorageLocation
+	for rows.Next() {
+		var storageLocation models.StorageLocation
+		var vault zeronull.Text
+		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
+			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not scan rows for storage locations")
+		}
+		storageLocation.Vault = string(vault)
+		storageLocations = append(storageLocations, storageLocation)
+	}
+	return storageLocations, nil
 }

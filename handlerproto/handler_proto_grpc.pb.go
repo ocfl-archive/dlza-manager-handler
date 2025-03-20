@@ -669,6 +669,7 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 const (
 	StorageHandlerHandlerService_Ping_FullMethodName                                        = "/handlerproto.StorageHandlerHandlerService/Ping"
 	StorageHandlerHandlerService_TenantHasAccess_FullMethodName                             = "/handlerproto.StorageHandlerHandlerService/TenantHasAccess"
+	StorageHandlerHandlerService_GetAllStorageLocations_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/GetAllStorageLocations"
 	StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByCollectionAlias"
 	StorageHandlerHandlerService_GetStorageLocationsByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByObjectId"
 	StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName              = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionForLocation"
@@ -692,6 +693,7 @@ const (
 type StorageHandlerHandlerServiceClient interface {
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*proto.DefaultResponse, error)
 	TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	GetAllStorageLocations(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
@@ -729,6 +731,15 @@ func (c *storageHandlerHandlerServiceClient) Ping(ctx context.Context, in *empty
 func (c *storageHandlerHandlerServiceClient) TenantHasAccess(ctx context.Context, in *dlzamanagerproto.UploaderAccessObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
 	out := new(dlzamanagerproto.Status)
 	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_TenantHasAccess_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storageHandlerHandlerServiceClient) GetAllStorageLocations(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error) {
+	out := new(dlzamanagerproto.StorageLocations)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetAllStorageLocations_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -901,6 +912,7 @@ func (c *storageHandlerHandlerServiceClient) GetStorageLocationByObjectInstanceI
 type StorageHandlerHandlerServiceServer interface {
 	Ping(context.Context, *emptypb.Empty) (*proto.DefaultResponse, error)
 	TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error)
+	GetAllStorageLocations(context.Context, *emptypb.Empty) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
 	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
@@ -928,6 +940,9 @@ func (UnimplementedStorageHandlerHandlerServiceServer) Ping(context.Context, *em
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) TenantHasAccess(context.Context, *dlzamanagerproto.UploaderAccessObject) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TenantHasAccess not implemented")
+}
+func (UnimplementedStorageHandlerHandlerServiceServer) GetAllStorageLocations(context.Context, *emptypb.Empty) (*dlzamanagerproto.StorageLocations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllStorageLocations not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByCollectionAlias not implemented")
@@ -1020,6 +1035,24 @@ func _StorageHandlerHandlerService_TenantHasAccess_Handler(srv interface{}, ctx 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageHandlerHandlerServiceServer).TenantHasAccess(ctx, req.(*dlzamanagerproto.UploaderAccessObject))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StorageHandlerHandlerService_GetAllStorageLocations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).GetAllStorageLocations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_GetAllStorageLocations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).GetAllStorageLocations(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1316,6 +1349,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TenantHasAccess",
 			Handler:    _StorageHandlerHandlerService_TenantHasAccess_Handler,
+		},
+		{
+			MethodName: "GetAllStorageLocations",
+			Handler:    _StorageHandlerHandlerService_GetAllStorageLocations_Handler,
 		},
 		{
 			MethodName: "GetStorageLocationsByCollectionAlias",

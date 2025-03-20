@@ -10,6 +10,7 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"log"
 )
@@ -96,6 +97,20 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByObjectId(ctx context.
 	if err != nil {
 		c.Logger.Error().Msgf("Could not get current storage locations", err)
 		return nil, errors.Wrapf(err, "Could not get current storage locations")
+	}
+	storageLocationsPb := make([]*pb.StorageLocation, 0)
+	for _, storageLocation := range storageLocations {
+		storageLocationPb := mapper.ConvertToStorageLocationPb(storageLocation)
+		storageLocationsPb = append(storageLocationsPb, storageLocationPb)
+	}
+	return &pb.StorageLocations{StorageLocations: storageLocationsPb}, nil
+}
+
+func (c *StorageHandlerHandlerServer) GetAllStorageLocations(ctx context.Context, param *emptypb.Empty) (*pb.StorageLocations, error) {
+	storageLocations, err := c.StorageLocationRepository.GetAllStorageLocations()
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get GetAllStorageLocations", err)
+		return nil, errors.Wrapf(err, "Could not get GetAllStorageLocations")
 	}
 	storageLocationsPb := make([]*pb.StorageLocation, 0)
 	for _, storageLocation := range storageLocations {

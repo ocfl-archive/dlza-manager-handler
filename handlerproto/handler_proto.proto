@@ -35,6 +35,7 @@ service CheckerHandlerService {
 service StorageHandlerHandlerService {
   rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
   rpc TenantHasAccess(dlzamanagerproto.UploaderAccessObject) returns (dlzamanagerproto.Status) {};
+  rpc GetAllStorageLocations(google.protobuf.Empty) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
