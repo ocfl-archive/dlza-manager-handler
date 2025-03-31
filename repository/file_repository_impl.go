@@ -239,7 +239,7 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 		}
 	}
 
-	query := fmt.Sprintf("SELECT mtfj.mime_type as id, count(mtfj.*) as file_count, sum(mtfj.size) as files_size,  count(*) OVER() FROM mat_tenant_file_join mtfj"+
+	query := fmt.Sprintf("SELECT mtfj.mime_type as id, count(mtfj.*) as file_count, count(*) OVER() FROM mat_tenant_file_join mtfj"+
 		" %s %s group by mtfj.mime_type order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
@@ -253,7 +253,7 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 	for notLast {
 		mimeType := models.MimeType{}
 		var id zeronull.Text
-		err := rows.Scan(&id, &mimeType.FileCount, &mimeType.FilesSize, &totalItems)
+		err := rows.Scan(&id, &mimeType.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
@@ -266,7 +266,6 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 				emptyMimeType = mimeType
 			} else {
 				emptyMimeType.FileCount = mimeType.FileCount + emptyMimeType.FileCount
-				emptyMimeType.FilesSize = mimeType.FilesSize + emptyMimeType.FilesSize
 			}
 		}
 		if mimeType.Id != UNKNOWN {
@@ -304,7 +303,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		}
 	}
 
-	query := fmt.Sprintf("SELECT mtfj.pronom as id, count(mtfj.*) as file_count, sum(mtfj.size) as files_size, count(*) OVER() FROM mat_tenant_file_join mtfj"+
+	query := fmt.Sprintf("SELECT mtfj.pronom as id, count(mtfj.*) as file_count, count(*) OVER() FROM mat_tenant_file_join mtfj"+
 		" %s %s group by mtfj.pronom order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
@@ -318,7 +317,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 	for notLast {
 		pronom := models.Pronom{}
 		var id zeronull.Text
-		err := rows.Scan(&id, &pronom.FileCount, &pronom.FilesSize, &totalItems)
+		err := rows.Scan(&id, &pronom.FileCount, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
@@ -332,7 +331,6 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 				emptyPronom = pronom
 			} else {
 				emptyPronom.FileCount = pronom.FileCount + emptyPronom.FileCount
-				emptyPronom.FilesSize = pronom.FilesSize + emptyPronom.FilesSize
 			}
 		}
 		if pronom.Id != UNKNOWN {
