@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	emperror.dev/errors v0.8.1
 	github.com/BurntSushi/toml v1.5.0
-	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jackc/pgx/v5 v5.7.2
 	github.com/je4/trustutil/v2 v2.0.28
 	github.com/je4/utils/v2 v2.0.58
 	github.com/lib/pq v1.10.9
