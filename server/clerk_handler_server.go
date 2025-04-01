@@ -352,6 +352,7 @@ func (c *ClerkHandlerServer) GetStoragePartitionsByLocationIdPaginated(ctx conte
 }
 
 func (c *ClerkHandlerServer) GetObjectsByCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.Objects, error) {
+	c.Logger.Debug().Msg("grpc function GetObjectsByCollectionIdPaginated called")
 	objects, totalItems, err := c.ObjectRepository.GetObjectsByCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not get paginated objects by collection with id: '%v'", pagination.Id, err)
@@ -362,6 +363,7 @@ func (c *ClerkHandlerServer) GetObjectsByCollectionIdPaginated(ctx context.Conte
 	for _, object := range objects {
 		objectsPb = append(objectsPb, mapper.ConvertToObjectPb(object))
 	}
+	c.Logger.Debug().Msg("grpc function GetObjectsByCollectionIdPaginated returned objects")
 	return &pb.Objects{Objects: objectsPb, TotalItems: int32(totalItems)}, nil
 }
 

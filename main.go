@@ -184,7 +184,7 @@ func main() {
 
 	tenantRepository := repository.NewTenantRepository(conn)
 	collectionRepository := repository.NewCollectionRepository(conn)
-	objectRepository := repository.NewObjectRepository(conn)
+	objectRepository := repository.NewObjectRepository(conn, logger)
 	objectInstanceRepository := repository.NewObjectInstanceRepository(conn)
 	fileRepository := repository.NewFileRepository(conn)
 	objectInstanceCheckRepository := repository.NewObjectInstanceCheckRepository(conn)
