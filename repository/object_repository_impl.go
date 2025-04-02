@@ -288,9 +288,10 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
 		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
-	o.Logger.Debug().Msg("Database request retrieving objects was sent")
+	o.Logger.Debug().Msgf("Database request retrieving objects was sent %s", time.Now())
+
 	rows, err := o.Db.Query(context.Background(), query)
-	o.Logger.Debug().Msg("Database request retrieving objects returned rows")
+	o.Logger.Debug().Msgf("Database request retrieving objects returned rows %s", time.Now())
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
@@ -318,7 +319,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		object.Created = created.Format(Layout)
 		objects = append(objects, object)
 	}
-	o.Logger.Debug().Msg("Repository GetObjectsByCollectionIdPaginated function returned objects")
+	o.Logger.Debug().Msgf("Repository GetObjectsByCollectionIdPaginated function returned objects %s", time.Now())
 	return objects, totalItems, nil
 }
 
