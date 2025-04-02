@@ -38,11 +38,9 @@ service StorageHandlerHandlerService {
   rpc GetAllStorageLocations(google.protobuf.Empty) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
-  rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
   rpc SaveAllTableObjectsAfterCopyingStream(stream dlzamanagerproto.InstanceWithPartitionAndObjectWithFile) returns (dlzamanagerproto.Status);
   rpc GetStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation);
   rpc GetAndSaveStoragePartitionWithRelevantAlias(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.StoragePartition);
-  rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status);
   rpc GetObjectsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.Objects);
   rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
   rpc CreateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.Id);
@@ -127,4 +125,6 @@ service DispatcherHandlerService {
   rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
   rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
   rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
+  rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status);
+  rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
 }

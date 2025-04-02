@@ -672,11 +672,9 @@ const (
 	StorageHandlerHandlerService_GetAllStorageLocations_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/GetAllStorageLocations"
 	StorageHandlerHandlerService_GetStorageLocationsByCollectionAlias_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByCollectionAlias"
 	StorageHandlerHandlerService_GetStorageLocationsByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationsByObjectId"
-	StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName              = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionForLocation"
 	StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_FullMethodName       = "/handlerproto.StorageHandlerHandlerService/SaveAllTableObjectsAfterCopyingStream"
 	StorageHandlerHandlerService_GetStorageLocationById_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationById"
 	StorageHandlerHandlerService_GetAndSaveStoragePartitionWithRelevantAlias_FullMethodName = "/handlerproto.StorageHandlerHandlerService/GetAndSaveStoragePartitionWithRelevantAlias"
-	StorageHandlerHandlerService_UpdateStoragePartition_FullMethodName                      = "/handlerproto.StorageHandlerHandlerService/UpdateStoragePartition"
 	StorageHandlerHandlerService_GetObjectsByCollectionAlias_FullMethodName                 = "/handlerproto.StorageHandlerHandlerService/GetObjectsByCollectionAlias"
 	StorageHandlerHandlerService_GetObjectsInstancesByObjectId_FullMethodName               = "/handlerproto.StorageHandlerHandlerService/GetObjectsInstancesByObjectId"
 	StorageHandlerHandlerService_CreateObjectInstance_FullMethodName                        = "/handlerproto.StorageHandlerHandlerService/CreateObjectInstance"
@@ -696,11 +694,9 @@ type StorageHandlerHandlerServiceClient interface {
 	GetAllStorageLocations(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
-	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 	SaveAllTableObjectsAfterCopyingStream(ctx context.Context, opts ...grpc.CallOption) (StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamClient, error)
 	GetStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 	GetAndSaveStoragePartitionWithRelevantAlias(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
-	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectsByCollectionAlias(ctx context.Context, in *dlzamanagerproto.CollectionAlias, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
 	GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	CreateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
@@ -764,15 +760,6 @@ func (c *storageHandlerHandlerServiceClient) GetStorageLocationsByObjectId(ctx c
 	return out, nil
 }
 
-func (c *storageHandlerHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
-	out := new(dlzamanagerproto.StoragePartition)
-	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *storageHandlerHandlerServiceClient) SaveAllTableObjectsAfterCopyingStream(ctx context.Context, opts ...grpc.CallOption) (StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamClient, error) {
 	stream, err := c.cc.NewStream(ctx, &StorageHandlerHandlerService_ServiceDesc.Streams[0], StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_FullMethodName, opts...)
 	if err != nil {
@@ -819,15 +806,6 @@ func (c *storageHandlerHandlerServiceClient) GetStorageLocationById(ctx context.
 func (c *storageHandlerHandlerServiceClient) GetAndSaveStoragePartitionWithRelevantAlias(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
 	out := new(dlzamanagerproto.StoragePartition)
 	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetAndSaveStoragePartitionWithRelevantAlias_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageHandlerHandlerServiceClient) UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
-	out := new(dlzamanagerproto.Status)
-	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_UpdateStoragePartition_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -915,11 +893,9 @@ type StorageHandlerHandlerServiceServer interface {
 	GetAllStorageLocations(context.Context, *emptypb.Empty) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.StorageLocations, error)
 	GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
-	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
 	SaveAllTableObjectsAfterCopyingStream(StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer) error
 	GetStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	GetAndSaveStoragePartitionWithRelevantAlias(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.StoragePartition, error)
-	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
 	GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error)
 	GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
 	CreateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.Id, error)
@@ -950,9 +926,6 @@ func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationsByColl
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationsByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationsByObjectId not implemented")
 }
-func (UnimplementedStorageHandlerHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
-}
 func (UnimplementedStorageHandlerHandlerServiceServer) SaveAllTableObjectsAfterCopyingStream(StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method SaveAllTableObjectsAfterCopyingStream not implemented")
 }
@@ -961,9 +934,6 @@ func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationById(co
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetAndSaveStoragePartitionWithRelevantAlias(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.StoragePartition, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAndSaveStoragePartitionWithRelevantAlias not implemented")
-}
-func (UnimplementedStorageHandlerHandlerServiceServer) UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateStoragePartition not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetObjectsByCollectionAlias(context.Context, *dlzamanagerproto.CollectionAlias) (*dlzamanagerproto.Objects, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsByCollectionAlias not implemented")
@@ -1093,24 +1063,6 @@ func _StorageHandlerHandlerService_GetStorageLocationsByObjectId_Handler(srv int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.SizeAndId)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeAndId))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _StorageHandlerHandlerService_SaveAllTableObjectsAfterCopyingStream_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(StorageHandlerHandlerServiceServer).SaveAllTableObjectsAfterCopyingStream(&storageHandlerHandlerServiceSaveAllTableObjectsAfterCopyingStreamServer{stream})
 }
@@ -1169,24 +1121,6 @@ func _StorageHandlerHandlerService_GetAndSaveStoragePartitionWithRelevantAlias_H
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StorageHandlerHandlerServiceServer).GetAndSaveStoragePartitionWithRelevantAlias(ctx, req.(*dlzamanagerproto.StoragePartition))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _StorageHandlerHandlerService_UpdateStoragePartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.StoragePartition)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageHandlerHandlerServiceServer).UpdateStoragePartition(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: StorageHandlerHandlerService_UpdateStoragePartition_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageHandlerHandlerServiceServer).UpdateStoragePartition(ctx, req.(*dlzamanagerproto.StoragePartition))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1363,20 +1297,12 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StorageHandlerHandlerService_GetStorageLocationsByObjectId_Handler,
 		},
 		{
-			MethodName: "GetStoragePartitionForLocation",
-			Handler:    _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler,
-		},
-		{
 			MethodName: "GetStorageLocationById",
 			Handler:    _StorageHandlerHandlerService_GetStorageLocationById_Handler,
 		},
 		{
 			MethodName: "GetAndSaveStoragePartitionWithRelevantAlias",
 			Handler:    _StorageHandlerHandlerService_GetAndSaveStoragePartitionWithRelevantAlias_Handler,
-		},
-		{
-			MethodName: "UpdateStoragePartition",
-			Handler:    _StorageHandlerHandlerService_UpdateStoragePartition_Handler,
 		},
 		{
 			MethodName: "GetObjectsByCollectionAlias",
@@ -3373,6 +3299,8 @@ const (
 	DispatcherHandlerService_GetExistingStorageLocationsCombinationsForCollectionId_FullMethodName = "/handlerproto.DispatcherHandlerService/GetExistingStorageLocationsCombinationsForCollectionId"
 	DispatcherHandlerService_GetCollectionsByTenantId_FullMethodName                               = "/handlerproto.DispatcherHandlerService/GetCollectionsByTenantId"
 	DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName              = "/handlerproto.DispatcherHandlerService/GetObjectInstanceChecksByObjectInstanceId"
+	DispatcherHandlerService_UpdateStoragePartition_FullMethodName                                 = "/handlerproto.DispatcherHandlerService/UpdateStoragePartition"
+	DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName                         = "/handlerproto.DispatcherHandlerService/GetStoragePartitionForLocation"
 )
 
 // DispatcherHandlerServiceClient is the client API for DispatcherHandlerService service.
@@ -3390,6 +3318,8 @@ type DispatcherHandlerServiceClient interface {
 	GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
+	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
+	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 }
 
 type dispatcherHandlerServiceClient struct {
@@ -3499,6 +3429,24 @@ func (c *dispatcherHandlerServiceClient) GetObjectInstanceChecksByObjectInstance
 	return out, nil
 }
 
+func (c *dispatcherHandlerServiceClient) UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error) {
+	out := new(dlzamanagerproto.Status)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_UpdateStoragePartition_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
+	out := new(dlzamanagerproto.StoragePartition)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DispatcherHandlerServiceServer is the server API for DispatcherHandlerService service.
 // All implementations must embed UnimplementedDispatcherHandlerServiceServer
 // for forward compatibility
@@ -3514,6 +3462,8 @@ type DispatcherHandlerServiceServer interface {
 	GetExistingStorageLocationsCombinationsForCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocationsCombinationsForCollections, error)
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
+	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
+	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
 
@@ -3553,6 +3503,12 @@ func (UnimplementedDispatcherHandlerServiceServer) GetCollectionsByTenantId(cont
 }
 func (UnimplementedDispatcherHandlerServiceServer) GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstanceChecksByObjectInstanceId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStoragePartition not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) mustEmbedUnimplementedDispatcherHandlerServiceServer() {
 }
@@ -3766,6 +3722,42 @@ func _DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DispatcherHandlerService_UpdateStoragePartition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.StoragePartition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).UpdateStoragePartition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_UpdateStoragePartition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).UpdateStoragePartition(ctx, req.(*dlzamanagerproto.StoragePartition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetStoragePartitionForLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.SizeAndId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetStoragePartitionForLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeAndId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DispatcherHandlerService_ServiceDesc is the grpc.ServiceDesc for DispatcherHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3816,6 +3808,14 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectInstanceChecksByObjectInstanceId",
 			Handler:    _DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_Handler,
+		},
+		{
+			MethodName: "UpdateStoragePartition",
+			Handler:    _DispatcherHandlerService_UpdateStoragePartition_Handler,
+		},
+		{
+			MethodName: "GetStoragePartitionForLocation",
+			Handler:    _DispatcherHandlerService_GetStoragePartitionForLocation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

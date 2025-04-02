@@ -11,12 +11,12 @@ import (
 	"github.com/ocfl-archive/dlza-manager/mapper"
 )
 
-func NewDispatcherHandlerServer(dispatcherRepository repository.DispatcherRepository, tenantService service.TenantService,
+func NewDispatcherHandlerServer(storagePartitionService service.StoragePartitionService, dispatcherRepository repository.DispatcherRepository, tenantService service.TenantService,
 	objectInstanceRepository repository.ObjectInstanceRepository, objectRepository repository.ObjectRepository, collectionRepository repository.CollectionRepository,
 	storageLocationRepository repository.StorageLocationRepository, objectInstanceCheckRepository repository.ObjectInstanceCheckRepository, logger zLogger.ZLogger) *DispatcherHandlerServer {
 	return &DispatcherHandlerServer{DispatcherRepository: dispatcherRepository, TenantService: tenantService,
 		ObjectInstanceRepository: objectInstanceRepository, ObjectInstanceCheckRepository: objectInstanceCheckRepository, ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository,
-		CollectionRepository: collectionRepository, Logger: logger}
+		CollectionRepository: collectionRepository, StoragePartitionService: storagePartitionService, Logger: logger}
 }
 
 type DispatcherHandlerServer struct {
@@ -25,6 +25,7 @@ type DispatcherHandlerServer struct {
 	ObjectRepository              repository.ObjectRepository
 	CollectionRepository          repository.CollectionRepository
 	ObjectInstanceCheckRepository repository.ObjectInstanceCheckRepository
+	StoragePartitionService       service.StoragePartitionService
 	StorageLocationRepository     repository.StorageLocationRepository
 	ObjectInstanceRepository      repository.ObjectInstanceRepository
 	DispatcherRepository          repository.DispatcherRepository
@@ -55,6 +56,15 @@ func (d *DispatcherHandlerServer) UpdateObjectInstance(ctx context.Context, obje
 	return nil, nil
 }
 
+func (d *DispatcherHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartition *pb.StoragePartition) (*pb.Status, error) {
+	status, err := d.StoragePartitionService.UpdateStoragePartition(storagePartition)
+	if err != nil {
+		d.Logger.Error().Msgf("Could not update storagePartition with ID: %v", storagePartition.Id, err)
+		return nil, errors.Wrapf(err, "Could not update storagePartition with ID: %v", storagePartition.Id)
+	}
+	return status, nil
+}
+
 func (d *DispatcherHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := d.ObjectInstanceRepository.GetObjectInstancesByObjectId(id.Id)
 	if err != nil {
@@ -67,6 +77,15 @@ func (d *DispatcherHandlerServer) GetObjectsInstancesByObjectId(ctx context.Cont
 		objectInstancesPb = append(objectInstancesPb, objectInstancePb)
 	}
 	return &pb.ObjectInstances{ObjectInstances: objectInstancesPb}, nil
+}
+
+func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
+	partition, err := d.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
+	if err != nil {
+		d.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
+		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
+	}
+	return partition, nil
 }
 
 func (d *DispatcherHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, tenantId *pb.Id) (*pb.StorageLocations, error) {

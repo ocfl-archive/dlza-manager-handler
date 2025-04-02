@@ -120,24 +120,6 @@ func (c *StorageHandlerHandlerServer) GetAllStorageLocations(ctx context.Context
 	return &pb.StorageLocations{StorageLocations: storageLocationsPb}, nil
 }
 
-func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
-	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
-		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
-	}
-	return partition, nil
-}
-
-func (c *StorageHandlerHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartition *pb.StoragePartition) (*pb.Status, error) {
-	status, err := c.StoragePartitionService.UpdateStoragePartition(storagePartition)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not update storagePartition with ID: %v", storagePartition.Id, err)
-		return nil, errors.Wrapf(err, "Could not update storagePartition with ID: %v", storagePartition.Id)
-	}
-	return status, nil
-}
-
 func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
 	storageLocation, err := c.StorageLocationRepository.GetStorageLocationById(id.Id)
 	if err != nil {
