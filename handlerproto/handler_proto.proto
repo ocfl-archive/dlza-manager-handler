@@ -49,6 +49,7 @@ service StorageHandlerHandlerService {
   rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetStorageLocationByObjectInstanceId (dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
+  rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
 }
 
 service ClerkHandlerService {

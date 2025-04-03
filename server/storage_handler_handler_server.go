@@ -129,6 +129,15 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }
 
+func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
+	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
+		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
+	}
+	return partition, nil
+}
+
 func (c *StorageHandlerHandlerServer) GetAndSaveStoragePartitionWithRelevantAlias(ctx context.Context, storagePartition *pb.StoragePartition) (*pb.StoragePartition, error) {
 	storagePartitionWithAlias, err := c.StoragePartitionService.GetAndSaveStoragePartitionWithRelevantAlias(storagePartition)
 	if err != nil {

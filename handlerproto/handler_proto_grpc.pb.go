@@ -683,6 +683,7 @@ const (
 	StorageHandlerHandlerService_AlterStatus_FullMethodName                                 = "/handlerproto.StorageHandlerHandlerService/AlterStatus"
 	StorageHandlerHandlerService_GetObjectById_FullMethodName                               = "/handlerproto.StorageHandlerHandlerService/GetObjectById"
 	StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_FullMethodName        = "/handlerproto.StorageHandlerHandlerService/GetStorageLocationByObjectInstanceId"
+	StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName              = "/handlerproto.StorageHandlerHandlerService/GetStoragePartitionForLocation"
 )
 
 // StorageHandlerHandlerServiceClient is the client API for StorageHandlerHandlerService service.
@@ -705,6 +706,7 @@ type StorageHandlerHandlerServiceClient interface {
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
+	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 }
 
 type storageHandlerHandlerServiceClient struct {
@@ -884,6 +886,15 @@ func (c *storageHandlerHandlerServiceClient) GetStorageLocationByObjectInstanceI
 	return out, nil
 }
 
+func (c *storageHandlerHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
+	out := new(dlzamanagerproto.StoragePartition)
+	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StorageHandlerHandlerServiceServer is the server API for StorageHandlerHandlerService service.
 // All implementations must embed UnimplementedStorageHandlerHandlerServiceServer
 // for forward compatibility
@@ -904,6 +915,7 @@ type StorageHandlerHandlerServiceServer interface {
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
+	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
 	mustEmbedUnimplementedStorageHandlerHandlerServiceServer()
 }
 
@@ -958,6 +970,9 @@ func (UnimplementedStorageHandlerHandlerServiceServer) GetObjectById(context.Con
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationByObjectInstanceId not implemented")
+}
+func (UnimplementedStorageHandlerHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) mustEmbedUnimplementedStorageHandlerHandlerServiceServer() {
 }
@@ -1269,6 +1284,24 @@ func _StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.SizeAndId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeAndId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StorageHandlerHandlerService_ServiceDesc is the grpc.ServiceDesc for StorageHandlerHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1335,6 +1368,10 @@ var StorageHandlerHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStorageLocationByObjectInstanceId",
 			Handler:    _StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_Handler,
+		},
+		{
+			MethodName: "GetStoragePartitionForLocation",
+			Handler:    _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
