@@ -112,6 +112,7 @@ service ClerkHandlerService {
   rpc GetAmountOfObjectsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
   rpc GetAmountOfObjectsAndTotalSizeByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
   rpc GetSizeForAllObjectInstancesByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
+  rpc GetObjectInstancesBySignatureAndLocationsPathName(dlzamanagerproto.AliasAndLocationsName) returns (dlzamanagerproto.ObjectInstance) {}
 }
 
 service DispatcherHandlerService {

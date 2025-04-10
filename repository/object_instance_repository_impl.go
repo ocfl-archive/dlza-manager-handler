@@ -51,6 +51,18 @@ func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn)
 	return nil
 }
 
+func (o *objectInstanceRepositoryImpl) GetObjectInstancesBySignatureAndLocationsPathName(alias string, locationsName string) (models.ObjectInstance, error) {
+	alias = strings.Replace(alias, ":", "_", -1)
+	objectInstance := models.ObjectInstance{}
+	var created time.Time
+	err := o.Db.QueryRow(context.Background(), fmt.Sprintf("select * from object_instance where path like '%%/%s/%%%s%%'", locationsName, alias)).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	if err != nil {
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
+	}
+	objectInstance.Created = created.Format(Layout)
+	return objectInstance, err
+}
+
 func (o *objectInstanceRepositoryImpl) GetAmountOfErrorsByCollectionId(id string) (int, error) {
 	row := o.Db.QueryRow(context.Background(), GetAmountOfErrorsByCollectionId, id)
 	var amount int

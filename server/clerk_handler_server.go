@@ -31,6 +31,16 @@ type ClerkHandlerServer struct {
 	Logger                             zLogger.ZLogger
 }
 
+func (c *ClerkHandlerServer) GetObjectInstancesBySignatureAndLocationsPathName(ctx context.Context, aliasAndLocationsName *pb.AliasAndLocationsName) (*pb.ObjectInstance, error) {
+	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstancesBySignatureAndLocationsPathName(aliasAndLocationsName.Alias, aliasAndLocationsName.LocationsName)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", aliasAndLocationsName.Alias, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", aliasAndLocationsName.Alias)
+	}
+	objectInstancePb := mapper.ConvertToObjectInstancePb(objectInstance)
+	return objectInstancePb, nil
+}
+
 func (c *ClerkHandlerServer) FindTenantById(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
 	tenant, err := c.TenantService.FindTenantById(id.Id)
 	if err != nil {

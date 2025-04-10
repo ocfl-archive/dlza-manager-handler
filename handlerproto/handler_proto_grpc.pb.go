@@ -1436,6 +1436,7 @@ const (
 	ClerkHandlerService_GetAmountOfObjectsForStorageLocationId_FullMethodName             = "/handlerproto.ClerkHandlerService/GetAmountOfObjectsForStorageLocationId"
 	ClerkHandlerService_GetAmountOfObjectsAndTotalSizeByTenantId_FullMethodName           = "/handlerproto.ClerkHandlerService/GetAmountOfObjectsAndTotalSizeByTenantId"
 	ClerkHandlerService_GetSizeForAllObjectInstancesByCollectionId_FullMethodName         = "/handlerproto.ClerkHandlerService/GetSizeForAllObjectInstancesByCollectionId"
+	ClerkHandlerService_GetObjectInstancesBySignatureAndLocationsPathName_FullMethodName  = "/handlerproto.ClerkHandlerService/GetObjectInstancesBySignatureAndLocationsPathName"
 )
 
 // ClerkHandlerServiceClient is the client API for ClerkHandlerService service.
@@ -1493,6 +1494,7 @@ type ClerkHandlerServiceClient interface {
 	GetAmountOfObjectsForStorageLocationId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.SizeAndId, error)
 	GetAmountOfObjectsAndTotalSizeByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error)
 	GetSizeForAllObjectInstancesByCollectionId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.AmountAndSize, error)
+	GetObjectInstancesBySignatureAndLocationsPathName(ctx context.Context, in *dlzamanagerproto.AliasAndLocationsName, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstance, error)
 }
 
 type clerkHandlerServiceClient struct {
@@ -1962,6 +1964,15 @@ func (c *clerkHandlerServiceClient) GetSizeForAllObjectInstancesByCollectionId(c
 	return out, nil
 }
 
+func (c *clerkHandlerServiceClient) GetObjectInstancesBySignatureAndLocationsPathName(ctx context.Context, in *dlzamanagerproto.AliasAndLocationsName, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstance, error) {
+	out := new(dlzamanagerproto.ObjectInstance)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetObjectInstancesBySignatureAndLocationsPathName_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClerkHandlerServiceServer is the server API for ClerkHandlerService service.
 // All implementations must embed UnimplementedClerkHandlerServiceServer
 // for forward compatibility
@@ -2017,6 +2028,7 @@ type ClerkHandlerServiceServer interface {
 	GetAmountOfObjectsForStorageLocationId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.SizeAndId, error)
 	GetAmountOfObjectsAndTotalSizeByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error)
 	GetSizeForAllObjectInstancesByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error)
+	GetObjectInstancesBySignatureAndLocationsPathName(context.Context, *dlzamanagerproto.AliasAndLocationsName) (*dlzamanagerproto.ObjectInstance, error)
 	mustEmbedUnimplementedClerkHandlerServiceServer()
 }
 
@@ -2176,6 +2188,9 @@ func (UnimplementedClerkHandlerServiceServer) GetAmountOfObjectsAndTotalSizeByTe
 }
 func (UnimplementedClerkHandlerServiceServer) GetSizeForAllObjectInstancesByCollectionId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.AmountAndSize, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSizeForAllObjectInstancesByCollectionId not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetObjectInstancesBySignatureAndLocationsPathName(context.Context, *dlzamanagerproto.AliasAndLocationsName) (*dlzamanagerproto.ObjectInstance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstancesBySignatureAndLocationsPathName not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) mustEmbedUnimplementedClerkHandlerServiceServer() {}
 
@@ -3108,6 +3123,24 @@ func _ClerkHandlerService_GetSizeForAllObjectInstancesByCollectionId_Handler(srv
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClerkHandlerService_GetObjectInstancesBySignatureAndLocationsPathName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.AliasAndLocationsName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetObjectInstancesBySignatureAndLocationsPathName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetObjectInstancesBySignatureAndLocationsPathName_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetObjectInstancesBySignatureAndLocationsPathName(ctx, req.(*dlzamanagerproto.AliasAndLocationsName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClerkHandlerService_ServiceDesc is the grpc.ServiceDesc for ClerkHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3318,6 +3351,10 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSizeForAllObjectInstancesByCollectionId",
 			Handler:    _ClerkHandlerService_GetSizeForAllObjectInstancesByCollectionId_Handler,
+		},
+		{
+			MethodName: "GetObjectInstancesBySignatureAndLocationsPathName",
+			Handler:    _ClerkHandlerService_GetObjectInstancesBySignatureAndLocationsPathName_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
