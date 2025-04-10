@@ -13,5 +13,5 @@ type ObjectInstanceRepository interface {
 	GetAllObjectInstances() ([]models.ObjectInstance, error)
 	GetAmountOfErrorsByCollectionId(id string) (int, error)
 	GetObjectInstancesByName(name string) ([]models.ObjectInstance, error)
-	GetObjectInstancesBySignatureAndLocationsPathName(alias string, locationsName string) (models.ObjectInstance, error)
+	GetObjectInstancesBySignatureAndLocationsPathName(signature string, locationsName string) (models.ObjectInstance, error)
 }

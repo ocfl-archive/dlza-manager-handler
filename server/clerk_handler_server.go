@@ -31,11 +31,11 @@ type ClerkHandlerServer struct {
 	Logger                             zLogger.ZLogger
 }
 
-func (c *ClerkHandlerServer) GetObjectInstancesBySignatureAndLocationsPathName(ctx context.Context, aliasAndLocationsName *pb.AliasAndLocationsName) (*pb.ObjectInstance, error) {
-	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstancesBySignatureAndLocationsPathName(aliasAndLocationsName.Alias, aliasAndLocationsName.LocationsName)
+func (c *ClerkHandlerServer) GetObjectInstancesBySignatureAndLocationsPathName(ctx context.Context, signatureAndLocationsName *pb.AliasAndLocationsName) (*pb.ObjectInstance, error) {
+	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstancesBySignatureAndLocationsPathName(signatureAndLocationsName.Alias, signatureAndLocationsName.LocationsName)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", aliasAndLocationsName.Alias, err)
-		return nil, errors.Wrapf(err, "Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", aliasAndLocationsName.Alias)
+		c.Logger.Error().Msgf("Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", signatureAndLocationsName.Alias, err)
+		return nil, errors.Wrapf(err, "Could not GetObjectInstancesBySignatureAndLocationsPathName with alias: '%s'", signatureAndLocationsName.Alias)
 	}
 	objectInstancePb := mapper.ConvertToObjectInstancePb(objectInstance)
 	return objectInstancePb, nil
