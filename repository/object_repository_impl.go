@@ -18,6 +18,7 @@ import (
 
 const (
 	GetObjectById                = "GetObjectById"
+	GetObjectBySignature         = "GetObjectBySignature"
 	UpdateObject                 = "UpdateObject"
 	CreateObject                 = "CreateObject"
 	GetObjectsByCollectionAlias  = "GetObjectsByCollectionAlias"
@@ -37,6 +38,8 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 	preparedStatements := map[string]string{
 		GetObjectById: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
        address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT o WHERE ID = $1`,
+		GetObjectBySignature: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
+       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT o WHERE signature = $1`,
 		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
 			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, holding, expiration, head, versions, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
 		CreateObject: "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
@@ -94,6 +97,30 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object by id")
+	}
+	object.Holding = string(holding)
+	if expiration.Valid {
+		object.Expiration = expiration.Time.Format(Layout)
+	} else {
+		object.Expiration = ""
+	}
+	object.Expiration = expiration.Time.Format(Layout)
+	object.LastChanged = lastChanged.Format(Layout)
+	object.Created = created.Format(Layout)
+	return object, nil
+}
+
+func (o *ObjectRepositoryImpl) GetObjectBySignature(signature string) (models.Object, error) {
+	var object models.Object
+	var holding zeronull.Text
+	var expiration pgtype.Date
+	var lastChanged time.Time
+	var created time.Time
+	err := o.Db.QueryRow(context.Background(), GetObjectBySignature, signature).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object by signature")
 	}
 	object.Holding = string(holding)
 	if expiration.Valid {

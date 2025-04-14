@@ -9,4 +9,5 @@ type StoragePartitionRepository interface {
 	UpdateStoragePartition(partition models.StoragePartition) error
 	GetStoragePartitionsByLocationIdPaginated(pagination models.Pagination) ([]models.StoragePartition, int, error)
 	GetStoragePartitionsByLocationId(locationId string) ([]models.StoragePartition, error)
+	GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error)
 }

@@ -41,6 +41,10 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 	return nil
 }
 
+func (s *storagePartitionRepositoryImpl) GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error) {
+	return models.StoragePartition{}, nil
+}
+
 func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models.StoragePartition) (string, error) {
 	row := s.Db.QueryRow(context.Background(), CreateStoragePartition, partition.Alias, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.StorageLocationId)
 

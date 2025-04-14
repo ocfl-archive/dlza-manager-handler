@@ -6,11 +6,12 @@ import (
 )
 
 const (
-	ErrorStatus  = "error"
-	OkStatus     = "ok"
-	DeleteStatus = "to delete"
-	NotAvailable = "not available"
-	NewStatus    = "new"
+	ErrorStatus      = "error"
+	OkStatus         = "ok"
+	DeleteStatus     = "to delete"
+	DeprecatedStatus = "deprecated"
+	NotAvailable     = "not available"
+	NewStatus        = "new"
 )
 
 func NewObjectInstanceService(objectInstanceRepository repository.ObjectInstanceRepository) ObjectInstanceService {

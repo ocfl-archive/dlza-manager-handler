@@ -6,6 +6,7 @@ import (
 
 type ObjectRepository interface {
 	GetObjectById(id string) (models.Object, error)
+	GetObjectBySignature(signature string) (models.Object, error)
 	GetObjectByIdMv(id string) (models.Object, error)
 	GetObjectsByChecksum(checksum string) ([]models.Object, error)
 	CreateObject(object models.Object) (string, error)
