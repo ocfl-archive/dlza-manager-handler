@@ -194,7 +194,7 @@ func main() {
 	dispatcherRepository := repository.NewDispatcherRepository(conn)
 	statusRepository := repository.NewStatusRepository(conn)
 	refreshMaterializedViewRepository := repository.NewRefreshMaterializedViewsRepository(conn)
-	transactionRepository := repository.NewTransactionRepository(conn)
+	transactionRepository := repository.NewTransactionRepository(conn, objectRepository, objectInstanceRepository)
 
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 	tenantService := service.NewTenantService(tenantRepository)
