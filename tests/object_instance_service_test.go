@@ -19,6 +19,11 @@ type ObjectInstanceRepositoryMock struct {
 	mock.Mock
 }
 
+func (o ObjectInstanceRepositoryMock) GetObjectInstancesBySignatureAndLocationsPathName(signature string, locationsName string) (models.ObjectInstance, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (o ObjectInstanceRepositoryMock) CreateObjectInstance(instance models.ObjectInstance) (string, error) {
 	//TODO implement me
 	panic("implement me")
