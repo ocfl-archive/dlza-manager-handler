@@ -65,7 +65,7 @@ func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocation
 
 	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Id)
 	firstVersionPartition := models.StoragePartition{}
-	if sizeAndLocationId.Object.Head != "v1" {
+	if sizeAndLocationId.Object != nil && sizeAndLocationId.Object.Head != "v1" {
 		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
 	}
 
