@@ -64,11 +64,15 @@ func (s *StoragePartitionService) GetStoragePartitionsForLocationId(locationId *
 func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
 
 	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Id)
+	firstVersionPartition := models.StoragePartition{}
+	if sizeAndLocationId.Object.Head != "v1" {
+		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+	}
 
 	var currentSize int64
 	var partitionOptimal models.StoragePartition
 	for _, partition := range partitions {
-		if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+sizeAndLocationId.Size <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) {
+		if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+sizeAndLocationId.Size <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) && (partition.Id != firstVersionPartition.Id) {
 			currentSize = partition.CurrentSize
 			partitionOptimal = partition
 		}
