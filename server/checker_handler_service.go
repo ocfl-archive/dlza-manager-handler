@@ -78,15 +78,6 @@ func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*p
 	return mapper.ConvertToObjectPb(object), nil
 }
 
-func (c *CheckerHandlerServer) GetObjectBySignature(ctx context.Context, id *pb.Id) (*pb.Object, error) {
-	object, err := c.ObjectRepository.GetObjectBySignature(id.Id)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not get object by signature: %s", id.Id, err)
-		return nil, errors.Wrapf(err, "Could not get object by signature: %s", id.Id)
-	}
-	return mapper.ConvertToObjectPb(object), nil
-}
-
 func (c *CheckerHandlerServer) GetObjectExceptListOlderThan(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
 	object, err := c.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.CollectionsIds)
 	if err != nil {

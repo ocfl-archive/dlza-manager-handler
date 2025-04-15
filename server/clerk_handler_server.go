@@ -250,6 +250,15 @@ func (c *ClerkHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.
 	return objectPb, nil
 }
 
+func (c *ClerkHandlerServer) GetObjectBySignature(ctx context.Context, id *pb.Id) (*pb.Object, error) {
+	object, err := c.ObjectRepository.GetObjectBySignature(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not get object by signature: %s", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get object by signature: %s", id.Id)
+	}
+	return mapper.ConvertToObjectPb(object), nil
+}
+
 func (c *ClerkHandlerServer) GetObjectInstanceById(ctx context.Context, id *pb.Id) (*pb.ObjectInstance, error) {
 	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstanceById(id.Id)
 	if err != nil {
