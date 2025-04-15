@@ -79,6 +79,7 @@ service ClerkHandlerService {
 
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetObjectsByChecksum(dlzamanagerproto.Id) returns (dlzamanagerproto.Objects){}
+  rpc GetObjectBySignature(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){}
   rpc GetObjectInstanceById(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstance){};
   rpc GetFileById(dlzamanagerproto.Id) returns (dlzamanagerproto.File){};
   rpc GetObjectInstanceCheckById(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceCheck){};

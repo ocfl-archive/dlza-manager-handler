@@ -1406,6 +1406,7 @@ const (
 	ClerkHandlerService_UpdateCollection_FullMethodName                                   = "/handlerproto.ClerkHandlerService/UpdateCollection"
 	ClerkHandlerService_GetObjectById_FullMethodName                                      = "/handlerproto.ClerkHandlerService/GetObjectById"
 	ClerkHandlerService_GetObjectsByChecksum_FullMethodName                               = "/handlerproto.ClerkHandlerService/GetObjectsByChecksum"
+	ClerkHandlerService_GetObjectBySignature_FullMethodName                               = "/handlerproto.ClerkHandlerService/GetObjectBySignature"
 	ClerkHandlerService_GetObjectInstanceById_FullMethodName                              = "/handlerproto.ClerkHandlerService/GetObjectInstanceById"
 	ClerkHandlerService_GetFileById_FullMethodName                                        = "/handlerproto.ClerkHandlerService/GetFileById"
 	ClerkHandlerService_GetObjectInstanceCheckById_FullMethodName                         = "/handlerproto.ClerkHandlerService/GetObjectInstanceCheckById"
@@ -1464,6 +1465,7 @@ type ClerkHandlerServiceClient interface {
 	UpdateCollection(ctx context.Context, in *dlzamanagerproto.Collection, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error)
+	GetObjectBySignature(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetObjectInstanceById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstance, error)
 	GetFileById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.File, error)
 	GetObjectInstanceCheckById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceCheck, error)
@@ -1688,6 +1690,15 @@ func (c *clerkHandlerServiceClient) GetObjectById(ctx context.Context, in *dlzam
 func (c *clerkHandlerServiceClient) GetObjectsByChecksum(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Objects, error) {
 	out := new(dlzamanagerproto.Objects)
 	err := c.cc.Invoke(ctx, ClerkHandlerService_GetObjectsByChecksum_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clerkHandlerServiceClient) GetObjectBySignature(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
+	out := new(dlzamanagerproto.Object)
+	err := c.cc.Invoke(ctx, ClerkHandlerService_GetObjectBySignature_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1998,6 +2009,7 @@ type ClerkHandlerServiceServer interface {
 	UpdateCollection(context.Context, *dlzamanagerproto.Collection) (*dlzamanagerproto.Status, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error)
+	GetObjectBySignature(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetObjectInstanceById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstance, error)
 	GetFileById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.File, error)
 	GetObjectInstanceCheckById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceCheck, error)
@@ -2098,6 +2110,9 @@ func (UnimplementedClerkHandlerServiceServer) GetObjectById(context.Context, *dl
 }
 func (UnimplementedClerkHandlerServiceServer) GetObjectsByChecksum(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Objects, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsByChecksum not implemented")
+}
+func (UnimplementedClerkHandlerServiceServer) GetObjectBySignature(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectBySignature not implemented")
 }
 func (UnimplementedClerkHandlerServiceServer) GetObjectInstanceById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstance, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstanceById not implemented")
@@ -2579,6 +2594,24 @@ func _ClerkHandlerService_GetObjectsByChecksum_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClerkHandlerServiceServer).GetObjectsByChecksum(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClerkHandlerService_GetObjectBySignature_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClerkHandlerServiceServer).GetObjectBySignature(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClerkHandlerService_GetObjectBySignature_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClerkHandlerServiceServer).GetObjectBySignature(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3231,6 +3264,10 @@ var ClerkHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectsByChecksum",
 			Handler:    _ClerkHandlerService_GetObjectsByChecksum_Handler,
+		},
+		{
+			MethodName: "GetObjectBySignature",
+			Handler:    _ClerkHandlerService_GetObjectBySignature_Handler,
 		},
 		{
 			MethodName: "GetObjectInstanceById",
