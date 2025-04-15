@@ -116,7 +116,14 @@ func (o *ObjectRepositoryImpl) GetObjectBySignature(signature string) (models.Ob
 	var expiration pgtype.Date
 	var lastChanged time.Time
 	var created time.Time
-	err := o.Db.QueryRow(context.Background(), GetObjectBySignature, signature).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+	rows, err := o.Db.Query(context.Background(), GetObjectBySignature, signature)
+	if err != nil {
+		return object, errors.Wrapf(err, "Could not execute query: %v", GetObjectBySignature)
+	}
+	if !rows.Next() {
+		return object, nil
+	}
+	err = rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 	if err != nil {
