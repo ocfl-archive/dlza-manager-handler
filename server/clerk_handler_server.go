@@ -614,7 +614,7 @@ func (c *ClerkHandlerServer) GetAmountOfObjectsAndTotalSizeByTenantId(ctx contex
 }
 
 func (c *ClerkHandlerServer) GetStorageLocationsStatusForCollectionAlias(ctx context.Context, sizeAndCollectionAlias *pb.SizeAndId) (*pb.Id, error) {
-	status, err := c.StorageLocationService.GetStorageLocationsStatusForCollectionAlias(sizeAndCollectionAlias.Id, sizeAndCollectionAlias.Size)
+	status, err := c.StorageLocationService.GetStorageLocationsStatusForCollectionAlias(sizeAndCollectionAlias.Id, sizeAndCollectionAlias.Size, sizeAndCollectionAlias.Object.Signature, sizeAndCollectionAlias.Object.Head)
 	if err != nil {
 		c.Logger.Error().Msgf("Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%v'", sizeAndCollectionAlias.Id, err)
 		return nil, errors.Wrapf(err, "Could not GetStorageLocationsStatusForCollectionAlias for collection alias : '%v'", sizeAndCollectionAlias.Id)

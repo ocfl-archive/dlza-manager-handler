@@ -22,7 +22,7 @@ type StorageLocationServiceImpl struct {
 	StoragePartitionService   StoragePartitionService
 }
 
-func (s StorageLocationServiceImpl) GetStorageLocationsStatusForCollectionAlias(alias string, size int64) (string, error) {
+func (s StorageLocationServiceImpl) GetStorageLocationsStatusForCollectionAlias(alias string, size int64, signature string, head string) (string, error) {
 
 	collection, err := s.CollectionRepository.GetCollectionByAlias(alias)
 	if err != nil {
@@ -33,9 +33,9 @@ func (s StorageLocationServiceImpl) GetStorageLocationsStatusForCollectionAlias(
 		return "", errors.Wrapf(err, "Could not get storageLocations for collection with alias '%s'", alias)
 	}
 	storageLocations = GetCheapestStorageLocationsForQuality(storageLocations, collection.Quality)
-
+	objectPb := &pb.Object{Signature: signature, Head: head}
 	for _, storageLocation := range storageLocations {
-		_, err := s.StoragePartitionService.GetStoragePartitionForLocation(&pb.SizeAndId{Size: size, Id: storageLocation.Id})
+		_, err := s.StoragePartitionService.GetStoragePartitionForLocation(&pb.SizeAndId{Size: size, Id: storageLocation.Id, Object: objectPb})
 		if err != nil {
 			return "Could not get storagePartition for storageLocation " + storageLocation.Alias, errors.Wrapf(err, "Could not get storagePartition for storageLocation '%s'", storageLocation.Alias)
 		}
