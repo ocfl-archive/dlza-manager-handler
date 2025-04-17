@@ -62,7 +62,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 			" collection_id = $13, checksum = $14, authors = $15, holding = $16, expiration = $17, head = $18, versions = $19" +
 			" where id =$20"
 		_, err = tx.Exec(ctx, queryUpdateObject, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, time.Now(), objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, objectIns.Expiration, objectIns.Head, objectIns.Versions, objectId)
+			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, time.Now(), objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions, objectId)
 		if err != nil {
 			tx.Rollback(ctx)
 			return errors.Wrapf(err, "cannot update object in transaction")
