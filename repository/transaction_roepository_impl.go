@@ -86,7 +86,6 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 				return errors.Wrapf(err, "cannot update object instance in transaction")
 			}
 		}
-		return nil
 	}
 
 	//////// CREATE FILES
