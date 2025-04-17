@@ -67,7 +67,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 			tx.Rollback(ctx)
 			return errors.Wrapf(err, "cannot update object in transaction")
 		}
-		deleteFilesQuery := "DELETE FROM FILES WHERE object_id = $1"
+		deleteFilesQuery := "DELETE FROM FILE WHERE object_id = $1"
 		_, err = tx.Exec(ctx, deleteFilesQuery, objectId)
 		if err != nil {
 			tx.Rollback(ctx)
