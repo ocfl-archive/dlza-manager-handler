@@ -37,20 +37,20 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
 		GetObjectById: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
-       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT o WHERE ID = $1`,
+       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions, "binary" FROM OBJECT o WHERE ID = $1`,
 		GetObjectBySignature: `SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,"references", ingest_workflow,"user",
-       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT o WHERE signature = $1`,
+       address, created, last_changed, "size", id, collection_id, checksum, authors, holding, expiration, head, versions, "binary" FROM OBJECT o WHERE signature = $1`,
 		GetObjectByIdMv: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow," +
 			" \"user\", address, created, last_changed, size, id, collection_id, checksum, authors, holding, expiration, head, versions, total_file_size, total_file_count FROM mat_coll_obj o WHERE ID = $1",
 		CreateObject: "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
-			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions)" +
-			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id",
+			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions, \"binary\")" +
+			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id",
 		UpdateObject: "UPDATE OBJECT set signature = $1, sets = $2, identifiers = $3, title = $4," +
 			" alternative_titles = $5, description = $6, keywords = $7, \"references\" = $8, ingest_workflow = $9," +
 			" \"user\" = $10, address = $11, last_changed = $12, size = $13," +
-			" collection_id = $14, checksum = $15, authors = $16, holding = $17, expiration = $18, head = $19, versions = $20" +
-			" where id =$21",
-		GetObjectsByCollectionAlias: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, holding, expiration, head, versions FROM OBJECT where collection_id = $1",
+			" collection_id = $14, checksum = $15, authors = $16, holding = $17, expiration = $18, head = $19, versions = $20, \"binary\" = $21" +
+			" where id =$22",
+		GetObjectsByCollectionAlias: "SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,\"user\", address, created, last_changed, \"size\", id, collection_id, checksum, authors, holding, expiration, head, versions, \"binary\" FROM OBJECT where collection_id = $1",
 		GetResultingQualityForObject: "select sum(quality) from object o " +
 			" inner join object_instance oi on oi.object_id = o.id " +
 			" inner join storage_partition sp on sp.id = oi.storage_partition_id" +
@@ -79,7 +79,7 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 		date.Valid = true
 	}
 	err = o.Db.QueryRow(context.Background(), CreateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
-		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, date, object.Head, object.Versions).Scan(&id)
+		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, date, object.Head, object.Versions, object.Binary).Scan(&id)
 	if err != nil {
 		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObject)
 	}
@@ -94,7 +94,7 @@ func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {
 	var created time.Time
 	err := o.Db.QueryRow(context.Background(), GetObjectById, id).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object by id")
 	}
@@ -188,10 +188,11 @@ func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error)
 	var holding zeronull.Text
 	var lastChanged time.Time
 	var created time.Time
-
+	var totalFileSize zeronull.Int8
+	var totalFileCount zeronull.Int8
 	err := o.Db.QueryRow(context.Background(), GetObjectByIdMv, id).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.TotalFileSize, &object.TotalFileCount)
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalFileSize, &totalFileCount)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot GetObjectByIdMv")
 	}
@@ -204,12 +205,14 @@ func (o *ObjectRepositoryImpl) GetObjectByIdMv(id string) (models.Object, error)
 	object.Expiration = expiration.Time.Format(Layout)
 	object.LastChanged = lastChanged.Format(Layout)
 	object.Created = created.Format(Layout)
+	object.TotalFileSize = int64(totalFileSize)
+	object.TotalFileCount = int64(totalFileCount)
 	return object, nil
 }
 
 func (o *ObjectRepositoryImpl) UpdateObject(object models.Object) error {
 	_, err := o.Db.Exec(context.Background(), UpdateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
-		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, time.Now(), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, object.Expiration, object.Head, object.Versions, object.Id)
+		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, time.Now(), object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, object.Expiration, object.Head, object.Versions, object.Binary, object.Id)
 	if err != nil {
 		return errors.Wrapf(err, "cannot update object")
 	}
@@ -231,7 +234,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 		var created time.Time
 		err := rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %v", GetObjectsByCollectionAlias)
 		}

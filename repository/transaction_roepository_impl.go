@@ -41,10 +41,10 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	var objectId string
 	if objectIns.Head == "v1" {
 		queryObject := "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
-			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions)" +
-			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING id"
+			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions, \"binary\")" +
+			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id"
 		err = tx.QueryRow(ctx, queryObject, objectIns.Signature, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions).Scan(&objectId)
+			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions, objectIns.Binary).Scan(&objectId)
 		if err != nil {
 			tx.Rollback(ctx)
 			return errors.Wrapf(err, "Could not exequte query: '%s'  in transaction", queryObject)
@@ -89,14 +89,15 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	}
 
 	//////// CREATE FILES
-	queryCreateFile := "insert into File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)"
-
-	for _, file := range instanceWithPartitionAndObjectWithFiles {
-		file.File.ObjectId = objectId
-		_, err = tx.Exec(ctx, queryCreateFile, file.File.Checksum, file.File.Name, file.File.Size, file.File.MimeType, file.File.Pronom, file.File.Width, file.File.Height, file.File.Duration, file.File.ObjectId)
-		if err != nil {
-			tx.Rollback(ctx)
-			return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateFile)
+	if !objectIns.Binary {
+		queryCreateFile := "insert into File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+		for _, file := range instanceWithPartitionAndObjectWithFiles {
+			file.File.ObjectId = objectId
+			_, err = tx.Exec(ctx, queryCreateFile, file.File.Checksum, file.File.Name, file.File.Size, file.File.MimeType, file.File.Pronom, file.File.Width, file.File.Height, file.File.Duration, file.File.ObjectId)
+			if err != nil {
+				tx.Rollback(ctx)
+				return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateFile)
+			}
 		}
 	}
 
