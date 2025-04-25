@@ -125,7 +125,7 @@ func (o *ObjectRepositoryImpl) GetObjectBySignature(signature string) (models.Ob
 	}
 	err = rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
-		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object by signature")
 	}
