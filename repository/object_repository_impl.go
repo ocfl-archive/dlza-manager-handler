@@ -202,7 +202,7 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []stri
 
 	query := fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,
 	"references", ingest_workflow, "user", address, objf.created, last_changed, objf."size",
-	objf.id, collection_id, checksum, authors, holding, expiration, head, versions FROM FROM object o 
+	objf.id, collection_id, checksum, authors, holding, expiration, head, versions FROM object o 
 	INNER JOIN object_instance oi on o.id = oi.object_id 
 	LEFT JOIN object_instance_check oic on oi.id = oic.object_instance_id
 	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
