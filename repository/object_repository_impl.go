@@ -164,11 +164,64 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string,
 	AND oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
 	limit 1`, firstCondition, collectionsNeededString, collectionsNeededString)
 
-	err := o.Db.QueryRow(context.Background(), query, collectionId).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+	rows, err := o.Db.Query(context.Background(), query, collectionId)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThan")
+	}
+	if !rows.Next() {
+		return object, nil
+	}
+	err = rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThan")
+	}
+	object.Holding = string(holding)
+	if expiration.Valid {
+		object.Expiration = expiration.Time.Format(Layout)
+	} else {
+		object.Expiration = ""
+	}
+	object.Expiration = expiration.Time.Format(Layout)
+	object.LastChanged = lastChanged.Format(Layout)
+	object.Created = created.Format(Layout)
+	return object, nil
+}
+
+func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []string, timeBefore string) (models.Object, error) {
+	firstCondition := ""
+	if len(ids) != 0 {
+		firstCondition = fmt.Sprintf("and o.id not in ('%s')", strings.Join(ids, "','"))
+	}
+	var object models.Object
+	var holding zeronull.Text
+	var expiration pgtype.Date
+	var lastChanged time.Time
+	var created time.Time
+
+	query := fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,
+	"references", ingest_workflow, "user", address, objf.created, last_changed, objf."size",
+	objf.id, collection_id, checksum, authors, holding, expiration, head, versions FROM FROM object o 
+	INNER JOIN object_instance oi on o.id = oi.object_id 
+	LEFT JOIN object_instance_check oic on oi.id = oic.object_instance_id
+	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
+	%s
+	AND (oic.checktime < (now() - INTERVAL %s) OR oic.id IS NULL)
+	limit 1`, firstCondition, timeBefore)
+
+	rows, err := o.Db.Query(context.Background(), query)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThanWithChecks")
+	}
+	if !rows.Next() {
+		return object, nil
+	}
+	err = rows.Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
+	if err != nil {
+		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThanWithChecks")
 	}
 	object.Holding = string(holding)
 	if expiration.Valid {

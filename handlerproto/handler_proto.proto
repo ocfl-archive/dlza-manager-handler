@@ -14,22 +14,12 @@ import "dlza_proto.proto";
 import "defaultResponse.proto";
 
 service CheckerHandlerService {
-  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
-  rpc getAllObjectInstances(dlzamanagerproto.NoParam) returns (dlzamanagerproto.ObjectInstances) {};
   rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
   rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
   rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
-  rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
-  rpc GetRelevantStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations) {};
-  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
-  rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
-  rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
-  rpc GetObjectsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.Objects);
-  rpc GetAmountOfObjectsInCollection(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){};
-  rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
-  rpc GetObjectExceptListOlderThan(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
+  rpc GetObjectExceptListOlderThanWithChecks(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
 }
 
 service StorageHandlerHandlerService {

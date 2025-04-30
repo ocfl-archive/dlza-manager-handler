@@ -62,19 +62,18 @@ schema = "management_test"
 
 [log]
 level = "debug"
-
 [log.stash]
-#logstash_host="sb-uwf4.swissbib.unibas.ch"
 logstashhost="localhost"
-logstashport=5046
+#logstashhost="ub-log.ub.unibas.ch"
+logstashport=5047
 logstashtracelevel="ERROR"
-namespace="miniresolver"
+namespace="dlza_checker"
 dataset=""
-#dataset="logs-mediaserver"
+#dataset="almasync.alma2elastic"
 [log.stash.tls]
 type="file"
-ca=["certs/ca.crt"]
 interval="1h"
 [log.stash.tls.file]
-cert="certs/ub-log.ub.unibas.ch.cert.pem"
-key="certs/ub-log.ub.unibas.ch.key.pem"
+ca=["certs/ca-t.crt"]
+cert="certs/ub-log.ub.unibas-t.ch.cert.pem"
+key="certs/ub-log.ub.unibas-t.ch.key.pem"
