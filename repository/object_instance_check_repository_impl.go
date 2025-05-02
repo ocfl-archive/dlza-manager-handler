@@ -27,9 +27,9 @@ func CreateObjectInstanceCheckPreparedStatements(ctx context.Context, conn *pgx.
 
 	preparedStatements := map[string]string{
 		GetObjectInstanceCheckById: "SELECT * FROM OBJECT_INSTANCE_CHECK WHERE ID = $1",
-		CreateObjectInstanceCheck: "INSERT INTO OBJECT_INSTANCE_CHECK(error, message, object_instance_id)" +
-			" VALUES ($1, $2, $3) RETURNING id",
-		GetObjectInstanceChecksByObjectInstanceId: `SELECT oic.checktime, oic.error, oic.message, oic.id, oic.object_instance_id
+		CreateObjectInstanceCheck: "INSERT INTO OBJECT_INSTANCE_CHECK(error, message, object_instance_id, check_type)" +
+			" VALUES ($1, $2, $3, $4) RETURNING id",
+		GetObjectInstanceChecksByObjectInstanceId: `SELECT oic.checktime, oic.error, oic.message, oic.id, oic.object_instance_id, oic.check_type
 													FROM (
 													SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
 													FROM object_instance_check
@@ -47,7 +47,7 @@ func CreateObjectInstanceCheckPreparedStatements(ctx context.Context, conn *pgx.
 
 func (o *ObjectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInstanceCheck models.ObjectInstanceCheck) (string, error) {
 
-	row := o.Db.QueryRow(context.Background(), CreateObjectInstanceCheck, objectInstanceCheck.Error, objectInstanceCheck.Message, objectInstanceCheck.ObjectInstanceId)
+	row := o.Db.QueryRow(context.Background(), CreateObjectInstanceCheck, objectInstanceCheck.Error, objectInstanceCheck.Message, objectInstanceCheck.ObjectInstanceId, objectInstanceCheck.CheckType)
 
 	var id string
 	err := row.Scan(&id)
@@ -60,7 +60,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInst
 func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceCheckById(id string) (models.ObjectInstanceCheck, error) {
 	objectInstanceCheck := models.ObjectInstanceCheck{}
 	var checkTime time.Time
-	err := o.Db.QueryRow(context.Background(), GetObjectInstanceCheckById, id).Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+	err := o.Db.QueryRow(context.Background(), GetObjectInstanceCheckById, id).Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId, &objectInstanceCheck.CheckType)
 	if err != nil {
 		return models.ObjectInstanceCheck{}, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceCheckById)
 	}
@@ -80,7 +80,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	for rows.Next() {
 		var objectInstanceCheck models.ObjectInstanceCheck
 		var checkTime time.Time
-		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId, &objectInstanceCheck.CheckType)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for method: %v", GetObjectInstanceChecksByObjectInstanceId)
 		}
@@ -135,7 +135,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	for rows.Next() {
 		var objectInstanceCheck models.ObjectInstanceCheck
 		var checkTime time.Time
-		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId)
+		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId, &objectInstanceCheck.CheckType)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
