@@ -201,13 +201,15 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []stri
 	var created time.Time
 
 	query := fmt.Sprintf(`SELECT signature, sets, identifiers, title, alternative_titles, description, keywords,
-	"references", ingest_workflow, "user", address, objf.created, last_changed, objf."size",
-	objf.id, collection_id, checksum, authors, holding, expiration, head, versions FROM object o 
+	"references", ingest_workflow, "user", address, o.created, last_changed, o."size",
+	o.id, collection_id, checksum, authors, holding, expiration, head, versions  FROM object o 
 	INNER JOIN object_instance oi on o.id = oi.object_id 
-	LEFT JOIN object_instance_check oic on oi.id = oic.object_instance_id
+	LEFT JOIN (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
+		FROM management_test.object_instance_check) oic
+		WHERE oic.number_of_row = 1) oicf ON oicf.object_instance_id = oi.id
 	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
 	%s
-	AND (oic.checktime < (now() - INTERVAL %s) OR oic.id IS NULL)
+	AND (oicf.checktime < (now() - INTERVAL %s) OR oicf.check_type = 'exists' OR oicf.id IS NULL)
 	limit 1`, firstCondition, timeBefore)
 
 	rows, err := o.Db.Query(context.Background(), query)
