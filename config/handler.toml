@@ -1,0 +1,80 @@
+localaddr = ""
+domains = ["ubdlza"]
+bearer = "grmbl"
+resolveraddr = "[::1]:7777"
+#resolveraddr = "127.0.0.1:7777"
+resolvertimeout = "10m"
+actiontimeout = "15m"
+resolvernotfoundtimeout = "10s"
+externaladdr = "https://localhost:8765"
+dbconn = "%%DBCONN%%"
+
+#[grpcclient]
+#mediaserverdb = "localhost:7653"
+
+[client]
+type = "minivault"
+initialtimeout = "1h"
+[client.minivault]
+baseurl = "https://localhost:8759/api/v1"
+parenttoken = "pa.2224c8d251ad91fb.43aab7e209dfbcda" #pa.2dc483e73851c137.15d94e61e0b377f1
+tokentype = "client_cert"
+tokenpolicies = ["ubdlza.handler"]
+tokeninterval = "48h"
+tokenttl = "96h"
+certtype = "client_cert"
+dnss = []
+uris = ["grpc:miniresolverproto.MiniResolver"]
+ips = []
+certinterval = "36h"
+certttl = "48h"
+ca = ["certs/minivault.ca.pem"]
+usesystempool = false
+
+
+[server]
+type = "minivault"
+initialtimeout = "1h"
+[server.minivault]
+baseurl = "https://localhost:8759/api/v1"
+parenttoken = "pa.2224c8d251ad91fb.43aab7e209dfbcda" #pa.2dc483e73851c137.15d94e61e0b377f1
+tokentype = "server_cert"
+tokenpolicies = ["ubdlza.handler"]
+tokeninterval = "48h"
+tokenttl = "96h"
+certtype = "server_cert"
+dnss = ["ubdlza.handlerproto.DispatcherHandlerService","ubdlza.handlerproto.StorageHandlerHandlerService", "ubdlza.handlerproto.ClerkHandlerService", "ubdlza.handlerproto.CheckerHandlerService"]
+uris = []
+ips = []
+certinterval = "36h"
+certttl = "48h"
+ca = ["certs/minivault.ca.pem"]
+usesystempool = false
+
+[database]
+host = "localhost"
+port = "5000"
+user = "jarekp"
+password = ""
+dbname = "archive_prod"
+sslmode = "require"
+schema = "management_test"
+
+[log]
+level = "debug"
+
+[log.stash]
+#logstash_host="sb-uwf4.swissbib.unibas.ch"
+logstashhost="localhost"
+logstashport=5046
+logstashtracelevel="ERROR"
+namespace="miniresolver"
+dataset=""
+#dataset="logs-mediaserver"
+[log.stash.tls]
+type="file"
+ca=["certs/ca.crt"]
+interval="1h"
+[log.stash.tls.file]
+cert="certs/ub-log.ub.unibas.ch.cert.pem"
+key="certs/ub-log.ub.unibas.ch.key.pem"

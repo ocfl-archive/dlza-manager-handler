@@ -1,0 +1,123 @@
+syntax="proto3";
+
+option go_package = "github.com/ocfl-archive/dlza-manager-handler/handlerproto";
+option java_package = "ch.unibas.ub.handler.pg";
+option java_outer_classname = "HandlerProto";
+option java_multiple_files = true;
+option objc_class_prefix = "UBB";
+option csharp_namespace = "Unibas.UB.Handler.PG";
+
+package handlerproto;
+
+import "google/protobuf/empty.proto";
+import "dlza_proto.proto";
+import "defaultResponse.proto";
+
+service CheckerHandlerService {
+  rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
+  rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
+  rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
+  rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
+  rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
+  rpc GetObjectExceptListOlderThanWithChecks(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
+}
+
+service StorageHandlerHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
+  rpc TenantHasAccess(dlzamanagerproto.UploaderAccessObject) returns (dlzamanagerproto.Status) {};
+  rpc GetAllStorageLocations(google.protobuf.Empty) returns (dlzamanagerproto.StorageLocations){};
+  rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
+  rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
+  rpc SaveAllTableObjectsAfterCopyingStream(stream dlzamanagerproto.InstanceWithPartitionAndObjectWithFile) returns (dlzamanagerproto.Status);
+  rpc GetStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation);
+  rpc GetAndSaveStoragePartitionWithRelevantAlias(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.StoragePartition);
+  rpc GetObjectsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.Objects);
+  rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
+  rpc CreateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.Id);
+  rpc GetStoragePartitionsByStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.StoragePartitions);
+  rpc DeleteObjectInstance(dlzamanagerproto.Id) returns (dlzamanagerproto.Status);
+  rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
+  rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
+  rpc GetStorageLocationByObjectInstanceId (dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
+  rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
+}
+
+service ClerkHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
+
+  rpc FindTenantById(dlzamanagerproto.Id) returns (dlzamanagerproto.Tenant){};
+  rpc DeleteTenant(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
+  rpc SaveTenant(dlzamanagerproto.Tenant) returns (dlzamanagerproto.Status){};
+  rpc UpdateTenant(dlzamanagerproto.Tenant) returns (dlzamanagerproto.Status){};
+  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
+
+  rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
+  rpc SaveStorageLocation(dlzamanagerproto.StorageLocation) returns (dlzamanagerproto.Id){};
+  rpc UpdateStorageLocation(dlzamanagerproto.StorageLocation) returns (dlzamanagerproto.Status){};
+  rpc DeleteStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
+
+  rpc CreateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Id){};
+  rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status){};
+  rpc DeleteStoragePartitionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
+
+  rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
+  rpc GetCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Collection){};
+  rpc GetCollectionByIdFromMv(dlzamanagerproto.Id) returns (dlzamanagerproto.Collection){};
+  rpc DeleteCollectionById(dlzamanagerproto.Id) returns (dlzamanagerproto.Status){};
+  rpc CreateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Id){};
+  rpc UpdateCollection(dlzamanagerproto.Collection) returns (dlzamanagerproto.Status){};
+
+  rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
+  rpc GetObjectsByChecksum(dlzamanagerproto.Id) returns (dlzamanagerproto.Objects){}
+  rpc GetObjectBySignature(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){}
+  rpc GetObjectInstanceById(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstance){};
+  rpc GetFileById(dlzamanagerproto.Id) returns (dlzamanagerproto.File){};
+  rpc GetObjectInstanceCheckById(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceCheck){};
+  rpc GetStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation){};
+  rpc GetStoragePartitionById(dlzamanagerproto.Id) returns (dlzamanagerproto.StoragePartition){};
+
+  rpc FindAllTenantsPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Tenants){};
+  rpc GetCollectionsByTenantIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Collections){};
+  rpc GetObjectsByCollectionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Objects){}
+  rpc GetFilesByCollectionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Files){}
+  rpc GetMimeTypesForCollectionId(dlzamanagerproto.Pagination) returns (dlzamanagerproto.MimeTypes){}
+  rpc GetPronomsForCollectionId(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Pronoms){}
+  rpc GetObjectInstancesByObjectIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.ObjectInstances){}
+  rpc GetFilesByObjectIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.Files){}
+  rpc GetObjectInstanceChecksByObjectInstanceIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.ObjectInstanceChecks){}
+  rpc GetObjectInstancesByName(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances){}
+
+  rpc GetStorageLocationsByTenantOrCollectionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StorageLocations){}
+  rpc GetStoragePartitionsByLocationIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.StoragePartitions){}
+  rpc GetObjectInstancesByStoragePartitionIdPaginated(dlzamanagerproto.Pagination) returns (dlzamanagerproto.ObjectInstances){}
+  rpc GetStorageLocationsStatusForCollectionAlias(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.Id){}
+
+  rpc CheckStatus(dlzamanagerproto.Id) returns (dlzamanagerproto.StatusObject){}
+  rpc CreateStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Id){}
+  rpc AlterStatus(dlzamanagerproto.StatusObject) returns (dlzamanagerproto.Status){}
+  rpc GetResultingQualityForObject(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetNeededQualityForObject(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetStatusForObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfErrorsByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfErrorsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfObjectsForStorageLocationId(dlzamanagerproto.Id) returns (dlzamanagerproto.SizeAndId){}
+  rpc GetAmountOfObjectsAndTotalSizeByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
+  rpc GetSizeForAllObjectInstancesByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
+  rpc GetObjectInstancesBySignatureAndLocationsPathName(dlzamanagerproto.AliasAndLocationsName) returns (dlzamanagerproto.ObjectInstance) {}
+}
+
+service DispatcherHandlerService {
+  rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
+  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
+  rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
+  rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
+  rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
+  rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
+  rpc GetObjectExceptListOlderThan(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
+  rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
+  rpc GetExistingStorageLocationsCombinationsForCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocationsCombinationsForCollections){};
+  rpc GetCollectionsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.Collections){};
+  rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
+  rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status);
+  rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeAndId) returns (dlzamanagerproto.StoragePartition);
+}
