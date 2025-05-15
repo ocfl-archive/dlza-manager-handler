@@ -120,6 +120,7 @@ func (o *ObjectRepositoryImpl) GetObjectBySignature(signature string) (models.Ob
 	if err != nil {
 		return object, errors.Wrapf(err, "Could not execute query: %v", GetObjectBySignature)
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return object, nil
 	}
@@ -168,6 +169,7 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string,
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThan")
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return object, nil
 	}
@@ -189,7 +191,7 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string,
 	return object, nil
 }
 
-func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []string, timeBefore string) (models.Object, error) {
+func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.Object, error) {
 	firstCondition := ""
 	if len(ids) != 0 {
 		firstCondition = fmt.Sprintf("and o.id not in ('%s')", strings.Join(ids, "','"))
@@ -205,17 +207,18 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThanWithChecks(ids []stri
 	o.id, collection_id, checksum, authors, holding, expiration, head, versions  FROM object o 
 	INNER JOIN object_instance oi on o.id = oi.object_id 
 	LEFT JOIN (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
-		FROM management_test.object_instance_check) oic
+		FROM object_instance_check) oic
 		WHERE oic.number_of_row = 1) oicf ON oicf.object_instance_id = oi.id
 	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
 	%s
-	AND (oicf.checktime < (now() - INTERVAL %s) OR oicf.check_type = 'exists' OR oicf.id IS NULL)
-	limit 1`, firstCondition, timeBefore)
+	AND (oicf.checktime < (now() - INTERVAL %s) OR (oicf.check_type = 'exists' AND oicf.checktime < (now() - INTERVAL %s)) OR oicf.id IS NULL)
+	limit 1`, firstCondition, timeBefore, timeToWaitAvailability)
 
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return object, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThanWithChecks")
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return object, nil
 	}
@@ -279,6 +282,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectsByCollectionAlias)
 	}
+	defer rows.Close()
 	var objects []models.Object
 
 	for rows.Next() {
@@ -310,6 +314,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var object models.Object
 		var holding zeronull.Text
@@ -380,13 +385,12 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
 		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
-	o.Logger.Debug().Msgf("Database request retrieving objects was sent %s", time.Now())
 
 	rows, err := o.Db.Query(context.Background(), query)
-	o.Logger.Debug().Msgf("Database request retrieving objects returned rows %s", time.Now())
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
+	defer rows.Close()
 	var objects []models.Object
 	var totalItems int
 	for rows.Next() {

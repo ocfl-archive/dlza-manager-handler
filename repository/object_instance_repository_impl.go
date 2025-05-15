@@ -87,6 +87,7 @@ func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectI
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetAllObjectInstances)
 	}
+	defer rows.Close()
 	var objectInstances []models.ObjectInstance
 
 	for rows.Next() {
@@ -138,6 +139,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) (
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstancesByObjectId)
 	}
+	defer rows.Close()
 	var objectInstances []models.ObjectInstance
 
 	for rows.Next() {
@@ -161,6 +163,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByName(name string) ([]
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var objectInstance models.ObjectInstance
 		var created time.Time
@@ -212,7 +215,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPaginated(pag
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var objectInstances []models.ObjectInstance
 	var totalItems int
 	for rows.Next() {
@@ -266,7 +269,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var objectInstances []models.ObjectInstance
 	var totalItems int
 	for rows.Next() {

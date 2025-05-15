@@ -114,6 +114,7 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantId(tenantId string) ([]
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetCollectionsByTenantId)
 	}
+	defer rows.Close()
 	var collections []models.Collection
 
 	for rows.Next() {
@@ -143,6 +144,7 @@ func (c *CollectionRepositoryImpl) GetExistingStorageLocationsCombinationsForCol
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetExistingStorageLocationsCombinationsForCollectionId)
 	}
+	defer rows.Close()
 	var collections []models.CollectionWithExistingStorageLocationsCombinations
 
 	for rows.Next() {
@@ -236,6 +238,7 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
+	defer rows.Close()
 	var collections []models.Collection
 	var totalItems int
 	for rows.Next() {

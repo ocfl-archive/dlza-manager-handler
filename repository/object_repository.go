@@ -16,5 +16,5 @@ type ObjectRepository interface {
 	GetResultingQualityForObject(id string) (int, error)
 	GetNeededQualityForObject(id string) (int, error)
 	GetObjectExceptListOlderThan(collectionId string, ids []string, collectionsNeeded []string) (models.Object, error)
-	GetObjectExceptListOlderThanWithChecks(ids []string, timeBefore string) (models.Object, error)
+	GetObjectExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.Object, error)
 }

@@ -79,6 +79,7 @@ func (s *StorageLocationRepositoryImpl) GetAllStorageLocations() ([]models.Stora
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetAllStorageLocations)
 	}
+	defer rows.Close()
 	return getStorageLocationsFromRows(rows)
 }
 
@@ -87,6 +88,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantId(tenantId s
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationsByTenantId)
 	}
+	defer rows.Close()
 	return getStorageLocationsFromRows(rows)
 }
 
@@ -147,7 +149,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByObjectId(id string)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot get current storage locations")
 	}
-
+	defer rows.Close()
 	var storageLocations []models.StorageLocation
 	for rows.Next() {
 		var storageLocation models.StorageLocation
@@ -216,6 +218,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
+	defer rows.Close()
 	var storageLocations []models.StorageLocation
 	var totalItems int
 	for rows.Next() {

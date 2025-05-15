@@ -95,6 +95,7 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationId(locati
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionsByLocationId)
 	}
+	defer rows.Close()
 	var storagePartitions []models.StoragePartition
 
 	for rows.Next() {
@@ -145,7 +146,7 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationIdPaginat
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var storagePartitions []models.StoragePartition
 	var totalItems int
 	for rows.Next() {
