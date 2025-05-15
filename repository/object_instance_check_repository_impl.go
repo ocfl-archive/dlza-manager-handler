@@ -74,7 +74,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceChecksByObjectInstanceId)
 	}
-
+	defer rows.Close()
 	var objectInstanceChecks []models.ObjectInstanceCheck
 
 	for rows.Next() {
@@ -129,7 +129,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var objectInstanceChecks []models.ObjectInstanceCheck
 
 	for rows.Next() {

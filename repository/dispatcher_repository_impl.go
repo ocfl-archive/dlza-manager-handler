@@ -55,6 +55,7 @@ func (d *DispatcherRepositoryImpl) GetLowQualityCollectionsWithObjectIds() (map[
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot get GetLowQualityCollectionsWithObjectIds")
 	}
+	defer rows.Close()
 	collectionsWithObjectIds := make(map[string][]string)
 	for rows.Next() {
 		var objectId string

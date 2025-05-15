@@ -114,7 +114,7 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var files []models.File
 	for rows.Next() {
 		var file models.File
@@ -183,7 +183,7 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var files []models.File
 	for rows.Next() {
 		var file models.File
@@ -245,7 +245,7 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var totalItems int
 	mimeTypes := make([]models.MimeType, 0)
 	emptyMimeType := models.MimeType{}
@@ -310,7 +310,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
 	}
-
+	defer rows.Close()
 	var totalItems int
 	pronoms := make([]models.Pronom, 0)
 	emptyPronom := models.Pronom{}

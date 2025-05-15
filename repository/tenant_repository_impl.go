@@ -116,6 +116,7 @@ func (t *TenantRepositoryImpl) FindAllTenants() ([]models.Tenant, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query: %v", FindAllTenants)
 	}
+	defer rows.Close()
 	var tenants []models.Tenant
 
 	for rows.Next() {
@@ -148,6 +149,7 @@ func (t *TenantRepositoryImpl) FindAllTenantsPaginated(pagination models.Paginat
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not scan tenant for query: %v", query)
 	}
+	defer rows.Close()
 	var tenants []models.Tenant
 	var totalItems int
 
