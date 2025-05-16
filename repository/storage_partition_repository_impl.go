@@ -29,7 +29,7 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 
 	preparedStatements := map[string]string{
 		GetStoragePartition:                             "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
-		GetStoragePartitionByObjectSignatureAndLocation: `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2`,
+		GetStoragePartitionByObjectSignatureAndLocation: `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
 		CreateStoragePartition:                          "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
 		UpdateStoragePartition:                          "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7",
 		DeleteStoragePartition:                          "DELETE FROM STORAGE_PARTITION  where id =$1",
@@ -47,10 +47,10 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionByObjectSignatureAnd
 	storagePartition := models.StoragePartition{}
 	err := s.Db.QueryRow(context.Background(), GetStoragePartitionByObjectSignatureAndLocation, signature, locationId).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
 		&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
-	if err != nil {
-		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartition)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionByObjectSignatureAndLocation)
 	}
-	return storagePartition, err
+	return storagePartition, nil
 }
 
 func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models.StoragePartition) (string, error) {
