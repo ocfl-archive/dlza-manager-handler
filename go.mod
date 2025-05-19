@@ -5,9 +5,9 @@ go 1.24.3
 require (
 	emperror.dev/errors v0.8.1
 	github.com/BurntSushi/toml v1.5.0
-	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jackc/pgx/v5 v5.7.5
 	github.com/je4/trustutil/v2 v2.0.30
-	github.com/je4/utils/v2 v2.0.59
+	github.com/je4/utils/v2 v2.0.60
 	github.com/lib/pq v1.10.9
 	github.com/ocfl-archive/dlza-manager v1.0.0-beta11
 	github.com/stretchr/testify v1.10.0
@@ -15,7 +15,7 @@ require (
 	go.ub.unibas.ch/cloud/certloader/v2 v2.0.18
 	go.ub.unibas.ch/cloud/genericproto/v2 v2.0.4
 	go.ub.unibas.ch/cloud/miniresolver/v2 v2.0.33
-	google.golang.org/grpc v1.72.0
+	google.golang.org/grpc v1.72.1
 	google.golang.org/protobuf v1.36.6
 )
 
