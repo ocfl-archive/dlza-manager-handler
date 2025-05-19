@@ -58,7 +58,6 @@ user = "jarekp"
 password = ""
 dbname = "archive_prod"
 sslmode = "require"
-schema = "management_test"
 
 [log]
 level = "debug"

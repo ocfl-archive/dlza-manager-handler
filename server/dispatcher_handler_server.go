@@ -50,7 +50,7 @@ func (d *DispatcherHandlerServer) FindAllTenants(ctx context.Context, status *pb
 func (d *DispatcherHandlerServer) UpdateObjectInstance(ctx context.Context, objectInstancePb *pb.ObjectInstance) (*pb.NoParam, error) {
 	err := d.ObjectInstanceRepository.UpdateObjectInstance(mapper.ConvertToObjectInstance(objectInstancePb))
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get all object instances", err)
+		d.Logger.Error().Msgf("Could not get all object instances. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not get all object instances")
 	}
 	return nil, nil
@@ -59,8 +59,8 @@ func (d *DispatcherHandlerServer) UpdateObjectInstance(ctx context.Context, obje
 func (d *DispatcherHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartition *pb.StoragePartition) (*pb.Status, error) {
 	status, err := d.StoragePartitionService.UpdateStoragePartition(storagePartition)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not update storagePartition with ID: %v", storagePartition.Id, err)
-		return nil, errors.Wrapf(err, "Could not update storagePartition with ID: %v", storagePartition.Id)
+		d.Logger.Error().Msgf("Could not update storagePartition with ID: %s. err: %v", storagePartition.Id, err)
+		return nil, errors.Wrapf(err, "Could not update storagePartition with ID: %s", storagePartition.Id)
 	}
 	return status, nil
 }
@@ -68,8 +68,8 @@ func (d *DispatcherHandlerServer) UpdateStoragePartition(ctx context.Context, st
 func (d *DispatcherHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := d.ObjectInstanceRepository.GetObjectInstancesByObjectId(id.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get objectInstances for object ID", err)
-		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID")
+		d.Logger.Error().Msgf("Could not get objectInstances for object ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID %s", id.Id)
 	}
 	objectInstancesPb := make([]*pb.ObjectInstance, 0)
 	for _, objectInstance := range objectInstances {
@@ -82,8 +82,8 @@ func (d *DispatcherHandlerServer) GetObjectsInstancesByObjectId(ctx context.Cont
 func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
 	partition, err := d.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
-		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
+		d.Logger.Error().Msgf("Could not get storagePartition for storageLocation with ID %s. err: %v", sizeAndLocationId.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation with ID %s", sizeAndLocationId.Id)
 	}
 	return partition, nil
 }
@@ -91,8 +91,8 @@ func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Con
 func (d *DispatcherHandlerServer) GetStorageLocationsByTenantId(ctx context.Context, tenantId *pb.Id) (*pb.StorageLocations, error) {
 	storageLocations, err := d.StorageLocationRepository.GetStorageLocationsByTenantId(tenantId.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get storageLocations by tenant with id: '%v'", tenantId.Id, err)
-		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%v'", tenantId.Id)
+		d.Logger.Error().Msgf("Could not get storageLocations by tenant with id: '%s' . err: %v", tenantId.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocations by tenant with id: '%s'", tenantId.Id)
 	}
 	var storageLocationsPb []*pb.StorageLocation
 
@@ -106,7 +106,7 @@ func (d *DispatcherHandlerServer) GetStorageLocationsByTenantId(ctx context.Cont
 func (d *DispatcherHandlerServer) GetObjectExceptListOlderThan(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
 	object, err := d.ObjectRepository.GetObjectExceptListOlderThan(idsWithInterval.CollectionId, idsWithInterval.Ids, idsWithInterval.CollectionsIds)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId, err)
+		d.Logger.Error().Msgf("Could not GetObjectExceptListOlderThan for collection: %s. err: %v", idsWithInterval.CollectionId, err)
 		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThan for collection: %s", idsWithInterval.CollectionId)
 	}
 	return mapper.ConvertToObjectPb(object), nil
@@ -115,8 +115,8 @@ func (d *DispatcherHandlerServer) GetObjectExceptListOlderThan(ctx context.Conte
 func (d *DispatcherHandlerServer) GetStorageLocationByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
 	storageLocation, err := d.StorageLocationRepository.GetStorageLocationByObjectInstanceId(id.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get storage location by object instance id: %v", id.Id, err)
-		return nil, errors.Wrapf(err, "Could not get storage location by object instance id: %v", id.Id)
+		d.Logger.Error().Msgf("Could not get storage location by object instance id: %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storage location by object instance id: %s", id.Id)
 	}
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }
@@ -124,7 +124,7 @@ func (d *DispatcherHandlerServer) GetStorageLocationByObjectInstanceId(ctx conte
 func (d *DispatcherHandlerServer) GetExistingStorageLocationsCombinationsForCollectionId(ctx context.Context, id *pb.Id) (*pb.StorageLocationsCombinationsForCollections, error) {
 	collections, err := d.CollectionRepository.GetExistingStorageLocationsCombinationsForCollectionId(id.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not GetExistingStorageLocationsCombinationsForCollectionId for collection with ID: '%s'", id.Id, err)
+		d.Logger.Error().Msgf("Could not GetExistingStorageLocationsCombinationsForCollectionId for collection with ID: '%s'. err: %v", id.Id, err)
 		return nil, errors.Wrapf(err, "Could not GetExistingStorageLocationsCombinationsForCollectionId for collection with ID: '%s'", id.Id)
 	}
 	var collectionsPb []*pb.StorageLocationsCombinationsForCollection
@@ -138,8 +138,8 @@ func (d *DispatcherHandlerServer) GetExistingStorageLocationsCombinationsForColl
 func (d *DispatcherHandlerServer) GetCollectionsByTenantId(ctx context.Context, id *pb.Id) (*pb.Collections, error) {
 	collections, err := d.CollectionRepository.GetCollectionsByTenantId(id.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get collections by tenant with id: '%v'", id.Id, err)
-		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%v'", id.Id)
+		d.Logger.Error().Msgf("Could not get collections by tenant with id: '%s'. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get collections by tenant with id: '%s'", id.Id)
 	}
 	var collectionsPb []*pb.Collection
 
@@ -153,7 +153,7 @@ func (d *DispatcherHandlerServer) GetCollectionsByTenantId(ctx context.Context, 
 func (d *DispatcherHandlerServer) CreateObjectInstanceCheck(ctx context.Context, objectInstanceCheckPb *pb.ObjectInstanceCheck) (*pb.NoParam, error) {
 	_, err := d.ObjectInstanceCheckRepository.CreateObjectInstanceCheck(mapper.ConvertToObjectInstanceCheck(objectInstanceCheckPb))
 	if err != nil {
-		d.Logger.Error().Msgf("Could not create object instance check", err)
+		d.Logger.Error().Msgf("Could not create object instance check. err: %v", err)
 		return &pb.NoParam{}, errors.Wrapf(err, "Could not create object instance check")
 	}
 	return &pb.NoParam{}, nil
@@ -162,8 +162,8 @@ func (d *DispatcherHandlerServer) CreateObjectInstanceCheck(ctx context.Context,
 func (d *DispatcherHandlerServer) GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.ObjectInstanceChecks, error) {
 	objectInstanceChecks, err := d.ObjectInstanceCheckRepository.GetObjectInstanceChecksByObjectInstanceId(id.Id)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get objectInstanceChecks for object instance ID", err)
-		return nil, errors.Wrapf(err, "Could not get objectInstances for object instance ID")
+		d.Logger.Error().Msgf("Could not get objectInstanceChecks for object instance ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get objectInstances for object instance ID %s", id.Id)
 	}
 	objectInstanceChecksPb := make([]*pb.ObjectInstanceCheck, 0)
 	for _, objectInstanceCheck := range objectInstanceChecks {
@@ -171,4 +171,13 @@ func (d *DispatcherHandlerServer) GetObjectInstanceChecksByObjectInstanceId(ctx 
 		objectInstanceChecksPb = append(objectInstanceChecksPb, objectInstanceCheckPb)
 	}
 	return &pb.ObjectInstanceChecks{ObjectInstanceChecks: objectInstanceChecksPb}, nil
+}
+
+func (d *DispatcherHandlerServer) CreateObjectInstance(ctx context.Context, objectInstance *pb.ObjectInstance) (*pb.Id, error) {
+	id, err := d.ObjectInstanceRepository.CreateObjectInstance(mapper.ConvertToObjectInstance(objectInstance))
+	if err != nil {
+		d.Logger.Error().Msgf("Could not create objectInstance for object ID: '%s'. err: %v", objectInstance.ObjectId, err)
+		return nil, errors.Wrapf(err, "Could not create objectInstance for object ID: '%s'", objectInstance.ObjectId)
+	}
+	return &pb.Id{Id: id}, nil
 }

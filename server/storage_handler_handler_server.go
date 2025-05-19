@@ -52,13 +52,14 @@ func (c *StorageHandlerHandlerServer) SaveAllTableObjectsAfterCopyingStream(stre
 	}
 	collectionId, err := c.CollectionRepository.GetCollectionIdByAlias(instanceWithPartitionAndObjectWithFiles[0].CollectionAlias)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias, err)
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias: '%s'. err: %v", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias, err)
 		return errors.Wrapf(err, "Could not get collectionId for collection with alias: '%s'", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias)
 	}
 	instanceWithPartitionAndObjectWithFiles[0].Object.CollectionId = collectionId
 	err = c.TransactionRepository.SaveAllTableObjectsAfterCopying(instanceWithPartitionAndObjectWithFiles)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias, err)
+		c.Logger.Error().Msgf("Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s. err: %v", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias,
+			instanceWithPartitionAndObjectWithFiles[0].ObjectInstance.Path, err)
 		return errors.Wrapf(err, "Could not SaveAllTableObjectsAfterCopying for collection with alias: %s and path: %s", instanceWithPartitionAndObjectWithFiles[0].CollectionAlias,
 			instanceWithPartitionAndObjectWithFiles[0].ObjectInstance.Path)
 	}
@@ -74,12 +75,12 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx c
 
 	collection, err := c.CollectionRepository.GetCollectionByAlias(collectionAlias.CollectionAlias)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%v'", collectionAlias.CollectionAlias, err)
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%s'. err: %v", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get collectionId for collection with alias '%s'", collectionAlias.CollectionAlias)
 	}
 	storageLocations, err := c.StorageLocationRepository.GetStorageLocationsByTenantId(collection.TenantId)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storageLocations for collection with alias '%v'", collectionAlias.CollectionAlias, err)
+		c.Logger.Error().Msgf("Could not get storageLocations for collection with alias '%s'. err: %v", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get storageLocations for collection with alias '%v'", collectionAlias.CollectionAlias)
 	}
 	storageLocations = service.GetCheapestStorageLocationsForQuality(storageLocations, collection.Quality)
@@ -95,7 +96,7 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx c
 func (c *StorageHandlerHandlerServer) GetStorageLocationsByObjectId(ctx context.Context, id *pb.Id) (*pb.StorageLocations, error) {
 	storageLocations, err := c.StorageLocationRepository.GetStorageLocationsByObjectId(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get current storage locations", err)
+		c.Logger.Error().Msgf("Could not get current storage locations. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not get current storage locations")
 	}
 	storageLocationsPb := make([]*pb.StorageLocation, 0)
@@ -109,7 +110,7 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByObjectId(ctx context.
 func (c *StorageHandlerHandlerServer) GetAllStorageLocations(ctx context.Context, param *emptypb.Empty) (*pb.StorageLocations, error) {
 	storageLocations, err := c.StorageLocationRepository.GetAllStorageLocations()
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get GetAllStorageLocations", err)
+		c.Logger.Error().Msgf("Could not get GetAllStorageLocations. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not get GetAllStorageLocations")
 	}
 	storageLocationsPb := make([]*pb.StorageLocation, 0)
@@ -123,8 +124,8 @@ func (c *StorageHandlerHandlerServer) GetAllStorageLocations(ctx context.Context
 func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
 	storageLocation, err := c.StorageLocationRepository.GetStorageLocationById(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storageLocation for location ID", err)
-		return nil, errors.Wrapf(err, "Could not get storageLocation for location ID")
+		c.Logger.Error().Msgf("Could not get storageLocation for location ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocation for location ID %s", id.Id)
 	}
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }
@@ -132,7 +133,7 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context
 func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
 	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
+		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation with ID %s. err: %v", sizeAndLocationId.Id, err)
 		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
 	}
 	return partition, nil
@@ -141,7 +142,7 @@ func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context
 func (c *StorageHandlerHandlerServer) GetAndSaveStoragePartitionWithRelevantAlias(ctx context.Context, storagePartition *pb.StoragePartition) (*pb.StoragePartition, error) {
 	storagePartitionWithAlias, err := c.StoragePartitionService.GetAndSaveStoragePartitionWithRelevantAlias(storagePartition)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not fill storagePartition with alias", err)
+		c.Logger.Error().Msgf("Could not fill storagePartition with alias. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not fill storagePartition with alias")
 	}
 	return storagePartitionWithAlias, nil
@@ -150,13 +151,13 @@ func (c *StorageHandlerHandlerServer) GetObjectsByCollectionAlias(ctx context.Co
 
 	id, err := c.CollectionRepository.GetCollectionIdByAlias(collectionAlias.CollectionAlias)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%s'", err)
+		c.Logger.Error().Msgf("Could not get collectionId for collection with alias '%s'. err: %v", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get collectionId for collection with alias '%s'", collectionAlias.CollectionAlias)
 	}
 
 	objects, err := c.ObjectRepository.GetObjectsByCollectionId(id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get objects for collection with alias '%s'", err)
+		c.Logger.Error().Msgf("Could not get objects for collection with alias '%s'. err: %v", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get objects for collection with alias '%s'", collectionAlias.CollectionAlias)
 	}
 	objectsPb := make([]*pb.Object, 0)
@@ -170,7 +171,7 @@ func (c *StorageHandlerHandlerServer) GetObjectsByCollectionAlias(ctx context.Co
 func (c *StorageHandlerHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := c.ObjectInstanceRepository.GetObjectInstancesByObjectId(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get objectInstances for object ID", err)
+		c.Logger.Error().Msgf("Could not get objectInstances for object ID %s. err: %v", id.Id, err)
 		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID")
 	}
 	objectInstancesPb := make([]*pb.ObjectInstance, 0)
@@ -184,7 +185,7 @@ func (c *StorageHandlerHandlerServer) GetObjectsInstancesByObjectId(ctx context.
 func (c *StorageHandlerHandlerServer) CreateObjectInstance(ctx context.Context, objectInstance *pb.ObjectInstance) (*pb.Id, error) {
 	id, err := c.ObjectInstanceRepository.CreateObjectInstance(mapper.ConvertToObjectInstance(objectInstance))
 	if err != nil {
-		c.Logger.Error().Msgf("Could not create objectInstance for object ID: '%s'", err)
+		c.Logger.Error().Msgf("Could not create objectInstance for object ID: '%s'. err: %v", objectInstance.ObjectId, err)
 		return nil, errors.Wrapf(err, "Could not create objectInstance for object ID: '%s'", objectInstance.ObjectId)
 	}
 	return &pb.Id{Id: id}, nil
@@ -193,7 +194,7 @@ func (c *StorageHandlerHandlerServer) CreateObjectInstance(ctx context.Context, 
 func (c *StorageHandlerHandlerServer) GetStoragePartitionsByStorageLocationId(ctx context.Context, locationId *pb.Id) (*pb.StoragePartitions, error) {
 	partitions, err := c.StoragePartitionService.GetStoragePartitionsForLocationId(locationId)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation", err)
+		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation ID %s. err: %v", locationId.Id, err)
 		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
 	}
 	return partitions, nil
@@ -202,7 +203,7 @@ func (c *StorageHandlerHandlerServer) GetStoragePartitionsByStorageLocationId(ct
 func (c *StorageHandlerHandlerServer) DeleteObjectInstance(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	err := c.ObjectInstanceRepository.DeleteObjectInstance(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not delete objectInstance with ID: '%s'", id.Id, err)
+		c.Logger.Error().Msgf("Could not delete objectInstance with ID: '%s'. err: %v", id.Id, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete objectInstance with ID: '%s'", id.Id)
 	}
 	return &pb.Status{Ok: true}, nil
@@ -212,7 +213,7 @@ func (c *StorageHandlerHandlerServer) AlterStatus(ctx context.Context, statusPb 
 	status := models.ArchivingStatus{Status: statusPb.Status, LastChanged: statusPb.LastChanged, Id: statusPb.Id}
 	err := c.StatusRepository.AlterStatus(status)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not AlterStatus with id: '%s'", statusPb.Id, err)
+		c.Logger.Error().Msgf("Could not AlterStatus with id: '%s'. err: %v", statusPb.Id, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not AlterStatus with id: '%s'", statusPb.Id)
 	}
 	return &pb.Status{Ok: true}, nil
@@ -230,7 +231,7 @@ func (c *StorageHandlerHandlerServer) GetObjectById(ctx context.Context, id *pb.
 func (c *StorageHandlerHandlerServer) GetStorageLocationByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
 	storageLocation, err := c.StorageLocationRepository.GetStorageLocationByObjectInstanceId(id.Id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get storage location by id object instance id: %v", id.Id)
+		return nil, errors.Wrapf(err, "Could not get storage location by id object instance id: %s", id.Id)
 	}
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }

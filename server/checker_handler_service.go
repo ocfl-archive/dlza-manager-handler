@@ -21,7 +21,7 @@ type CheckerHandlerServer struct {
 func (c *CheckerHandlerServer) GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, id *pb.Id) (*pb.ObjectInstanceChecks, error) {
 	objectInstanceChecks, err := c.ObjectInstanceCheckRepository.GetObjectInstanceChecksByObjectInstanceId(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get objectInstanceChecks for object instance ID", err)
+		c.Logger.Error().Msgf("Could not get objectInstanceChecks for object instance ID %s. err: %v", id.Id, err)
 		return nil, errors.Wrapf(err, "Could not get objectInstances for object instance ID")
 	}
 	objectInstanceChecksPb := make([]*pb.ObjectInstanceCheck, 0)
@@ -35,8 +35,8 @@ func (c *CheckerHandlerServer) GetObjectInstanceChecksByObjectInstanceId(ctx con
 func (c *CheckerHandlerServer) UpdateObjectInstance(ctx context.Context, objectInstancePb *pb.ObjectInstance) (*pb.NoParam, error) {
 	err := c.ObjectInstanceRepository.UpdateObjectInstance(mapper.ConvertToObjectInstance(objectInstancePb))
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get all object instances", err)
-		return nil, errors.Wrapf(err, "Could not get all object instances")
+		c.Logger.Error().Msgf("Could not UpdateObjectInstance with ID %s. err: %v", objectInstancePb.Id, err)
+		return nil, errors.Wrapf(err, "Could not UpdateObjectInstance with ID %s", objectInstancePb.Id)
 	}
 	return nil, nil
 }
@@ -44,7 +44,7 @@ func (c *CheckerHandlerServer) UpdateObjectInstance(ctx context.Context, objectI
 func (c *CheckerHandlerServer) CreateObjectInstanceCheck(ctx context.Context, objectInstanceCheckPb *pb.ObjectInstanceCheck) (*pb.NoParam, error) {
 	_, err := c.ObjectInstanceCheckRepository.CreateObjectInstanceCheck(mapper.ConvertToObjectInstanceCheck(objectInstanceCheckPb))
 	if err != nil {
-		c.Logger.Error().Msgf("Could not create object instance check", err)
+		c.Logger.Error().Msgf("Could not create object instance check. err: %v", err)
 		return &pb.NoParam{}, errors.Wrapf(err, "Could not create object instance check")
 	}
 	return &pb.NoParam{}, nil
@@ -53,8 +53,8 @@ func (c *CheckerHandlerServer) CreateObjectInstanceCheck(ctx context.Context, ob
 func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*pb.Object, error) {
 	object, err := c.ObjectRepository.GetObjectById(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get object by id: %v", id.Id, err)
-		return nil, errors.Wrapf(err, "Could not get object by id: %v", id.Id)
+		c.Logger.Error().Msgf("Could not get object by id: %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get object by id: %s", id.Id)
 	}
 	return mapper.ConvertToObjectPb(object), nil
 }
@@ -62,7 +62,7 @@ func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*p
 func (c *CheckerHandlerServer) GetObjectExceptListOlderThanWithChecks(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
 	object, err := c.ObjectRepository.GetObjectExceptListOlderThanWithChecks(idsWithInterval.Ids, idsWithInterval.Interval, idsWithInterval.AvailabilityInterval)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not GetObjectExceptListOlderThanWithChecks. err: %s", err)
+		c.Logger.Error().Msgf("Could not GetObjectExceptListOlderThanWithChecks. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThanWithChecks")
 	}
 	return mapper.ConvertToObjectPb(object), nil
@@ -71,8 +71,8 @@ func (c *CheckerHandlerServer) GetObjectExceptListOlderThanWithChecks(ctx contex
 func (c *CheckerHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
 	objectInstances, err := c.ObjectInstanceRepository.GetObjectInstancesByObjectId(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get objectInstances for object ID", err)
-		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID")
+		c.Logger.Error().Msgf("Could not get objectInstances for object ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID %s", id.Id)
 	}
 	objectInstancesPb := make([]*pb.ObjectInstance, 0)
 	for _, objectInstance := range objectInstances {
