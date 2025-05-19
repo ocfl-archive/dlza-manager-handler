@@ -111,7 +111,7 @@ service DispatcherHandlerService {
   rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){};
   rpc UpdateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.NoParam) {};
   rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
-  rpc CreateObjectInstanceCheck (dlzamanagerproto.ObjectInstanceCheck) returns (dlzamanagerproto.NoParam) {};
+  rpc CreateObjectInstance(dlzamanagerproto.ObjectInstance) returns (dlzamanagerproto.Id);
   rpc GetStorageLocationsByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
   rpc GetObjectExceptListOlderThan(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
   rpc GetStorageLocationByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
