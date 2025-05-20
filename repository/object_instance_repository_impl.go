@@ -57,7 +57,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesBySignatureAndLocations
 	var created time.Time
 	err := o.Db.QueryRow(context.Background(), fmt.Sprintf("select * from object_instance where path like '%%/%s/%%%s%%'", locationsName, signature)).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 	if err != nil {
-		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %s", DeleteObjectInstance)
 	}
 	objectInstance.Created = created.Format(Layout)
 	return objectInstance, err
@@ -68,7 +68,7 @@ func (o *objectInstanceRepositoryImpl) GetAmountOfErrorsByCollectionId(id string
 	var amount int
 	err := row.Scan(&amount)
 	if err != nil {
-		return amount, errors.Wrapf(err, "Could not execute query for method: %v", GetAmountOfErrorsByCollectionId)
+		return amount, errors.Wrapf(err, "Could not execute query for method: %s", GetAmountOfErrorsByCollectionId)
 	}
 	return amount, nil
 }
@@ -77,7 +77,7 @@ func (o *objectInstanceRepositoryImpl) UpdateObjectInstance(objectInstance model
 	_, err := o.Db.Exec(context.Background(), UpdateObjectInstance, objectInstance.Status, objectInstance.Id)
 
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query for method: %v", UpdateObjectInstance)
+		return errors.Wrapf(err, "Could not execute query for method: %s", UpdateObjectInstance)
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (o *objectInstanceRepositoryImpl) UpdateObjectInstance(objectInstance model
 func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectInstance, error) {
 	rows, err := o.Db.Query(context.Background(), GetAllObjectInstances)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetAllObjectInstances)
+		return nil, errors.Wrapf(err, "Could not execute query for method: %s", GetAllObjectInstances)
 	}
 	defer rows.Close()
 	var objectInstances []models.ObjectInstance
@@ -96,7 +96,7 @@ func (o *objectInstanceRepositoryImpl) GetAllObjectInstances() ([]models.ObjectI
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for in method: %v", GetObjectInstancesByObjectId)
+			return nil, errors.Wrapf(err, "Could not scan rows for in method: %s", GetObjectInstancesByObjectId)
 		}
 		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
@@ -110,7 +110,7 @@ func (o *objectInstanceRepositoryImpl) CreateObjectInstance(objectInstance model
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObjectInstance)
+		return "", errors.Wrapf(err, "Could not execute query for method: %s", CreateObjectInstance)
 	}
 	return id, nil
 }
@@ -118,7 +118,7 @@ func (o *objectInstanceRepositoryImpl) CreateObjectInstance(objectInstance model
 func (o *objectInstanceRepositoryImpl) DeleteObjectInstance(id string) error {
 	_, err := o.Db.Exec(context.Background(), DeleteObjectInstance, id)
 	if err != nil {
-		return errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
+		return errors.Wrapf(err, "Could not execute query: %s", DeleteObjectInstance)
 	}
 	return nil
 }
@@ -128,7 +128,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstanceById(id string) (models.
 	var created time.Time
 	err := o.Db.QueryRow(context.Background(), GetObjectInstance, id).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 	if err != nil {
-		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %v", DeleteObjectInstance)
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %s", DeleteObjectInstance)
 	}
 	objectInstance.Created = created.Format(Layout)
 	return objectInstance, err
@@ -137,7 +137,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstanceById(id string) (models.
 func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) ([]models.ObjectInstance, error) {
 	rows, err := o.Db.Query(context.Background(), GetObjectInstancesByObjectId, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstancesByObjectId)
+		return nil, errors.Wrapf(err, "Could not execute query for method: %s", GetObjectInstancesByObjectId)
 	}
 	defer rows.Close()
 	var objectInstances []models.ObjectInstance
@@ -161,7 +161,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByName(name string) ([]
 	var objectInstances []models.ObjectInstance
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -170,7 +170,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByName(name string) ([]
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
@@ -201,19 +201,15 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPaginated(pag
 			secondCondition = fmt.Sprintf("and t.id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM OBJECT_INSTANCE oi"+
 		" inner join object o on oi.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField, firstCondition, secondCondition), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var objectInstances []models.ObjectInstance
@@ -224,7 +220,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPaginated(pag
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId, &totalItems)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
@@ -255,19 +251,15 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 			secondCondition = fmt.Sprintf("and t.id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT oi.*, count(*) over() as total_items FROM OBJECT_INSTANCE oi"+
 		" inner join storage_partition sp on oi.storage_partition_id = sp.id"+
 		" inner join storage_location sl on sl.id = sp.storage_location_id"+
 		" inner join tenant t on t.id = sl.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstance(pagination.SearchField, firstCondition, secondCondition), "oi."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var objectInstances []models.ObjectInstance
@@ -278,7 +270,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId, &totalItems)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)
@@ -290,8 +282,17 @@ func NewObjectInstanceRepository(db *pgxpool.Pool) ObjectInstanceRepository {
 	return &objectInstanceRepositoryImpl{Db: db}
 }
 
-func getLikeQueryForObjectInstance(searchKey string) string {
-	return strings.Replace("(oi.id::text like '_search_key_%' or lower(oi.path) like '%_search_key_%'"+
-		" or lower(oi.status::text) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForObjectInstance(searchKey string, firstCondition string, secondCondition string) string {
+	if searchKey != "" {
+		condition := ""
+		if firstCondition == "" && secondCondition == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (oi.id::text like '_search_key_%' or lower(oi.path) like '%_search_key_%'"+
+			" or lower(oi.status::text) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }
