@@ -224,14 +224,9 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 			secondCondition = fmt.Sprintf("and tenant_id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
 
 	query := fmt.Sprintf("SELECT *, count(*) over() FROM mat_coll_obj_file"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForCollection(pagination.SearchField),
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForCollection(pagination.SearchField, firstCondition, secondCondition),
 		pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 
 	rows, err := c.Db.Query(context.Background(), query)
@@ -260,8 +255,17 @@ func (c *CollectionRepositoryImpl) GetCollectionsByTenantIdPaginated(pagination 
 	return collections, totalItems, nil
 }
 
-func getLikeQueryForCollection(searchKey string) string {
-	return strings.Replace("(id::text like '_search_key_%' or lower(alias) like '%_search_key_%'"+
-		" or lower(name) like '%_search_key_%' or lower(owner_mail) like '%_search_key_%' or lower(owner) like '%_search_key_%' or lower(description) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForCollection(searchKey string, firstCondition string, secondCondition string) string {
+	if searchKey != "" {
+		condition := ""
+		if firstCondition == "" && secondCondition == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (id::text like '_search_key_%' or lower(alias) like '%_search_key_%'"+
+			" or lower(name) like '%_search_key_%' or lower(owner_mail) like '%_search_key_%' or lower(owner) like '%_search_key_%' or lower(description) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }
