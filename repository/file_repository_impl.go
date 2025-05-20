@@ -100,19 +100,15 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 			secondCondition = fmt.Sprintf("and t.id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT f.* FROM FILE f"+
 		" inner join object o on f.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField, firstCondition, secondCondition), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var files []models.File
@@ -124,24 +120,23 @@ func (f *FileRepositoryImpl) GetFilesByObjectIdPaginated(pagination models.Pagin
 		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		file.Width = int64(width)
 		file.Height = int64(height)
 		file.Duration = int64(duration)
 		files = append(files, file)
 	}
-
 	countQuery := fmt.Sprintf("SELECT count(*) as total_items FROM FILE f"+
 		" inner join object o on f.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField))
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField, firstCondition, secondCondition))
 	var totalItems int
 	countRow := f.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
+		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %s", countQuery)
 	}
 	return files, totalItems, nil
 }
@@ -169,19 +164,15 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 			secondCondition = fmt.Sprintf("and t.id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT f.* FROM FILE f"+
 		" inner join object o on f.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField, firstCondition, secondCondition), "f."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var files []models.File
@@ -193,7 +184,7 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 		err := rows.Scan(&file.Checksum, &file.Name, &file.Size, &file.MimeType,
 			&file.Pronom, &width, &height, &duration, &file.Id, &file.ObjectId)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		file.Width = int64(width)
 		file.Height = int64(height)
@@ -205,12 +196,12 @@ func (f *FileRepositoryImpl) GetFilesByCollectionIdPaginated(pagination models.P
 		" inner join object o on f.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField))
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForFile(pagination.SearchField, firstCondition, secondCondition))
 	var totalItems int
 	countRow := f.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
+		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %s", countQuery)
 	}
 	return files, totalItems, nil
 }
@@ -255,7 +246,7 @@ func (f *FileRepositoryImpl) GetMimeTypesForCollectionId(pagination models.Pagin
 		var id zeronull.Text
 		err := rows.Scan(&id, &mimeType.FileCount, &mimeType.FilesSize, &totalItems)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		mimeType.Id = string(id)
 		if mimeType.Id == "" {
@@ -308,7 +299,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		" %s %s group by mtfj.pronom order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := f.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var totalItems int
@@ -320,7 +311,7 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 		var id zeronull.Text
 		err := rows.Scan(&id, &pronom.FileCount, &pronom.FilesSize, &totalItems)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		pronomWithoutSpaces := strings.Replace(string(id), " ", "", -1)
 		pronom.Id = pronomWithoutSpaces
@@ -346,8 +337,17 @@ func (f *FileRepositoryImpl) GetPronomsForCollectionId(pagination models.Paginat
 	return pronoms, totalItems, nil
 }
 
-func getLikeQueryForFile(searchKey string) string {
-	return strings.Replace("(f.id::text like '_search_key_%' or lower(f.name::text) like '%_search_key_%' or f.checksum like '%_search_key_%'"+
-		" or lower(f.pronom) like '%_search_key_%' or lower(f.mime_type) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForFile(searchKey string, firstCondition string, secondCondition string) string {
+	if searchKey != "" {
+		condition := ""
+		if firstCondition == "" && secondCondition == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (f.id::text like '_search_key_%' or lower(f.name::text) like '%_search_key_%' or f.checksum like '%_search_key_%'"+
+			" or lower(f.pronom) like '%_search_key_%' or lower(f.mime_type) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }

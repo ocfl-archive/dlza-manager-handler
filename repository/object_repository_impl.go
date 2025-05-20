@@ -81,7 +81,7 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 	err = o.Db.QueryRow(context.Background(), CreateObject, object.Signature, object.Sets, object.Identifiers, object.Title, object.AlternativeTitles, object.Description,
 		object.Keywords, object.References, object.IngestWorkflow, object.User, object.Address, object.Size, object.CollectionId, object.Checksum, object.Authors, object.Holding, date, object.Head, object.Versions, object.Binary).Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObject)
+		return "", errors.Wrapf(err, "Could not execute query for method: %s", CreateObject)
 	}
 	return id, nil
 }
@@ -118,7 +118,7 @@ func (o *ObjectRepositoryImpl) GetObjectBySignature(signature string) (models.Ob
 	var created time.Time
 	rows, err := o.Db.Query(context.Background(), GetObjectBySignature, signature)
 	if err != nil {
-		return object, errors.Wrapf(err, "Could not execute query: %v", GetObjectBySignature)
+		return object, errors.Wrapf(err, "Could not execute query: %s", GetObjectBySignature)
 	}
 	defer rows.Close()
 	if !rows.Next() {
@@ -280,7 +280,7 @@ func (o *ObjectRepositoryImpl) UpdateObject(object models.Object) error {
 func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Object, error) {
 	rows, err := o.Db.Query(context.Background(), GetObjectsByCollectionAlias, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectsByCollectionAlias)
+		return nil, errors.Wrapf(err, "Could not execute query for method: %s", GetObjectsByCollectionAlias)
 	}
 	defer rows.Close()
 	var objects []models.Object
@@ -295,7 +295,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionId(id string) ([]models.Obj
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %v", GetObjectsByCollectionAlias)
+			return nil, errors.Wrapf(err, "Could not scan rows for query for method: %s", GetObjectsByCollectionAlias)
 		}
 		object.Holding = string(holding)
 		object.Expiration = expiration.Time.Format(Layout)
@@ -312,7 +312,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 	var objects []models.Object
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -325,7 +325,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByChecksum(checksum string) ([]models.O
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		object.Holding = string(holding)
 		object.Expiration = expiration.Time.Format(Layout)
@@ -377,18 +377,14 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 			secondCondition = fmt.Sprintf("and tenant_id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
 		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField, firstCondition, secondCondition), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var objects []models.Object
@@ -405,7 +401,7 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 			&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 			&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &totalFileSize, &totalFileCount, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &totalItems)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		object.Holding = string(holding)
 		object.TotalFileSize = int64(totalFileSize)
@@ -423,9 +419,18 @@ func NewObjectRepository(db *pgxpool.Pool, logger zLogger.ZLogger) ObjectReposit
 	return &ObjectRepositoryImpl{Db: db, Logger: logger}
 }
 
-func getLikeQueryForObject(searchKey string) string {
-	return strings.Replace("(id::text like '_search_key_%' or lower(signature) like '%_search_key_%'"+
-		" or lower(title) like '%_search_key_%' or lower(description) like '%_search_key_%' or lower(ingest_workflow) like '%_search_key_%'"+
-		" or lower(\"user\") like '%_search_key_%' or lower(address) like '%_search_key_%' or checksum like '%_search_key_%' or lower(authors::text) like '%_search_key_%' or lower(holding) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForObject(searchKey string, firstCondition string, secondCondition string) string {
+	if searchKey != "" {
+		condition := ""
+		if firstCondition == "" && secondCondition == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (id::text like '_search_key_%' or lower(signature) like '%_search_key_%'"+
+			" or lower(title) like '%_search_key_%' or lower(description) like '%_search_key_%' or lower(ingest_workflow) like '%_search_key_%'"+
+			" or lower(\"user\") like '%_search_key_%' or lower(address) like '%_search_key_%' or checksum like '%_search_key_%' or lower(authors::text) like '%_search_key_%' or lower(holding) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }

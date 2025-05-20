@@ -52,7 +52,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) CreateObjectInstanceCheck(objectInst
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
-		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateObjectInstanceCheck)
+		return "", errors.Wrapf(err, "Could not execute query for method: %s", CreateObjectInstanceCheck)
 	}
 	return id, nil
 }
@@ -72,7 +72,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 
 	rows, err := o.Db.Query(context.Background(), GetObjectInstanceChecksByObjectInstanceId, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectInstanceChecksByObjectInstanceId)
+		return nil, errors.Wrapf(err, "Could not execute query for method: %s", GetObjectInstanceChecksByObjectInstanceId)
 	}
 	defer rows.Close()
 	var objectInstanceChecks []models.ObjectInstanceCheck
@@ -82,7 +82,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 		var checkTime time.Time
 		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId, &objectInstanceCheck.CheckType)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Could not scan rows for method: %v", GetObjectInstanceChecksByObjectInstanceId)
+			return nil, errors.Wrapf(err, "Could not scan rows for method: %s", GetObjectInstanceChecksByObjectInstanceId)
 		}
 		objectInstanceCheck.CheckTime = checkTime.Format(Layout)
 		objectInstanceChecks = append(objectInstanceChecks, objectInstanceCheck)
@@ -114,20 +114,16 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 			secondCondition = fmt.Sprintf("and t.id in ('%s')", tenants)
 		}
 	}
-	if firstCondition == "" && secondCondition == "" {
-		firstCondition = "where"
-	} else {
-		secondCondition = secondCondition + " and"
-	}
+
 	query := fmt.Sprintf("SELECT oic.* FROM OBJECT_INSTANCE_CHECK oic"+
 		" inner join object_instance oi on oic.object_instance_id = oi.id"+
 		" inner join object o on oi.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField), "oic."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField, firstCondition, secondCondition), "oic."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
+		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
 	}
 	defer rows.Close()
 	var objectInstanceChecks []models.ObjectInstanceCheck
@@ -137,7 +133,7 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 		var checkTime time.Time
 		err := rows.Scan(&checkTime, &objectInstanceCheck.Error, &objectInstanceCheck.Message, &objectInstanceCheck.Id, &objectInstanceCheck.ObjectInstanceId, &objectInstanceCheck.CheckType)
 		if err != nil {
-			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
+			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %s", query)
 		}
 		objectInstanceCheck.CheckTime = checkTime.Format(Layout)
 		objectInstanceChecks = append(objectInstanceChecks, objectInstanceCheck)
@@ -147,12 +143,12 @@ func (o *ObjectInstanceCheckRepositoryImpl) GetObjectInstanceChecksByObjectInsta
 		" inner join object o on oi.object_id = o.id"+
 		" inner join collection c on c.id = o.collection_id"+
 		" inner join tenant t on t.id = c.tenant_id"+
-		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField))
+		" %s %s %s ", firstCondition, secondCondition, getLikeQueryForObjectInstanceCheck(pagination.SearchField, firstCondition, secondCondition))
 	var totalItems int
 	countRow := o.Db.QueryRow(context.Background(), countQuery)
 	err = countRow.Scan(&totalItems)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %v", countQuery)
+		return nil, 0, errors.Wrapf(err, "Could not scan countRow for query: %s", countQuery)
 	}
 	return objectInstanceChecks, totalItems, nil
 }
@@ -161,7 +157,16 @@ func NewObjectInstanceCheckRepository(db *pgxpool.Pool) ObjectInstanceCheckRepos
 	return &ObjectInstanceCheckRepositoryImpl{Db: db}
 }
 
-func getLikeQueryForObjectInstanceCheck(searchKey string) string {
-	return strings.Replace("(oic.id::text like '_search_key_%' or lower(oic.message) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForObjectInstanceCheck(searchKey string, firstCondition string, secondCondition string) string {
+	if searchKey != "" {
+		condition := ""
+		if firstCondition == "" && secondCondition == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (oic.id::text like '_search_key_%' or lower(oic.message) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }
