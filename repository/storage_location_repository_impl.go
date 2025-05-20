@@ -167,7 +167,6 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByObjectId(id string)
 
 func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionIdPaginated(pagination models.Pagination) ([]models.StorageLocation, int, error) {
 	tenantStatement := ""
-	likeStatement := getLikeQueryForStorageLocation(pagination.SearchField)
 	collectionStatement := ""
 
 	// tenantID filter
@@ -182,11 +181,6 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 			tenants := strings.Join(pagination.AllowedTenants, "','")
 			tenantStatement = tenantStatement + fmt.Sprintf(" and sl.tenant_id in ('%s')", tenants)
 		}
-	}
-	if tenantStatement == "" {
-		likeStatement = " where" + likeStatement
-	} else {
-		likeStatement = " and" + likeStatement
 	}
 	// collectionID filter
 	if pagination.SecondId != "" {
@@ -213,7 +207,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 		" group by sp.id) b"+
 		" group by storage_location_id) d"+
 		" on a.id = d.storage_location_id"+
-		" order by %s %s limit %s OFFSET %s ", tenantStatement, likeStatement, collectionStatement, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+		" order by %s %s limit %s OFFSET %s ", tenantStatement, getLikeQueryForStorageLocation(pagination.SearchField, tenantStatement), collectionStatement, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
 	rows, err := s.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %v", query)
@@ -257,9 +251,18 @@ func NewStorageLocationRepository(db *pgxpool.Pool) StorageLocationRepository {
 	return &StorageLocationRepositoryImpl{Db: db}
 }
 
-func getLikeQueryForStorageLocation(searchKey string) string {
-	return strings.Replace("(sl.id::text like '_search_key_%' or lower(sl.alias) like '%_search_key_%' or lower(sl.security_compliency) like '%_search_key_%')",
-		"_search_key_", searchKey, -1)
+func getLikeQueryForStorageLocation(searchKey string, tenantStatement string) string {
+	if searchKey != "" {
+		condition := ""
+		if tenantStatement == "" {
+			condition = "where"
+		} else {
+			condition = "and"
+		}
+		return condition + strings.Replace(" (sl.id::text like '_search_key_%' or lower(sl.alias) like '%_search_key_%' or lower(sl.security_compliency) like '%_search_key_%')",
+			"_search_key_", searchKey, -1)
+	}
+	return ""
 }
 
 func (s *StorageLocationRepositoryImpl) getOneNumberParameterById(id string, preparedStatement string) (int, error) {
