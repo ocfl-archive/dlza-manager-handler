@@ -28,25 +28,22 @@ func (o ObjectInstanceServiceImpl) GetStatusForObjectId(id string) (int, error) 
 		return 0, errors.Wrapf(err, "cannot get objectInstances by object id")
 	}
 
-	var numberWithErrors int
-	var numberWithoutErrors int
-	var numberToDelete int
+	var numberWithErrorsOrNew int
+	var numberToDeleteOrDeprecated int
 	for _, objectInstance := range objectInstances {
-		if objectInstance.Status == DeleteStatus {
-			numberToDelete++
+		if objectInstance.Status == DeleteStatus || objectInstance.Status == DeprecatedStatus {
+			numberToDeleteOrDeprecated++
 			continue
 		}
-		if objectInstance.Status == ErrorStatus || objectInstance.Status == NotAvailable {
-			numberWithErrors++
-		} else {
-			numberWithoutErrors++
+		if objectInstance.Status == ErrorStatus || objectInstance.Status == NotAvailable || objectInstance.Status == NewStatus {
+			numberWithErrorsOrNew++
 		}
 	}
 
-	if numberWithErrors == 0 {
+	if numberWithErrorsOrNew == 0 {
 		return 0, nil
 	} else {
-		if numberWithErrors == len(objectInstances)-numberToDelete {
+		if numberWithErrorsOrNew == len(objectInstances)-numberToDeleteOrDeprecated {
 			return 2, nil
 		} else {
 			return 1, nil

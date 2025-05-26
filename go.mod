@@ -15,7 +15,7 @@ require (
 	go.ub.unibas.ch/cloud/certloader/v2 v2.0.18
 	go.ub.unibas.ch/cloud/genericproto/v2 v2.0.4
 	go.ub.unibas.ch/cloud/miniresolver/v2 v2.0.33
-	google.golang.org/grpc v1.72.1
+	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
 )
 
