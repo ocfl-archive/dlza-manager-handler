@@ -8,6 +8,7 @@ type ObjectInstanceRepository interface {
 	DeleteObjectInstance(id string) error
 	GetObjectInstanceById(id string) (models.ObjectInstance, error)
 	GetObjectInstancesByObjectId(id string) ([]models.ObjectInstance, error)
+	GetObjectInstancesByObjectIdPositive(id string) ([]models.ObjectInstance, error)
 	GetObjectInstancesByObjectIdPaginated(pagination models.Pagination) ([]models.ObjectInstance, int, error)
 	GetObjectInstancesByPartitionIdPaginated(pagination models.Pagination) ([]models.ObjectInstance, int, error)
 	GetAllObjectInstances() ([]models.ObjectInstance, error)
