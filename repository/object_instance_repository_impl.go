@@ -36,7 +36,7 @@ func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn)
 		UpdateObjectInstance:                 "UPDATE OBJECT_INSTANCE set status = $1 where id = $2",
 		DeleteObjectInstance:                 "DELETE FROM OBJECT_INSTANCE  where id =$1",
 		GetObjectInstancesByObjectId:         "SELECT * FROM OBJECT_INSTANCE where object_id = $1",
-		GetObjectInstancesByObjectIdPositive: "SELECT * FROM OBJECT_INSTANCE where object_id = $1 AND status IN ('new', 'ok')",
+		GetObjectInstancesByObjectIdPositive: "SELECT * FROM OBJECT_INSTANCE where object_id = $1 AND status = 'ok'",
 		GetAllObjectInstances:                "SELECT * FROM OBJECT_INSTANCE",
 		GetAmountOfErrorsByCollectionId: "select count(oi.*) from collection c," +
 			" object o, object_instance oi" +

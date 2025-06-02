@@ -162,7 +162,7 @@ func (o *ObjectRepositoryImpl) GetObjectExceptListOlderThan(collectionId string,
 	where objf.collection_id = $1
 	%s
 	AND (objf.ok IS false OR NOT ((objf.locations @> %s) AND (objf.locations <@ %s)))
-	AND oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
+	AND oi.status = 'ok'
 	limit 1`, firstCondition, collectionsNeededString, collectionsNeededString)
 
 	rows, err := o.Db.Query(context.Background(), query, collectionId)
