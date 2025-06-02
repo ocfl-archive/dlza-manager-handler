@@ -47,9 +47,10 @@ func (o ObjectInstanceRepositoryMock) GetObjectInstanceById(id string) (models.O
 func (o ObjectInstanceRepositoryMock) GetObjectInstancesByObjectId(id string) ([]models.ObjectInstance, error) {
 	args := o.Called(id)
 
-	objectInstances0 := []models.ObjectInstance{{Status: newStatus}, {Status: newStatus}, {Status: newStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
-	objectInstances1 := []models.ObjectInstance{{Status: errorStatus}, {Status: newStatus}, {Status: newStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
+	objectInstances0 := []models.ObjectInstance{{Status: okStatus}, {Status: okStatus}, {Status: okStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
+	objectInstances1 := []models.ObjectInstance{{Status: errorStatus}, {Status: okStatus}, {Status: okStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
 	objectInstances2 := []models.ObjectInstance{{Status: errorStatus}, {Status: errorStatus}, {Status: errorStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
+	objectInstances3 := []models.ObjectInstance{{Status: newStatus}, {Status: newStatus}, {Status: newStatus}, {Status: deleteStatus}, {Status: deleteStatus}}
 
 	switch id {
 	case "1":
@@ -58,6 +59,8 @@ func (o ObjectInstanceRepositoryMock) GetObjectInstancesByObjectId(id string) ([
 		return objectInstances0, args.Error(0)
 	case "2":
 		return objectInstances2, args.Error(0)
+	case "3":
+		return objectInstances3, args.Error(0)
 	}
 
 	return nil, args.Error(0)
@@ -129,6 +132,20 @@ func TestGetStatusForObjectId2(t *testing.T) {
 	objectInstanceService := service.ObjectInstanceServiceImpl{ObjectInstanceRepository: repositoryMock}
 
 	status, _ := objectInstanceService.GetStatusForObjectId("2")
+
+	if status != 2 {
+		panic("TestGetStatusForObjectId2 failed")
+	}
+}
+
+func TestGetStatusForObjectId3(t *testing.T) {
+
+	repositoryMock := &ObjectInstanceRepositoryMock{}
+	repositoryMock.On("GetObjectInstancesByObjectId", "3").Return(nil, nil)
+
+	objectInstanceService := service.ObjectInstanceServiceImpl{ObjectInstanceRepository: repositoryMock}
+
+	status, _ := objectInstanceService.GetStatusForObjectId("3")
 
 	if status != 2 {
 		panic("TestGetStatusForObjectId2 failed")

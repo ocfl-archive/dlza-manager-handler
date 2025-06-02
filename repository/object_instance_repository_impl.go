@@ -14,13 +14,14 @@ import (
 )
 
 const (
-	GetObjectInstance               = "GetObjectInstance"
-	CreateObjectInstance            = "CreateObjectInstance"
-	DeleteObjectInstance            = "DeleteObjectInstance"
-	GetObjectInstancesByObjectId    = "GetObjectInstancesByObjectId"
-	GetAllObjectInstances           = "GetAllObjectInstances"
-	UpdateObjectInstance            = "UpdateObjectInstance"
-	GetAmountOfErrorsByCollectionId = "GetAmountOfErrorsByCollectionId"
+	GetObjectInstance                    = "GetObjectInstance"
+	CreateObjectInstance                 = "CreateObjectInstance"
+	DeleteObjectInstance                 = "DeleteObjectInstance"
+	GetObjectInstancesByObjectId         = "GetObjectInstancesByObjectId"
+	GetAllObjectInstances                = "GetAllObjectInstances"
+	UpdateObjectInstance                 = "UpdateObjectInstance"
+	GetAmountOfErrorsByCollectionId      = "GetAmountOfErrorsByCollectionId"
+	GetObjectInstancesByObjectIdPositive = "GetObjectInstancesByObjectIdPositive"
 )
 
 type objectInstanceRepositoryImpl struct {
@@ -30,12 +31,13 @@ type objectInstanceRepositoryImpl struct {
 func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
-		GetObjectInstance:            "SELECT * FROM OBJECT_INSTANCE o WHERE ID = $1",
-		CreateObjectInstance:         "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		UpdateObjectInstance:         "UPDATE OBJECT_INSTANCE set status = $1 where id = $2",
-		DeleteObjectInstance:         "DELETE FROM OBJECT_INSTANCE  where id =$1",
-		GetObjectInstancesByObjectId: "SELECT * FROM OBJECT_INSTANCE where object_id = $1",
-		GetAllObjectInstances:        "SELECT * FROM OBJECT_INSTANCE",
+		GetObjectInstance:                    "SELECT * FROM OBJECT_INSTANCE o WHERE ID = $1",
+		CreateObjectInstance:                 "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		UpdateObjectInstance:                 "UPDATE OBJECT_INSTANCE set status = $1 where id = $2",
+		DeleteObjectInstance:                 "DELETE FROM OBJECT_INSTANCE  where id =$1",
+		GetObjectInstancesByObjectId:         "SELECT * FROM OBJECT_INSTANCE where object_id = $1",
+		GetObjectInstancesByObjectIdPositive: "SELECT * FROM OBJECT_INSTANCE where object_id = $1 AND status IN ('new', 'ok')",
+		GetAllObjectInstances:                "SELECT * FROM OBJECT_INSTANCE",
 		GetAmountOfErrorsByCollectionId: "select count(oi.*) from collection c," +
 			" object o, object_instance oi" +
 			" where c.id = o.collection_id" +
@@ -149,6 +151,28 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectId(id string) (
 			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetObjectInstancesByObjectId)
+		}
+		objectInstance.Created = created.Format(Layout)
+		objectInstances = append(objectInstances, objectInstance)
+	}
+	return objectInstances, nil
+}
+
+func (o *objectInstanceRepositoryImpl) GetObjectInstancesByObjectIdPositive(id string) ([]models.ObjectInstance, error) {
+	rows, err := o.Db.Query(context.Background(), GetObjectInstancesByObjectIdPositive, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not execute query for method: %s", GetObjectInstancesByObjectIdPositive)
+	}
+	defer rows.Close()
+	var objectInstances []models.ObjectInstance
+
+	for rows.Next() {
+		var objectInstance models.ObjectInstance
+		var created time.Time
+		err := rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
+			&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetObjectInstancesByObjectIdPositive)
 		}
 		objectInstance.Created = created.Format(Layout)
 		objectInstances = append(objectInstances, objectInstance)

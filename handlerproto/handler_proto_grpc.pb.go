@@ -3033,6 +3033,7 @@ const (
 	DispatcherHandlerService_FindAllTenants_FullMethodName                                         = "/handlerproto.DispatcherHandlerService/FindAllTenants"
 	DispatcherHandlerService_UpdateObjectInstance_FullMethodName                                   = "/handlerproto.DispatcherHandlerService/UpdateObjectInstance"
 	DispatcherHandlerService_GetObjectsInstancesByObjectId_FullMethodName                          = "/handlerproto.DispatcherHandlerService/GetObjectsInstancesByObjectId"
+	DispatcherHandlerService_GetObjectInstancesByObjectIdPositive_FullMethodName                   = "/handlerproto.DispatcherHandlerService/GetObjectInstancesByObjectIdPositive"
 	DispatcherHandlerService_CreateObjectInstance_FullMethodName                                   = "/handlerproto.DispatcherHandlerService/CreateObjectInstance"
 	DispatcherHandlerService_GetStorageLocationsByTenantId_FullMethodName                          = "/handlerproto.DispatcherHandlerService/GetStorageLocationsByTenantId"
 	DispatcherHandlerService_GetObjectExceptListOlderThan_FullMethodName                           = "/handlerproto.DispatcherHandlerService/GetObjectExceptListOlderThan"
@@ -3052,6 +3053,7 @@ type DispatcherHandlerServiceClient interface {
 	FindAllTenants(ctx context.Context, in *dlzamanagerproto.NoParam, opts ...grpc.CallOption) (*dlzamanagerproto.Tenants, error)
 	UpdateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.NoParam, error)
 	GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
+	GetObjectInstancesByObjectIdPositive(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
 	CreateObjectInstance(ctx context.Context, in *dlzamanagerproto.ObjectInstance, opts ...grpc.CallOption) (*dlzamanagerproto.Id, error)
 	GetStorageLocationsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocations, error)
 	GetObjectExceptListOlderThan(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
@@ -3101,6 +3103,15 @@ func (c *dispatcherHandlerServiceClient) UpdateObjectInstance(ctx context.Contex
 func (c *dispatcherHandlerServiceClient) GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error) {
 	out := new(dlzamanagerproto.ObjectInstances)
 	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetObjectsInstancesByObjectId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dispatcherHandlerServiceClient) GetObjectInstancesByObjectIdPositive(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error) {
+	out := new(dlzamanagerproto.ObjectInstances)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetObjectInstancesByObjectIdPositive_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3196,6 +3207,7 @@ type DispatcherHandlerServiceServer interface {
 	FindAllTenants(context.Context, *dlzamanagerproto.NoParam) (*dlzamanagerproto.Tenants, error)
 	UpdateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.NoParam, error)
 	GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
+	GetObjectInstancesByObjectIdPositive(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
 	CreateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.Id, error)
 	GetStorageLocationsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocations, error)
 	GetObjectExceptListOlderThan(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error)
@@ -3223,6 +3235,9 @@ func (UnimplementedDispatcherHandlerServiceServer) UpdateObjectInstance(context.
 }
 func (UnimplementedDispatcherHandlerServiceServer) GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsInstancesByObjectId not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetObjectInstancesByObjectIdPositive(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstancesByObjectIdPositive not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) CreateObjectInstance(context.Context, *dlzamanagerproto.ObjectInstance) (*dlzamanagerproto.Id, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectInstance not implemented")
@@ -3333,6 +3348,24 @@ func _DispatcherHandlerService_GetObjectsInstancesByObjectId_Handler(srv interfa
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DispatcherHandlerServiceServer).GetObjectsInstancesByObjectId(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DispatcherHandlerService_GetObjectInstancesByObjectIdPositive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetObjectInstancesByObjectIdPositive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetObjectInstancesByObjectIdPositive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetObjectInstancesByObjectIdPositive(ctx, req.(*dlzamanagerproto.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3521,6 +3554,10 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObjectsInstancesByObjectId",
 			Handler:    _DispatcherHandlerService_GetObjectsInstancesByObjectId_Handler,
+		},
+		{
+			MethodName: "GetObjectInstancesByObjectIdPositive",
+			Handler:    _DispatcherHandlerService_GetObjectInstancesByObjectIdPositive_Handler,
 		},
 		{
 			MethodName: "CreateObjectInstance",

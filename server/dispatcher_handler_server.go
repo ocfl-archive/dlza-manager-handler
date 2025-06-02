@@ -79,6 +79,20 @@ func (d *DispatcherHandlerServer) GetObjectsInstancesByObjectId(ctx context.Cont
 	return &pb.ObjectInstances{ObjectInstances: objectInstancesPb}, nil
 }
 
+func (d *DispatcherHandlerServer) GetObjectInstancesByObjectIdPositive(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
+	objectInstances, err := d.ObjectInstanceRepository.GetObjectInstancesByObjectIdPositive(id.Id)
+	if err != nil {
+		d.Logger.Error().Msgf("Could not get objectInstances for object ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get objectInstances for object ID %s", id.Id)
+	}
+	objectInstancesPb := make([]*pb.ObjectInstance, 0)
+	for _, objectInstance := range objectInstances {
+		objectInstancePb := mapper.ConvertToObjectInstancePb(objectInstance)
+		objectInstancesPb = append(objectInstancesPb, objectInstancePb)
+	}
+	return &pb.ObjectInstances{ObjectInstances: objectInstancesPb}, nil
+}
+
 func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
 	partition, err := d.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
 	if err != nil {
