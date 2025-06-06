@@ -13,12 +13,15 @@ import (
 )
 
 const (
-	GetStoragePartition                             = "GetStoragePartition"
-	CreateStoragePartition                          = "CreateStoragePartition"
-	UpdateStoragePartition                          = "UpdateStoragePartition"
-	DeleteStoragePartition                          = "DeleteStoragePartition"
-	GetStoragePartitionsByLocationId                = "GetStoragePartitionsByLocationId"
-	GetStoragePartitionByObjectSignatureAndLocation = "GetStoragePartitionByObjectSignatureAndLocation"
+	GetStoragePartition                                    = "GetStoragePartition"
+	CreateStoragePartition                                 = "CreateStoragePartition"
+	UpdateStoragePartition                                 = "UpdateStoragePartition"
+	DeleteStoragePartition                                 = "DeleteStoragePartition"
+	GetStoragePartitionsByLocationId                       = "GetStoragePartitionsByLocationId"
+	GetStoragePartitionByObjectSignatureAndLocation        = "GetStoragePartitionByObjectSignatureAndLocation"
+	CreateStoragePartitionGroupElement                     = "CreateStoragePartitionGroupElement"
+	UpdateStoragePartitionGroupElement                     = "UpdateStoragePartitionGroupElement"
+	DeleteStoragePartitionGroupElementByStoragePartitionId = "DeleteStoragePartitionGroupElementByStoragePartitionId"
 )
 
 type storagePartitionRepositoryImpl struct {
@@ -28,12 +31,15 @@ type storagePartitionRepositoryImpl struct {
 func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
-		GetStoragePartition:                             "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
-		GetStoragePartitionByObjectSignatureAndLocation: `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
-		CreateStoragePartition:                          "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-		UpdateStoragePartition:                          "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7",
-		DeleteStoragePartition:                          "DELETE FROM STORAGE_PARTITION  where id =$1",
-		GetStoragePartitionsByLocationId:                "SELECT * FROM STORAGE_PARTITION WHERE storage_location_id = $1",
+		GetStoragePartition:                                    "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
+		GetStoragePartitionByObjectSignatureAndLocation:        `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
+		CreateStoragePartition:                                 "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		UpdateStoragePartition:                                 "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7",
+		DeleteStoragePartition:                                 "DELETE FROM STORAGE_PARTITION  where id =$1",
+		GetStoragePartitionsByLocationId:                       "SELECT * FROM STORAGE_PARTITION WHERE storage_location_id = $1",
+		CreateStoragePartitionGroupElement:                     "INSERT INTO STORAGE_PARTITION_GROUP_ELEM(alias, \"name\", partition_group_id) VALUES ($1, $2, $3) RETURNING id",
+		UpdateStoragePartitionGroupElement:                     "UPDATE STORAGE_PARTITION_GROUP_ELEM set name = $1, alias = $6 where alias =$7",
+		DeleteStoragePartitionGroupElementByStoragePartitionId: "DELETE FROM STORAGE_PARTITION_GROUP_ELEM  where partition_group_id =$1",
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -63,6 +69,24 @@ func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models
 	}
 	return id, nil
 }
+func (s *storagePartitionRepositoryImpl) CreateStoragePartitionGroupElement(partitionGroup models.StoragePartitionGroup) (string, error) {
+	row := s.Db.QueryRow(context.Background(), CreateStoragePartitionGroupElement, partitionGroup.Alias, partitionGroup.Name, partitionGroup.PartitionGroupId)
+
+	var id string
+	err := row.Scan(&id)
+	if err != nil {
+		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateStoragePartitionGroupElement)
+	}
+	return id, nil
+}
+
+func (s *storagePartitionRepositoryImpl) UpdateStoragePartitionGroupElement(partitionGroup models.StoragePartitionGroup) error {
+	_, err := s.Db.Exec(context.Background(), UpdateStoragePartitionGroupElement, partitionGroup.Name, partitionGroup.Alias, partitionGroup.Alias)
+	if err != nil {
+		return errors.Wrapf(err, "Could not execute query for method: %v", UpdateStoragePartitionGroupElement)
+	}
+	return nil
+}
 
 func (s *storagePartitionRepositoryImpl) UpdateStoragePartition(partition models.StoragePartition) error {
 	_, err := s.Db.Exec(context.Background(), UpdateStoragePartition, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Alias, partition.Id)
@@ -76,6 +100,14 @@ func (s *storagePartitionRepositoryImpl) DeleteStoragePartitionById(id string) e
 	_, err := s.Db.Exec(context.Background(), DeleteStoragePartition, id)
 	if err != nil {
 		return errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartition)
+	}
+	return nil
+}
+
+func (s *storagePartitionRepositoryImpl) DeleteStoragePartitionGroupElementByStoragePartitionId(partitionId string) error {
+	_, err := s.Db.Exec(context.Background(), DeleteStoragePartitionGroupElementByStoragePartitionId, partitionId)
+	if err != nil {
+		return errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartitionGroupElementByStoragePartitionId)
 	}
 	return nil
 }

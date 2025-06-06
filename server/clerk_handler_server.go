@@ -190,10 +190,16 @@ func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageL
 }
 
 func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Id, error) {
+
 	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
+	}
+	_, err = c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: id, Name: storagePartitionPb.Name, Alias: storagePartitionPb.Alias})
+	if err != nil {
+		c.Logger.Error().Msgf("Could not create CreateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
+		return nil, errors.Wrapf(err, "Could not create CreateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
 	}
 	return &pb.Id{Id: id}, nil
 }
@@ -204,11 +210,21 @@ func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storage
 		c.Logger.Error().Msgf("Could not update storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%s'", storagePartitionPb.Alias)
 	}
+	err = c.StoragePartitionRepository.UpdateStoragePartitionGroupElement(models.StoragePartitionGroup{Name: storagePartitionPb.Name, Alias: storagePartitionPb.Alias})
+	if err != nil {
+		c.Logger.Error().Msgf("Could not UpdateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not UpdateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
+	}
 	return &pb.Status{Ok: true}, nil
 }
 
 func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
-	err := c.StoragePartitionRepository.DeleteStoragePartitionById(id.Id)
+	err := c.StoragePartitionRepository.DeleteStoragePartitionGroupElementByStoragePartitionId(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not delete DeleteStoragePartitionGroupElementByStoragePartitionId with  partition id: '%s'. err: %v", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with partition id: '%s'", id.Id)
+	}
+	err = c.StoragePartitionRepository.DeleteStoragePartitionById(id.Id)
 	if err != nil {
 		c.Logger.Error().Msgf("Could not delete storagePartition with id: '%s'. err: %v", id.Id, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with id: '%s'", id.Id)
