@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
@@ -10,6 +11,7 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"strings"
 	"time"
 )
 
@@ -190,13 +192,17 @@ func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageL
 }
 
 func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Id, error) {
-
+	alias, groupAlias, err := getAliases(storagePartitionPb, c.StoragePartitionRepository)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not getAliases err: %v", err)
+	}
+	storagePartitionPb.Alias = alias
 	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
 	}
-	_, err = c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: id, Name: storagePartitionPb.Name, Alias: storagePartitionPb.Alias})
+	_, err = c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: id, Name: storagePartitionPb.Name, Alias: groupAlias})
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create CreateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create CreateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
@@ -205,12 +211,17 @@ func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storage
 }
 
 func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Status, error) {
-	err := c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	alias, groupAlias, err := getAliases(storagePartitionPb, c.StoragePartitionRepository)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not getAliases err: %v", err)
+	}
+	storagePartitionPb.Alias = alias
+	err = c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not update storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%s'", storagePartitionPb.Alias)
 	}
-	err = c.StoragePartitionRepository.UpdateStoragePartitionGroupElement(models.StoragePartitionGroup{Name: storagePartitionPb.Name, Alias: storagePartitionPb.Alias})
+	err = c.StoragePartitionRepository.UpdateStoragePartitionGroupElement(models.StoragePartitionGroup{Name: storagePartitionPb.Name, Alias: groupAlias})
 	if err != nil {
 		c.Logger.Error().Msgf("Could not UpdateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not UpdateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
@@ -656,4 +667,19 @@ func (c *ClerkHandlerServer) GetSizeForAllObjectInstancesByCollectionId(ctx cont
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size}
 	return &amountAndSizePb, nil
+}
+
+func getAliases(storagePartitionPb *pb.StoragePartition, repository repository.StoragePartitionRepository) (string, string, error) {
+	aliasParts := strings.Split(storagePartitionPb.Alias, "/")
+	if len(aliasParts) != 2 {
+		return "", "", errors.New("alias should have right format 'part1/part2'")
+	}
+	storagePartitionGroupElem, err := repository.GetStoragePartitionGroupElementByAlias(aliasParts[1])
+	if err != nil {
+		return "", "", errors.New(fmt.Sprintf("Could not GetStoragePartitionGroupElementByAlias for alias %s", aliasParts[1]))
+	}
+	if storagePartitionGroupElem.Id != "" && storagePartitionPb.Id != storagePartitionGroupElem.PartitionGroupId {
+		return "", "", errors.New("second alias already exists")
+	}
+	return aliasParts[0], aliasParts[1], nil
 }

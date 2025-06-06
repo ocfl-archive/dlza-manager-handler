@@ -8,6 +8,7 @@ type StoragePartitionRepository interface {
 	DeleteStoragePartitionGroupElementByStoragePartitionId(id string) error
 	DeleteStoragePartitionById(id string) error
 	GetStoragePartitionById(id string) (models.StoragePartition, error)
+	GetStoragePartitionGroupElementByAlias(alias string) (models.StoragePartitionGroup, error)
 	UpdateStoragePartition(partition models.StoragePartition) error
 	UpdateStoragePartitionGroupElement(partition models.StoragePartitionGroup) error
 	GetStoragePartitionsByLocationIdPaginated(pagination models.Pagination) ([]models.StoragePartition, int, error)

@@ -22,6 +22,7 @@ const (
 	CreateStoragePartitionGroupElement                     = "CreateStoragePartitionGroupElement"
 	UpdateStoragePartitionGroupElement                     = "UpdateStoragePartitionGroupElement"
 	DeleteStoragePartitionGroupElementByStoragePartitionId = "DeleteStoragePartitionGroupElementByStoragePartitionId"
+	GetStoragePartitionGroupElementByAlias                 = "GetStoragePartitionGroupElementByAlias"
 )
 
 type storagePartitionRepositoryImpl struct {
@@ -32,6 +33,7 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 
 	preparedStatements := map[string]string{
 		GetStoragePartition:                                    "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
+		GetStoragePartitionGroupElementByAlias:                 "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM o WHERE alias = $1",
 		GetStoragePartitionByObjectSignatureAndLocation:        `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
 		CreateStoragePartition:                                 "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
 		UpdateStoragePartition:                                 "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5, alias = $6 where id =$7",
@@ -69,6 +71,7 @@ func (s *storagePartitionRepositoryImpl) CreateStoragePartition(partition models
 	}
 	return id, nil
 }
+
 func (s *storagePartitionRepositoryImpl) CreateStoragePartitionGroupElement(partitionGroup models.StoragePartitionGroup) (string, error) {
 	row := s.Db.QueryRow(context.Background(), CreateStoragePartitionGroupElement, partitionGroup.Alias, partitionGroup.Name, partitionGroup.PartitionGroupId)
 
@@ -112,12 +115,22 @@ func (s *storagePartitionRepositoryImpl) DeleteStoragePartitionGroupElementBySto
 	return nil
 }
 
+func (s *storagePartitionRepositoryImpl) GetStoragePartitionGroupElementByAlias(alias string) (models.StoragePartitionGroup, error) {
+	storagePartitionGroup := models.StoragePartitionGroup{}
+	err := s.Db.QueryRow(context.Background(), GetStoragePartitionGroupElementByAlias, alias).Scan(&storagePartitionGroup.PartitionGroupId, &storagePartitionGroup.Alias,
+		&storagePartitionGroup.Id, &storagePartitionGroup.Name)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return storagePartitionGroup, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionGroupElementByAlias)
+	}
+	return storagePartitionGroup, err
+}
+
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionById(id string) (models.StoragePartition, error) {
 	storagePartition := models.StoragePartition{}
 	err := s.Db.QueryRow(context.Background(), GetStoragePartition, id).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
 		&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 	if err != nil {
-		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", DeleteStoragePartition)
+		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartition)
 	}
 	return storagePartition, err
 }
