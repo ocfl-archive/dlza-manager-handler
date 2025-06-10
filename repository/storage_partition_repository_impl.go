@@ -122,7 +122,7 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionGroupElementByAlias(
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return storagePartitionGroup, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionGroupElementByAlias)
 	}
-	return storagePartitionGroup, err
+	return storagePartitionGroup, nil
 }
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionById(id string) (models.StoragePartition, error) {
