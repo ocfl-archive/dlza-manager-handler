@@ -40,7 +40,7 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 		DeleteStoragePartition:                                 "DELETE FROM STORAGE_PARTITION  where id =$1",
 		GetStoragePartitionsByLocationId:                       "SELECT * FROM STORAGE_PARTITION WHERE storage_location_id = $1",
 		CreateStoragePartitionGroupElement:                     "INSERT INTO STORAGE_PARTITION_GROUP_ELEM(alias, \"name\", partition_group_id) VALUES ($1, $2, $3) RETURNING id",
-		UpdateStoragePartitionGroupElement:                     "UPDATE STORAGE_PARTITION_GROUP_ELEM set name = $1, alias = $6 where alias =$7",
+		UpdateStoragePartitionGroupElement:                     "UPDATE STORAGE_PARTITION_GROUP_ELEM set name = $1, alias = $2 where alias =$3",
 		DeleteStoragePartitionGroupElementByStoragePartitionId: "DELETE FROM STORAGE_PARTITION_GROUP_ELEM  where partition_group_id =$1",
 	}
 	for name, sqlStm := range preparedStatements {
