@@ -211,27 +211,7 @@ func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storage
 }
 
 func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Status, error) {
-	alias, groupAlias, err := getAliases(storagePartitionPb, c.StoragePartitionRepository)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not getAliases err: %v", err)
-	}
-	storagePartitionPb.Alias = alias
-	storagePartitionGroupElements, err := c.StoragePartitionRepository.GetStoragePartitionGroupElementsByStoragePartitionId(storagePartitionPb.Id)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetStoragePartitionGroupElementsByStoragePartitionId '%s'. err: %v", storagePartitionPb.Id, err)
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not UpdateStoragePartitionGroupElement '%s'", storagePartitionPb.Id)
-	}
-	if len(storagePartitionGroupElements) > 1 || len(storagePartitionGroupElements) == 0 {
-		c.Logger.Error().Msgf("You cannot update this StoragePartitionGroupElement for storage partition with id '%s'", storagePartitionPb.Id)
-		return &pb.Status{Ok: false}, errors.New(fmt.Sprintf("Could not UpdateStoragePartitionGroupElement '%s'", storagePartitionPb.Id))
-	}
-
-	err = c.StoragePartitionRepository.UpdateStoragePartitionGroupElement(models.StoragePartitionGroup{Name: storagePartitionPb.Name, Alias: groupAlias, Id: storagePartitionGroupElements[0].Id})
-	if err != nil {
-		c.Logger.Error().Msgf("Could not UpdateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
-		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not UpdateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
-	}
-	err = c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	err := c.StoragePartitionRepository.UpdateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not update storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not update storagePartition '%s'", storagePartitionPb.Alias)
