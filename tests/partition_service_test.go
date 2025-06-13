@@ -12,31 +12,6 @@ type StoragePartitionRepositoryMock struct {
 	mock.Mock
 }
 
-func (s *StoragePartitionRepositoryMock) CreateStoragePartitionGroupElement(partitionGroupElement models.StoragePartitionGroup) (string, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *StoragePartitionRepositoryMock) DeleteStoragePartitionGroupElementByStoragePartitionId(id string) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *StoragePartitionRepositoryMock) GetStoragePartitionGroupElementByAlias(alias string) (models.StoragePartitionGroup, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *StoragePartitionRepositoryMock) UpdateStoragePartitionGroupElement(partition models.StoragePartitionGroup) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *StoragePartitionRepositoryMock) GetStoragePartitionGroupElementsByStoragePartitionId(partitionGroupId string) ([]models.StoragePartitionGroup, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (s *StoragePartitionRepositoryMock) GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error) {
 	partition3 := models.StoragePartition{Name: "Partition3", Id: "1234-5678-4321-3333", MaxSize: 1000000, MaxObjects: 100, CurrentObjects: 23, CurrentSize: 150000, StorageLocationId: "1"}
 	return partition3, nil
