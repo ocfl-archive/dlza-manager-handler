@@ -33,13 +33,13 @@ type storagePartitionRepositoryImpl struct {
 func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
-		GetStoragePartition:                                    "SELECT * FROM STORAGE_PARTITION o WHERE ID = $1",
+		GetStoragePartition:                                    "SELECT * FROM STORAGE_PARTITION_JOINT_ALIAS o WHERE ID = $1",
 		GetStoragePartitionGroupElementByAlias:                 "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM o WHERE alias = $1",
-		GetStoragePartitionByObjectSignatureAndLocation:        `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
-		CreateStoragePartition:                                 "INSERT INTO STORAGE_PARTITION(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-		UpdateStoragePartition:                                 "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5 where id =$6",
-		DeleteStoragePartition:                                 "DELETE FROM STORAGE_PARTITION  where id =$1",
-		GetStoragePartitionsByLocationId:                       "SELECT * FROM STORAGE_PARTITION WHERE storage_location_id = $1",
+		GetStoragePartitionByObjectSignatureAndLocation:        `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition_joint_alias sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
+		CreateStoragePartition:                                 "INSERT INTO STORAGE_PARTITION_BASE(alias, \"name\", max_size, max_objects, current_size, current_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		UpdateStoragePartition:                                 "UPDATE STORAGE_PARTITION_BASE set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5 where id =$6",
+		DeleteStoragePartition:                                 "DELETE FROM STORAGE_PARTITION_BASE  where id =$1",
+		GetStoragePartitionsByLocationId:                       "SELECT * FROM STORAGE_PARTITION_JOINT_ALIAS WHERE storage_location_id = $1",
 		CreateStoragePartitionGroupElement:                     "INSERT INTO STORAGE_PARTITION_GROUP_ELEM(alias, \"name\", partition_group_id) VALUES ($1, $2, $3) RETURNING id",
 		UpdateStoragePartitionGroupElement:                     "UPDATE STORAGE_PARTITION_GROUP_ELEM set name = $1, alias = $2 where id =$3",
 		DeleteStoragePartitionGroupElementByStoragePartitionId: "DELETE FROM STORAGE_PARTITION_GROUP_ELEM  where partition_group_id =$1",
@@ -204,7 +204,7 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationIdPaginat
 	} else {
 		secondCondition = secondCondition + " and"
 	}
-	query := fmt.Sprintf("SELECT sp.*, count(*) over() as total_items FROM STORAGE_PARTITION sp"+
+	query := fmt.Sprintf("SELECT sp.*, count(*) over() as total_items FROM STORAGE_PARTITION_JOINT_ALIAS sp"+
 		" inner join storage_location sl on sl.id = sp.storage_location_id"+
 		" inner join tenant t on t.id = sl.tenant_id"+
 		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForStoragePartition(pagination.SearchField), "sp."+pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
