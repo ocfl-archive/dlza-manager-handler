@@ -204,7 +204,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 		" inner join collection c"+
 		" on c.id = o.collection_id"+
 		" %s"+
-		" group by sp.id) b"+
+		" group by sp.id, sp.storage_location_id) b"+
 		" group by storage_location_id) d"+
 		" on a.id = d.storage_location_id"+
 		" order by %s %s limit %s OFFSET %s ", tenantStatement, getLikeQueryForStorageLocation(pagination.SearchField, tenantStatement), collectionStatement, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
