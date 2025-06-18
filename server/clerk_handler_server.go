@@ -222,7 +222,7 @@ func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storage
 func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	storagePartitionGroupElem, err := c.StoragePartitionRepository.GetStoragePartitionGroupElementById(id.Id)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not delete GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'. err: %v", id.Id, err)
+		c.Logger.Error().Msgf("Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'. err: %v", id.Id, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'", id.Id)
 	}
 	storagePartitionGroupElements, err := c.StoragePartitionRepository.GetStoragePartitionGroupElementsByStoragePartitionId(storagePartitionGroupElem.PartitionGroupId)
@@ -232,7 +232,7 @@ func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id 
 	}
 	if len(storagePartitionGroupElements) > 1 {
 		c.Logger.Error().Msgf("You are not allowed to proceed with deleting partition with id: '%s'", id.Id)
-		return &pb.Status{Ok: false}, errors.New(fmt.Sprintf("Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'", id.Id))
+		return &pb.Status{Ok: false}, errors.New(fmt.Sprintf("You are not allowed to proceed with deleting partition with id: '%s'", id.Id))
 	}
 	err = c.StoragePartitionRepository.DeleteStoragePartitionGroupElementByStoragePartitionId(storagePartitionGroupElem.PartitionGroupId)
 	if err != nil {
