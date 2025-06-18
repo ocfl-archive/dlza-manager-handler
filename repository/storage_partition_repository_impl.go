@@ -5,6 +5,7 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
@@ -55,11 +56,16 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error) {
 	storagePartition := models.StoragePartition{}
+	var currentSize zeronull.Int8
 	err := s.Db.QueryRow(context.Background(), GetStoragePartitionByObjectSignatureAndLocation, signature, locationId).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
-		&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
+		&storagePartition.MaxObjects, &currentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionByObjectSignatureAndLocation)
 	}
+	if currentSize == 0 && storagePartition.CurrentObjects == 1 {
+		storagePartition.CurrentObjects = 0
+	}
+	storagePartition.CurrentSize = int64(currentSize)
 	return storagePartition, nil
 }
 
@@ -148,11 +154,16 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionGroupElementByAlias(
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionById(id string) (models.StoragePartition, error) {
 	storagePartition := models.StoragePartition{}
+	var currentSize zeronull.Int8
 	err := s.Db.QueryRow(context.Background(), GetStoragePartition, id).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
-		&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
+		&storagePartition.MaxObjects, &currentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 	if err != nil {
 		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartition)
 	}
+	if currentSize == 0 && storagePartition.CurrentObjects == 1 {
+		storagePartition.CurrentObjects = 0
+	}
+	storagePartition.CurrentSize = int64(currentSize)
 	return storagePartition, err
 }
 
@@ -163,14 +174,18 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationId(locati
 	}
 	defer rows.Close()
 	var storagePartitions []models.StoragePartition
-
+	var currentSize zeronull.Int8
 	for rows.Next() {
 		var storagePartition models.StoragePartition
-		err := rows.Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize, &storagePartition.MaxObjects, &storagePartition.CurrentSize,
+		err := rows.Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize, &storagePartition.MaxObjects, &currentSize,
 			&storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query in method: %v", GetStoragePartitionsByLocationId)
 		}
+		if currentSize == 0 && storagePartition.CurrentObjects == 1 {
+			storagePartition.CurrentObjects = 0
+		}
+		storagePartition.CurrentSize = int64(currentSize)
 		storagePartitions = append(storagePartitions, storagePartition)
 	}
 	return storagePartitions, nil
@@ -214,14 +229,19 @@ func (s *storagePartitionRepositoryImpl) GetStoragePartitionsByLocationIdPaginat
 	}
 	defer rows.Close()
 	var storagePartitions []models.StoragePartition
+	var currentSize zeronull.Int8
 	var totalItems int
 	for rows.Next() {
 		var storagePartition models.StoragePartition
 		err := rows.Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
-			&storagePartition.MaxObjects, &storagePartition.CurrentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId, &totalItems)
+			&storagePartition.MaxObjects, &currentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
 		}
+		if currentSize == 0 && storagePartition.CurrentObjects == 1 {
+			storagePartition.CurrentObjects = 0
+		}
+		storagePartition.CurrentSize = int64(currentSize)
 		storagePartitions = append(storagePartitions, storagePartition)
 	}
 	return storagePartitions, totalItems, nil
