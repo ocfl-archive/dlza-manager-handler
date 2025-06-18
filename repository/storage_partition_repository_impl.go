@@ -24,6 +24,7 @@ const (
 	UpdateStoragePartitionGroupElement                     = "UpdateStoragePartitionGroupElement"
 	DeleteStoragePartitionGroupElementByStoragePartitionId = "DeleteStoragePartitionGroupElementByStoragePartitionId"
 	GetStoragePartitionGroupElementByAlias                 = "GetStoragePartitionGroupElementByAlias"
+	GetStoragePartitionGroupElementById                    = "GetStoragePartitionGroupElementById"
 	GetStoragePartitionGroupElementsByStoragePartitionId   = "GetStoragePartitionGroupElementsByStoragePartitionId"
 )
 
@@ -44,6 +45,7 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 		CreateStoragePartitionGroupElement:                     "INSERT INTO STORAGE_PARTITION_GROUP_ELEM(alias, \"name\", partition_group_id) VALUES ($1, $2, $3) RETURNING id",
 		UpdateStoragePartitionGroupElement:                     "UPDATE STORAGE_PARTITION_GROUP_ELEM set name = $1, alias = $2 where id =$3",
 		DeleteStoragePartitionGroupElementByStoragePartitionId: "DELETE FROM STORAGE_PARTITION_GROUP_ELEM  where partition_group_id =$1",
+		GetStoragePartitionGroupElementById:                    "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM WHERE id =$1",
 		GetStoragePartitionGroupElementsByStoragePartitionId:   "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM WHERE partition_group_id =$1",
 	}
 	for name, sqlStm := range preparedStatements {
@@ -89,6 +91,16 @@ func (s *storagePartitionRepositoryImpl) CreateStoragePartitionGroupElement(part
 		return "", errors.Wrapf(err, "Could not execute query for method: %v", CreateStoragePartitionGroupElement)
 	}
 	return id, nil
+}
+
+func (s *storagePartitionRepositoryImpl) GetStoragePartitionGroupElementById(Id string) (models.StoragePartitionGroup, error) {
+	storagePartitionGroup := models.StoragePartitionGroup{}
+	err := s.Db.QueryRow(context.Background(), GetStoragePartitionGroupElementById, Id).Scan(&storagePartitionGroup.PartitionGroupId, &storagePartitionGroup.Alias,
+		&storagePartitionGroup.Id, &storagePartitionGroup.Name)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return storagePartitionGroup, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionGroupElementById)
+	}
+	return storagePartitionGroup, nil
 }
 
 func (s *storagePartitionRepositoryImpl) GetStoragePartitionGroupElementsByStoragePartitionId(partitionGroupId string) ([]models.StoragePartitionGroup, error) {
