@@ -189,11 +189,11 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 
 	query := fmt.Sprintf("select a.*, d.total_files_size, count(*) over() as total_items  from"+
 		" (select sl.*, sum(sp.max_size) as total_existing_volume from storage_location sl"+
-		" inner join storage_partition sp"+
+		" left join storage_partition sp"+
 		" on sl.id = sp.storage_location_id "+
 		" %s %s"+
 		" group by sl.id) a"+
-		" inner join"+
+		" left join"+
 		" (select b.storage_location_id, sum(total_files_size_for_instance) as total_files_size"+
 		" from (select sum(oi.size) as total_files_size_for_instance, sp.id as spid, sp.storage_location_id"+
 		" from storage_partition sp"+
