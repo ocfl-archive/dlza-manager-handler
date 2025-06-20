@@ -197,12 +197,12 @@ func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storage
 		return nil, errors.Wrapf(err, "Could not getAliases err: %v", err)
 	}
 	storagePartitionPb.Alias = alias
-	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	partitionGroupId, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
 	}
-	_, err = c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: id, Name: storagePartitionPb.Name, Alias: groupAlias})
+	id, err := c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: partitionGroupId, Name: storagePartitionPb.Name, Alias: groupAlias})
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create CreateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create CreateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
