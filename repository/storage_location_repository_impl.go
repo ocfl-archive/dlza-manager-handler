@@ -170,18 +170,12 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 	collectionStatement := ""
 
 	// tenantID filter
-	if pagination.Id == "" {
-		if len(pagination.AllowedTenants) != 0 {
-			tenants := strings.Join(pagination.AllowedTenants, "','")
-			tenantStatement = fmt.Sprintf(" where sl.tenant_id in ('%s')", tenants)
-		}
-	} else {
-		tenantStatement = fmt.Sprintf(" where sl.tenant_id = '%s'", pagination.Id)
-		if len(pagination.AllowedTenants) != 0 {
-			tenants := strings.Join(pagination.AllowedTenants, "','")
-			tenantStatement = tenantStatement + fmt.Sprintf(" and sl.tenant_id in ('%s')", tenants)
-		}
+	tenantStatement = fmt.Sprintf(" where sl.tenant_id = '%s'", pagination.Id)
+	if len(pagination.AllowedTenants) != 0 {
+		tenants := strings.Join(pagination.AllowedTenants, "','")
+		tenantStatement = tenantStatement + fmt.Sprintf(" and sl.tenant_id in ('%s')", tenants)
 	}
+
 	// collectionID filter
 	if pagination.SecondId != "" {
 		collectionStatement = fmt.Sprintf("where c.id = '%s'", pagination.SecondId)

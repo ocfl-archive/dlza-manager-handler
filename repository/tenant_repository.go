@@ -4,6 +4,7 @@ import "github.com/ocfl-archive/dlza-manager/models"
 
 type TenantRepository interface {
 	FindTenantById(id string) (models.Tenant, error)
+	FindTenantByCollectionId(id string) (models.Tenant, error)
 	FindTenantByKey(key string) (models.Tenant, error)
 	SaveTenant(tenant models.Tenant) error
 	UpdateTenant(tenant models.Tenant) error

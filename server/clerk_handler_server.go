@@ -373,6 +373,15 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantIdPaginated(ctx context.Conte
 }
 
 func (c *ClerkHandlerServer) GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
+	if pagination.Id == "" {
+		tenant, err := c.TenantRepository.FindTenantByCollectionId(pagination.SecondId)
+		if err != nil {
+			c.Logger.Error().Msgf("Could not get c by collection id: '%s'. err: %v", pagination.SecondId, err)
+			return nil, errors.Wrapf(err, "Could not get tenant by collection id: '%s'", pagination.SecondId)
+		}
+		pagination.Id = tenant.Id
+	}
+
 	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByTenantOrCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not get storageLocations by collection with id: '%s'. err: %v", pagination.Id, err)
