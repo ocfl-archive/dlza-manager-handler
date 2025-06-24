@@ -106,7 +106,7 @@ func (t *TenantRepositoryImpl) FindTenantByKey(key string) (models.Tenant, error
 func (t *TenantRepositoryImpl) FindTenantByCollectionId(collectionId string) (models.Tenant, error) {
 	var tenant models.Tenant
 	query := fmt.Sprintf("SELECT t.name, t.alias, t.person, t.email, t.id, t.api_key_id  FROM TENANT t, COLLECTION c"+
-		" where t.id = c.tenant_id and c.tenant_id = '%s'", collectionId)
+		" where t.id = c.tenant_id and c.id = '%s'", collectionId)
 	countRow := t.Db.QueryRow(context.Background(), query)
 	err := countRow.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
 	if err != nil {
