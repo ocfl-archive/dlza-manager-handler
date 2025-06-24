@@ -678,12 +678,5 @@ func getAliases(storagePartitionPb *pb.StoragePartition, repository repository.S
 	if len(aliasParts) != 2 {
 		return "", "", errors.New("alias should have right format 'part1/part2'")
 	}
-	storagePartitionGroupElem, err := repository.GetStoragePartitionGroupElementByAlias(aliasParts[1])
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("Could not GetStoragePartitionGroupElementByAlias for alias %s", aliasParts[1]))
-	}
-	if storagePartitionGroupElem.Id != "" && storagePartitionPb.Id != storagePartitionGroupElem.PartitionGroupId {
-		return "", "", errors.New("second alias already exists")
-	}
 	return aliasParts[0], aliasParts[1], nil
 }
