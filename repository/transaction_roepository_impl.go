@@ -89,7 +89,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	}
 
 	//////// CREATE FILES
-	if !objectIns.Binary {
+	if instanceWithPartitionAndObjectWithFiles[0].File != nil {
 		queryCreateFile := "insert into File(checksum, \"name\", \"size\", mime_type, pronom, width, height, duration, object_id) values($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 		for _, file := range instanceWithPartitionAndObjectWithFiles {
 			file.File.ObjectId = objectId
