@@ -17,15 +17,16 @@ import (
 )
 
 const (
-	GetObjectById                = "GetObjectById"
-	GetObjectBySignature         = "GetObjectBySignature"
-	UpdateObject                 = "UpdateObject"
-	CreateObject                 = "CreateObject"
-	GetObjectsByCollectionAlias  = "GetObjectsByCollectionAlias"
-	GetResultingQualityForObject = "GetResultingQualityForObject"
-	GetNeededQualityForObject    = "GetNeededQualityForObject"
-	GetObjectByIdMv              = "GetObjectByIdMv"
-	Layout                       = "2006-01-02 15:04:05"
+	GetObjectById                            = "GetObjectById"
+	GetObjectBySignature                     = "GetObjectBySignature"
+	UpdateObject                             = "UpdateObject"
+	CreateObject                             = "CreateObject"
+	GetObjectsByCollectionAlias              = "GetObjectsByCollectionAlias"
+	GetResultingQualityForObject             = "GetResultingQualityForObject"
+	GetNeededQualityForObject                = "GetNeededQualityForObject"
+	GetObjectBySignatureAndStorageLocationId = "GetObjectBySignatureAndStorageLocationId"
+	GetObjectByIdMv                          = "GetObjectByIdMv"
+	Layout                                   = "2006-01-02 15:04:05"
 )
 
 type ObjectRepositoryImpl struct {
@@ -59,6 +60,10 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 		GetNeededQualityForObject: "select quality from collection c " +
 			" inner join object o on c.id = o.collection_id" +
 			" where o.id = $1",
+		GetObjectBySignatureAndStorageLocationId: `select * from management_test.object o
+			inner join management_test.object_instance oi on o.id = oi.object_id
+			inner join management_test.storage_partition sp on sp.id = oi.storage_partition_id
+			where oi.status in ('ok', 'new') and signature = $1  and sp.storage_location_id = $2`,
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -84,6 +89,30 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 		return "", errors.Wrapf(err, "Could not execute query for method: %s", CreateObject)
 	}
 	return id, nil
+}
+
+func (o *ObjectRepositoryImpl) GetObjectBySignatureAndStorageLocationId(signature string, locationId string) (models.Object, error) {
+	object := models.Object{}
+	var holding zeronull.Text
+	var expiration pgtype.Date
+	var lastChanged time.Time
+	var created time.Time
+	err := o.Db.QueryRow(context.Background(), GetObjectBySignatureAndStorageLocationId, signature, locationId).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
+		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return object, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectBySignatureAndStorageLocationId)
+	}
+	object.Holding = string(holding)
+	if expiration.Valid {
+		object.Expiration = expiration.Time.Format(Layout)
+	} else {
+		object.Expiration = ""
+	}
+	object.Expiration = expiration.Time.Format(Layout)
+	object.LastChanged = lastChanged.Format(Layout)
+	object.Created = created.Format(Layout)
+	return object, nil
 }
 
 func (o *ObjectRepositoryImpl) GetObjectById(id string) (models.Object, error) {

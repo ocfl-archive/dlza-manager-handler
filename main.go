@@ -199,7 +199,7 @@ func main() {
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 	tenantService := service.NewTenantService(tenantRepository)
 
-	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository}
+	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository, ObjectRepository: objectRepository}
 
 	uploadService := service.NewUploaderService(tenantRepository, collectionRepository)
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)
