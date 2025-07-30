@@ -39,7 +39,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 
 	objectIns := instanceWithPartitionAndObjectWithFiles[0].Object
 	var objectId string
-	if objectIns.Head == "v1" {
+	if objectIns.Id == "" {
 		queryObject := "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
 			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions, \"binary\")" +
 			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id"
@@ -50,12 +50,6 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 			return errors.Wrapf(err, "Could not exequte query: '%s'  in transaction", queryObject)
 		}
 	} else {
-		oldVersionObject, err := t.ObjectRepository.GetObjectBySignature(objectIns.Signature)
-		objectId = oldVersionObject.Id
-		if err != nil {
-			tx.Rollback(ctx)
-			return errors.Wrapf(err, "cannot GetObjectBySignature in transaction")
-		}
 		queryUpdateObject := "UPDATE OBJECT set sets = $1, identifiers = $2, title = $3," +
 			" alternative_titles = $4, description = $5, keywords = $6, \"references\" = $7, ingest_workflow = $8," +
 			" \"user\" = $9, address = $10, last_changed = $11, size = $12," +
