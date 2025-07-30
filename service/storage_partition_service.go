@@ -13,6 +13,7 @@ import (
 
 type StoragePartitionService struct {
 	StoragePartitionRepository repository.StoragePartitionRepository
+	ObjectRepository           repository.ObjectRepository
 }
 
 const aliasStart = "partition-"
@@ -62,10 +63,13 @@ func (s *StoragePartitionService) GetStoragePartitionsForLocationId(locationId *
 }
 
 func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
-
+	object, err := s.ObjectRepository.GetObjectBySignatureAndStorageLocationId(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get GetObjectBySignatureAndStorageLocationId for Object and StorageLocation with signature and id: %s/%s ", sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+	}
 	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Id)
 	firstVersionPartition := models.StoragePartition{}
-	if sizeAndLocationId.Object != nil && sizeAndLocationId.Object.Head != "v1" {
+	if sizeAndLocationId.Object.Head != "v1" && object.Id != "" {
 		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
 	}
 
