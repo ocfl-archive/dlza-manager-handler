@@ -60,9 +60,9 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 		GetNeededQualityForObject: "select quality from collection c " +
 			" inner join object o on c.id = o.collection_id" +
 			" where o.id = $1",
-		GetObjectBySignatureAndStorageLocationId: `select * from management_test.object o
-			inner join management_test.object_instance oi on o.id = oi.object_id
-			inner join management_test.storage_partition sp on sp.id = oi.storage_partition_id
+		GetObjectBySignatureAndStorageLocationId: `select * from object o
+			inner join object_instance oi on o.id = oi.object_id
+			inner join storage_partition sp on sp.id = oi.storage_partition_id
 			where oi.status in ('ok', 'new') and signature = $1  and sp.storage_location_id = $2`,
 	}
 	for name, sqlStm := range preparedStatements {

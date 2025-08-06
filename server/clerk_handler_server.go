@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
@@ -10,6 +11,7 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"strings"
 	"time"
 )
 
@@ -190,10 +192,20 @@ func (c *ClerkHandlerServer) UpdateStorageLocation(ctx context.Context, storageL
 }
 
 func (c *ClerkHandlerServer) CreateStoragePartition(ctx context.Context, storagePartitionPb *pb.StoragePartition) (*pb.Id, error) {
-	id, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
+	alias, groupAlias, err := getAliases(storagePartitionPb, c.StoragePartitionRepository)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not getAliases err: %v", err)
+	}
+	storagePartitionPb.Alias = alias
+	partitionGroupId, err := c.StoragePartitionRepository.CreateStoragePartition(mapper.ConvertToStoragePartition(storagePartitionPb))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not create storagePartition '%s'. err: %v", storagePartitionPb.Alias, err)
 		return nil, errors.Wrapf(err, "Could not create storagePartition '%s'", storagePartitionPb.Alias)
+	}
+	id, err := c.StoragePartitionRepository.CreateStoragePartitionGroupElement(models.StoragePartitionGroup{PartitionGroupId: partitionGroupId, Name: storagePartitionPb.Name, Alias: groupAlias})
+	if err != nil {
+		c.Logger.Error().Msgf("Could not create CreateStoragePartitionGroupElement '%s'. err: %v", storagePartitionPb.Alias, err)
+		return nil, errors.Wrapf(err, "Could not create CreateStoragePartitionGroupElement '%s'", storagePartitionPb.Alias)
 	}
 	return &pb.Id{Id: id}, nil
 }
@@ -208,7 +220,26 @@ func (c *ClerkHandlerServer) UpdateStoragePartition(ctx context.Context, storage
 }
 
 func (c *ClerkHandlerServer) DeleteStoragePartitionById(ctx context.Context, id *pb.Id) (*pb.Status, error) {
-	err := c.StoragePartitionRepository.DeleteStoragePartitionById(id.Id)
+	storagePartitionGroupElem, err := c.StoragePartitionRepository.GetStoragePartitionGroupElementById(id.Id)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'. err: %v", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'", id.Id)
+	}
+	storagePartitionGroupElements, err := c.StoragePartitionRepository.GetStoragePartitionGroupElementsByStoragePartitionId(storagePartitionGroupElem.PartitionGroupId)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'. err: %v", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not GetStoragePartitionGroupElementsByStoragePartitionId with partition id: '%s'", id.Id)
+	}
+	if len(storagePartitionGroupElements) > 1 {
+		c.Logger.Error().Msgf("You are not allowed to proceed with deleting partition with id: '%s'", id.Id)
+		return &pb.Status{Ok: false}, errors.New(fmt.Sprintf("You are not allowed to proceed with deleting partition with id: '%s'", id.Id))
+	}
+	err = c.StoragePartitionRepository.DeleteStoragePartitionGroupElementByStoragePartitionId(storagePartitionGroupElem.PartitionGroupId)
+	if err != nil {
+		c.Logger.Error().Msgf("Could not delete DeleteStoragePartitionGroupElementByStoragePartitionId with partition id: '%s'. err: %v", id.Id, err)
+		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with partition id: '%s'", id.Id)
+	}
+	err = c.StoragePartitionRepository.DeleteStoragePartitionById(storagePartitionGroupElem.PartitionGroupId)
 	if err != nil {
 		c.Logger.Error().Msgf("Could not delete storagePartition with id: '%s'. err: %v", id.Id, err)
 		return &pb.Status{Ok: false}, errors.Wrapf(err, "Could not delete storagePartition with id: '%s'", id.Id)
@@ -342,6 +373,15 @@ func (c *ClerkHandlerServer) GetCollectionsByTenantIdPaginated(ctx context.Conte
 }
 
 func (c *ClerkHandlerServer) GetStorageLocationsByTenantOrCollectionIdPaginated(ctx context.Context, pagination *pb.Pagination) (*pb.StorageLocations, error) {
+	if pagination.Id == "" {
+		tenant, err := c.TenantRepository.FindTenantByCollectionId(pagination.SecondId)
+		if err != nil {
+			c.Logger.Error().Msgf("Could not get c by collection id: '%s'. err: %v", pagination.SecondId, err)
+			return nil, errors.Wrapf(err, "Could not get tenant by collection id: '%s'", pagination.SecondId)
+		}
+		pagination.Id = tenant.Id
+	}
+
 	storageLocations, totalItems, err := c.StorageLocationRepository.GetStorageLocationsByTenantOrCollectionIdPaginated(mapper.ConvertToPagination(pagination))
 	if err != nil {
 		c.Logger.Error().Msgf("Could not get storageLocations by collection with id: '%s'. err: %v", pagination.Id, err)
@@ -640,4 +680,12 @@ func (c *ClerkHandlerServer) GetSizeForAllObjectInstancesByCollectionId(ctx cont
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size}
 	return &amountAndSizePb, nil
+}
+
+func getAliases(storagePartitionPb *pb.StoragePartition, repository repository.StoragePartitionRepository) (string, string, error) {
+	aliasParts := strings.Split(storagePartitionPb.Alias, "/")
+	if len(aliasParts) != 2 {
+		return "", "", errors.New("alias should have right format 'part1/part2'")
+	}
+	return aliasParts[0], aliasParts[1], nil
 }

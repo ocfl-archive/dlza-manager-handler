@@ -170,18 +170,12 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 	collectionStatement := ""
 
 	// tenantID filter
-	if pagination.Id == "" {
-		if len(pagination.AllowedTenants) != 0 {
-			tenants := strings.Join(pagination.AllowedTenants, "','")
-			tenantStatement = fmt.Sprintf(" where sl.tenant_id in ('%s')", tenants)
-		}
-	} else {
-		tenantStatement = fmt.Sprintf(" where sl.tenant_id = '%s'", pagination.Id)
-		if len(pagination.AllowedTenants) != 0 {
-			tenants := strings.Join(pagination.AllowedTenants, "','")
-			tenantStatement = tenantStatement + fmt.Sprintf(" and sl.tenant_id in ('%s')", tenants)
-		}
+	tenantStatement = fmt.Sprintf(" where sl.tenant_id = '%s'", pagination.Id)
+	if len(pagination.AllowedTenants) != 0 {
+		tenants := strings.Join(pagination.AllowedTenants, "','")
+		tenantStatement = tenantStatement + fmt.Sprintf(" and sl.tenant_id in ('%s')", tenants)
 	}
+
 	// collectionID filter
 	if pagination.SecondId != "" {
 		collectionStatement = fmt.Sprintf("where c.id = '%s'", pagination.SecondId)
@@ -189,11 +183,11 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 
 	query := fmt.Sprintf("select a.*, d.total_files_size, count(*) over() as total_items  from"+
 		" (select sl.*, sum(sp.max_size) as total_existing_volume from storage_location sl"+
-		" inner join storage_partition sp"+
+		" left join storage_partition sp"+
 		" on sl.id = sp.storage_location_id "+
 		" %s %s"+
 		" group by sl.id) a"+
-		" inner join"+
+		" left join"+
 		" (select b.storage_location_id, sum(total_files_size_for_instance) as total_files_size"+
 		" from (select sum(oi.size) as total_files_size_for_instance, sp.id as spid, sp.storage_location_id"+
 		" from storage_partition sp"+
@@ -204,7 +198,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 		" inner join collection c"+
 		" on c.id = o.collection_id"+
 		" %s"+
-		" group by sp.id) b"+
+		" group by sp.id, sp.storage_location_id) b"+
 		" group by storage_location_id) d"+
 		" on a.id = d.storage_location_id"+
 		" order by %s %s limit %s OFFSET %s ", tenantStatement, getLikeQueryForStorageLocation(pagination.SearchField, tenantStatement), collectionStatement, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
