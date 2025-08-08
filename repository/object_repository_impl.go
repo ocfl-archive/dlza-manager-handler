@@ -413,8 +413,8 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		status := strings.SplitAfter(pagination.SearchField, Status)[1]
 		query = fmt.Sprintf("select mo.signature, mo.sets, mo.identifiers, mo.title, mo.alternative_titles, mo.description, mo.keywords, mo.references, mo.ingest_workflow,"+
 			" mo.user, mo.address, mo.created, mo.last_changed, mo.size, mo.id, mo.collection_id, mo.checksum, mo.total_file_size, mo.total_file_count,"+
-			" mo.authors, mo.holding, mo.expiration, mo.head, mo.versions, count(*) over() from management_prod.col_obj_inst coi"+
-			" inner join management_prod.mat_coll_obj mo"+
+			" mo.authors, mo.holding, mo.expiration, mo.head, mo.versions, count(*) over() from col_obj_inst coi"+
+			" inner join mat_coll_obj mo"+
 			" on mo.id = coi.id"+
 			" %s %s and status = '%s' "+
 			" group by mo.id,mo.signature, mo.sets, mo.identifiers, mo.title, mo.alternative_titles, mo.description, mo.keywords, mo.references, mo.ingest_workflow, mo.user, mo.address, mo.created, mo.last_changed, mo.size, mo.expiration, mo.authors, mo.holding, mo.collection_id, mo.checksum, mo.head, mo.versions, mo.total_file_size, mo.total_file_count, mo.tenant_id"+
