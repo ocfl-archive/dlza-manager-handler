@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	Status                                   = "status::"
 	GetObjectById                            = "GetObjectById"
 	GetObjectBySignature                     = "GetObjectBySignature"
 	UpdateObject                             = "UpdateObject"
@@ -407,10 +408,22 @@ func (o *ObjectRepositoryImpl) GetObjectsByCollectionIdPaginated(pagination mode
 		}
 	}
 
-	query := fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
-		"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
-		" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField, firstCondition, secondCondition), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
-
+	query := ""
+	if strings.Contains(pagination.SearchField, Status) {
+		status := strings.SplitAfter(pagination.SearchField, Status)[1]
+		query = fmt.Sprintf("select mo.signature, mo.sets, mo.identifiers, mo.title, mo.alternative_titles, mo.description, mo.keywords, mo.references, mo.ingest_workflow,"+
+			" mo.user, mo.address, mo.created, mo.last_changed, mo.size, mo.id, mo.collection_id, mo.checksum, mo.total_file_size, mo.total_file_count,"+
+			" mo.authors, mo.holding, mo.expiration, mo.head, mo.versions, count(*) over() from management_prod.col_obj_inst coi"+
+			" inner join management_prod.mat_coll_obj mo"+
+			" on mo.id = coi.id"+
+			" %s %s and status = '%s' "+
+			" group by mo.id,mo.signature, mo.sets, mo.identifiers, mo.title, mo.alternative_titles, mo.description, mo.keywords, mo.references, mo.ingest_workflow, mo.user, mo.address, mo.created, mo.last_changed, mo.size, mo.expiration, mo.authors, mo.holding, mo.collection_id, mo.checksum, mo.head, mo.versions, mo.total_file_size, mo.total_file_count, mo.tenant_id"+
+			" order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, status, pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	} else {
+		query = fmt.Sprintf("SELECT signature, sets, identifiers, title, alternative_titles, description, keywords, \"references\", ingest_workflow,"+
+			"\"user\", address, created, last_changed, size, id, collection_id, checksum, total_file_size, total_file_count, authors, holding, expiration, head, versions, count(*) over() FROM mat_coll_obj"+
+			" %s %s %s order by %s %s limit %s OFFSET %s ", firstCondition, secondCondition, getLikeQueryForObject(pagination.SearchField, firstCondition, secondCondition), pagination.SortKey, pagination.SortDirection, strconv.Itoa(pagination.Take), strconv.Itoa(pagination.Skip))
+	}
 	rows, err := o.Db.Query(context.Background(), query)
 	if err != nil {
 		return nil, 0, errors.Wrapf(err, "Could not execute query: %s", query)
