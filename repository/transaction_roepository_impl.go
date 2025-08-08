@@ -95,14 +95,6 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 		}
 	}
 
-	//////// UPDATE STORAGE PARTITION
-	queryUpdateStoragePartition := "UPDATE STORAGE_PARTITION set name = $1, max_size = $2, max_objects = $3, current_size = $4, current_objects = $5 where id =$6"
-	partition := instanceWithPartitionAndObjectWithFiles[0].StoragePartition
-	_, err = tx.Exec(ctx, queryUpdateStoragePartition, partition.Name, partition.MaxSize, partition.MaxObjects, partition.CurrentSize, partition.CurrentObjects, partition.Id)
-	if err != nil {
-		tx.Rollback(ctx)
-		return errors.Wrapf(err, "Could not exequte query: '%s'", queryUpdateStoragePartition)
-	}
 	//////// CREATE OBJECT INSTANCE
 	queryCreateObjectInstance := "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id"
 	objectInstance := instanceWithPartitionAndObjectWithFiles[0].ObjectInstance
