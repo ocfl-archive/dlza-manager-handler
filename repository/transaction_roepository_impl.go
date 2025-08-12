@@ -50,6 +50,7 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 			return errors.Wrapf(err, "Could not exequte query: '%s'  in transaction", queryObject)
 		}
 	} else {
+		objectId = objectIns.Id
 		queryUpdateObject := "UPDATE OBJECT set sets = $1, identifiers = $2, title = $3," +
 			" alternative_titles = $4, description = $5, keywords = $6, \"references\" = $7, ingest_workflow = $8," +
 			" \"user\" = $9, address = $10, last_changed = $11, size = $12," +
