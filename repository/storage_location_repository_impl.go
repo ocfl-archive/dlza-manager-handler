@@ -2,14 +2,15 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"strconv"
+	"strings"
+
+	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -42,7 +43,7 @@ func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 			" (select sp.storage_location_id, sum(sp.max_size) as total_existing_volume from storage_partition sp group by sp.storage_location_id) c" +
 			" on a.id = c.storage_location_id",
 		DeleteStorageLocationForTenantIdById: "DELETE FROM storage_location WHERE id = $1",
-		SaveStorageLocationForTenant:         "INSERT INTO storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)  RETURNING id",
+		SaveStorageLocationForTenant:         "INSERT INTO storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads, group) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)  RETURNING id",
 		GetStorageLocationsByObjectId: "select sl.* from object o," +
 			" object_instance oi," +
 			" storage_partition sp," +
@@ -60,7 +61,7 @@ func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 			" where oi.storage_partition_id = sp.id" +
 			" and sp.storage_location_id = sl.id" +
 			" and sl.id = $1",
-		UpdateStorageLocation: "UPDATE STORAGE_LOCATION set alias = $1, type = $2, vault = $3, connection = $4, quality = $5, price = $6, security_compliency = $7, fill_first = $8, ocfl_type = $9, tenant_id = $10, number_of_threads = $12 where id =$11",
+		UpdateStorageLocation: "UPDATE STORAGE_LOCATION set alias = $1, type = $2, vault = $3, connection = $4, quality = $5, price = $6, security_compliency = $7, fill_first = $8, ocfl_type = $9, tenant_id = $10, number_of_threads = $12, group = $13 where id =$11",
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -110,7 +111,7 @@ func (s *StorageLocationRepositoryImpl) DeleteStorageLocationById(storageLocatio
 
 func (s *StorageLocationRepositoryImpl) SaveStorageLocation(storageLocation models.StorageLocation) (string, error) {
 	row := s.Db.QueryRow(context.Background(), SaveStorageLocationForTenant, storageLocation.Alias, storageLocation.Type, storageLocation.Vault, storageLocation.Connection, storageLocation.Quality,
-		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.NumberOfThreads)
+		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.NumberOfThreads, storageLocation.Group)
 	var id string
 	err := row.Scan(&id)
 	if err != nil {
@@ -121,7 +122,7 @@ func (s *StorageLocationRepositoryImpl) SaveStorageLocation(storageLocation mode
 
 func (s *StorageLocationRepositoryImpl) UpdateStorageLocation(storageLocation models.StorageLocation) error {
 	_, err := s.Db.Exec(context.Background(), UpdateStorageLocation, storageLocation.Alias, storageLocation.Type, storageLocation.Vault, storageLocation.Connection, storageLocation.Quality,
-		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.Id, storageLocation.NumberOfThreads)
+		storageLocation.Price, storageLocation.SecurityCompliency, storageLocation.FillFirst, storageLocation.OcflType, storageLocation.TenantId, storageLocation.Id, storageLocation.NumberOfThreads, storageLocation.Group)
 	if err != nil {
 		return errors.Wrapf(err, "Could not execute query for method: %v", UpdateStorageLocation)
 	}
@@ -134,7 +135,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationById(id string) (model
 	var totalExistingVolume zeronull.Int8
 	var totalFilesSize zeronull.Int8
 	err := s.Db.QueryRow(context.Background(), GetStorageLocationById, id).Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
-		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &totalFilesSize, &totalExistingVolume)
+		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &storageLocation.Group, &totalFilesSize, &totalExistingVolume)
 	if err != nil {
 		return models.StorageLocation{}, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationById)
 	}
@@ -155,7 +156,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByObjectId(id string)
 		var storageLocation models.StorageLocation
 		var vault zeronull.Text
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
-			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
+			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &storageLocation.Group)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for query: %v", GetStorageLocationsByObjectId)
 		}
@@ -275,7 +276,7 @@ func getStorageLocationsFromRows(rows pgx.Rows) ([]models.StorageLocation, error
 		var storageLocation models.StorageLocation
 		var vault zeronull.Text
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
-			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
+			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &storageLocation.Group)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Could not scan rows for storage locations")
 		}
