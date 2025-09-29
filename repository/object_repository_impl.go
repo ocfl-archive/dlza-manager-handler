@@ -2,32 +2,33 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+	"time"
+
+	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	"github.com/ocfl-archive/dlza-manager/models"
-	"slices"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
-	Status                                   = "status::"
-	GetObjectById                            = "GetObjectById"
-	GetObjectBySignature                     = "GetObjectBySignature"
-	UpdateObject                             = "UpdateObject"
-	CreateObject                             = "CreateObject"
-	GetObjectsByCollectionAlias              = "GetObjectsByCollectionAlias"
-	GetResultingQualityForObject             = "GetResultingQualityForObject"
-	GetNeededQualityForObject                = "GetNeededQualityForObject"
-	GetObjectBySignatureAndStorageLocationId = "GetObjectBySignatureAndStorageLocationId"
-	GetObjectByIdMv                          = "GetObjectByIdMv"
-	Layout                                   = "2006-01-02 15:04:05"
+	Status                                      = "status::"
+	GetObjectById                               = "GetObjectById"
+	GetObjectBySignature                        = "GetObjectBySignature"
+	UpdateObject                                = "UpdateObject"
+	CreateObject                                = "CreateObject"
+	GetObjectsByCollectionAlias                 = "GetObjectsByCollectionAlias"
+	GetResultingQualityForObject                = "GetResultingQualityForObject"
+	GetNeededQualityForObject                   = "GetNeededQualityForObject"
+	GetObjectBySignatureAndStorageLocationGroup = "GetObjectBySignatureAndStorageLocationGroup"
+	GetObjectByIdMv                             = "GetObjectByIdMv"
+	Layout                                      = "2006-01-02 15:04:05"
 )
 
 type ObjectRepositoryImpl struct {
@@ -61,10 +62,11 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 		GetNeededQualityForObject: "select quality from collection c " +
 			" inner join object o on c.id = o.collection_id" +
 			" where o.id = $1",
-		GetObjectBySignatureAndStorageLocationId: `select * from object o
+		GetObjectBySignatureAndStorageLocationGroup: `select * from object o
 			inner join object_instance oi on o.id = oi.object_id
 			inner join storage_partition sp on sp.id = oi.storage_partition_id
-			where oi.status in ('ok', 'new') and signature = $1  and sp.storage_location_id = $2`,
+         	inner join storage_location sl on sl.id = sp.storage_location_id
+			where oi.status in ('ok', 'new') and signature = $1  and sl.group = $2`,
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {
@@ -92,17 +94,17 @@ func (o *ObjectRepositoryImpl) CreateObject(object models.Object) (string, error
 	return id, nil
 }
 
-func (o *ObjectRepositoryImpl) GetObjectBySignatureAndStorageLocationId(signature string, locationId string) (models.Object, error) {
+func (o *ObjectRepositoryImpl) GetObjectBySignatureAndStorageLocationGroup(signature string, locationGroup string) (models.Object, error) {
 	object := models.Object{}
 	var holding zeronull.Text
 	var expiration pgtype.Date
 	var lastChanged time.Time
 	var created time.Time
-	err := o.Db.QueryRow(context.Background(), GetObjectBySignatureAndStorageLocationId, signature, locationId).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
+	err := o.Db.QueryRow(context.Background(), GetObjectBySignatureAndStorageLocationGroup, signature, locationGroup).Scan(&object.Signature, &object.Sets, &object.Identifiers, &object.Title,
 		&object.AlternativeTitles, &object.Description, &object.Keywords, &object.References, &object.IngestWorkflow, &object.User,
 		&object.Address, &created, &lastChanged, &object.Size, &object.Id, &object.CollectionId, &object.Checksum, &object.Authors, &holding, &expiration, &object.Head, &object.Versions, &object.Binary)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return object, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectBySignatureAndStorageLocationId)
+		return object, errors.Wrapf(err, "Could not execute query for method: %v", GetObjectBySignatureAndStorageLocationGroup)
 	}
 	object.Holding = string(holding)
 	if expiration.Valid {
