@@ -1,18 +1,20 @@
 package service
 
 import (
+	"slices"
+	"strconv"
+	"strings"
+
 	"emperror.dev/errors"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
-	"slices"
-	"strconv"
-	"strings"
 )
 
 type StoragePartitionService struct {
 	StoragePartitionRepository repository.StoragePartitionRepository
+	StorageLocationRepository  repository.StorageLocationRepository
 	ObjectRepository           repository.ObjectRepository
 }
 
@@ -62,15 +64,16 @@ func (s *StoragePartitionService) GetStoragePartitionsForLocationId(locationId *
 	return &pb.StoragePartitions{StoragePartitions: storagePartitionsPb}, nil
 }
 
-func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
-	object, err := s.ObjectRepository.GetObjectBySignatureAndStorageLocationId(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocationId *pb.SizeObjectLocation) (*pb.StoragePartition, error) {
+	object, err := s.ObjectRepository.GetObjectBySignatureAndStorageLocationGroup(sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Group)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get GetObjectBySignatureAndStorageLocationId for Object and StorageLocation with signature and id: %s/%s ", sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+		return nil, errors.Wrapf(err, "Could not get GetObjectBySignatureAndStorageLocationGroup for Object and StorageLocation with signature and group: %s/%s ", sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Group)
 	}
-	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Id)
+	storageLocations, err := s.StorageLocationRepository.GetStorageLocationsByTenantIdAndGroup()
+	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Location.Id)
 	firstVersionPartition := models.StoragePartition{}
 	if sizeAndLocationId.Object.Head != "v1" && object.Id != "" {
-		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Id)
+		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Id)
 	}
 
 	var currentSize int64
@@ -82,7 +85,7 @@ func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocation
 		}
 	}
 	if partitionOptimal.Id == "" {
-		return nil, errors.New("Could not find optimal storagePartition for storageLocation with id: " + sizeAndLocationId.Id)
+		return nil, errors.New("Could not find optimal storagePartition for storageLocation with id: " + sizeAndLocationId.Location.Id)
 	}
 
 	return mapper.ConvertToStoragePartitionPb(partitionOptimal), err

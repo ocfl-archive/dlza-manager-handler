@@ -3062,7 +3062,7 @@ type DispatcherHandlerServiceClient interface {
 	GetCollectionsByTenantId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Collections, error)
 	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
-	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
+	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeObjectLocation, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 }
 
 type dispatcherHandlerServiceClient struct {
@@ -3190,7 +3190,7 @@ func (c *dispatcherHandlerServiceClient) UpdateStoragePartition(ctx context.Cont
 	return out, nil
 }
 
-func (c *dispatcherHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
+func (c *dispatcherHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeObjectLocation, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
 	out := new(dlzamanagerproto.StoragePartition)
 	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -3216,7 +3216,7 @@ type DispatcherHandlerServiceServer interface {
 	GetCollectionsByTenantId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Collections, error)
 	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
-	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
+	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
 
@@ -3263,7 +3263,7 @@ func (UnimplementedDispatcherHandlerServiceServer) GetObjectInstanceChecksByObje
 func (UnimplementedDispatcherHandlerServiceServer) UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStoragePartition not implemented")
 }
-func (UnimplementedDispatcherHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
+func (UnimplementedDispatcherHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) mustEmbedUnimplementedDispatcherHandlerServiceServer() {
@@ -3515,7 +3515,7 @@ func _DispatcherHandlerService_UpdateStoragePartition_Handler(srv interface{}, c
 }
 
 func _DispatcherHandlerService_GetStoragePartitionForLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.SizeAndId)
+	in := new(dlzamanagerproto.SizeObjectLocation)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3527,7 +3527,7 @@ func _DispatcherHandlerService_GetStoragePartitionForLocation_Handler(srv interf
 		FullMethod: DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DispatcherHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeAndId))
+		return srv.(DispatcherHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeObjectLocation))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -5,6 +5,17 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io"
+	"io/fs"
+	"log"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/je4/trustutil/v2/pkg/certutil"
@@ -18,16 +29,6 @@ import (
 	ublogger "gitlab.switch.ch/ub-unibas/go-ublogger/v2"
 	"go.ub.unibas.ch/cloud/certloader/v2/pkg/loader"
 	"go.ub.unibas.ch/cloud/miniresolver/v2/pkg/resolver"
-	"io"
-	"io/fs"
-	"log"
-	"os"
-	"os/signal"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"syscall"
-	"time"
 )
 
 var configfile = flag.String("config", "", "config file in toml format")
@@ -199,7 +200,7 @@ func main() {
 	objectInstanceService := service.NewObjectInstanceService(objectInstanceRepository)
 	tenantService := service.NewTenantService(tenantRepository)
 
-	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository, ObjectRepository: objectRepository}
+	storagePartitionService := service.StoragePartitionService{StoragePartitionRepository: storagePartitionRepository, ObjectRepository: objectRepository, StorageLocationRepository: storageLocationRepository}
 
 	uploadService := service.NewUploaderService(tenantRepository, collectionRepository)
 	storageLocationService := service.NewStorageLocationService(collectionRepository, storageLocationRepository, storagePartitionService)

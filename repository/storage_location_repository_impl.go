@@ -16,6 +16,7 @@ import (
 const (
 	GetAllStorageLocations                 = "GetAllStorageLocations"
 	GetStorageLocationsByTenantId          = "GetStorageLocationsByTenantId"
+	GetStorageLocationsByTenantIdAndGroup  = "GetStorageLocationsByTenantIdAndGroup"
 	DeleteStorageLocationForTenantIdById   = "DeleteStorageLocationForTenantIdById"
 	UpdateStorageLocation                  = "UpdateStorageLocation"
 	SaveStorageLocationForTenant           = "SaveStorageLocationForTenant"
@@ -28,8 +29,9 @@ const (
 
 func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 	preparedStatements := map[string]string{
-		GetAllStorageLocations:        "SELECT * FROM storage_location",
-		GetStorageLocationsByTenantId: "SELECT * FROM storage_location where tenant_id = $1",
+		GetAllStorageLocations:                "SELECT * FROM storage_location",
+		GetStorageLocationsByTenantId:         "SELECT * FROM storage_location where tenant_id = $1",
+		GetStorageLocationsByTenantIdAndGroup: `SELECT * FROM storage_location where tenant_id = $1 and "group" = $2`,
 		GetStorageLocationByObjectInstanceId: "select sl.* from object_instance oi " +
 			" inner join storage_partition sp" +
 			" on sp.id = oi.storage_partition_id" +
@@ -88,6 +90,15 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantId(tenantId s
 	rows, err := s.Db.Query(context.Background(), GetStorageLocationsByTenantId, tenantId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationsByTenantId)
+	}
+	defer rows.Close()
+	return getStorageLocationsFromRows(rows)
+}
+
+func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantIdAndGroup(tenantId string, group string) ([]models.StorageLocation, error) {
+	rows, err := s.Db.Query(context.Background(), GetStorageLocationsByTenantIdAndGroup, tenantId, group)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not execute query for method: %v", GetStorageLocationsByTenantIdAndGroup)
 	}
 	defer rows.Close()
 	return getStorageLocationsFromRows(rows)

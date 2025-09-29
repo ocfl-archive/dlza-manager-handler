@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	"emperror.dev/errors"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
@@ -93,11 +94,11 @@ func (d *DispatcherHandlerServer) GetObjectInstancesByObjectIdPositive(ctx conte
 	return &pb.ObjectInstances{ObjectInstances: objectInstancesPb}, nil
 }
 
-func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
+func (d *DispatcherHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeObjectLocation) (*pb.StoragePartition, error) {
 	partition, err := d.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
 	if err != nil {
-		d.Logger.Error().Msgf("Could not get storagePartition for storageLocation with ID %s. err: %v", sizeAndLocationId.Id, err)
-		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation with ID %s", sizeAndLocationId.Id)
+		d.Logger.Error().Msgf("Could not get storagePartition for storageLocation with ID %s. err: %v", sizeAndLocationId.Location.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation with ID %s", sizeAndLocationId.Location.Id)
 	}
 	return partition, nil
 }
