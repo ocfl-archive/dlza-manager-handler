@@ -336,7 +336,7 @@ type StorageHandlerHandlerServiceClient interface {
 	AlterStatus(ctx context.Context, in *dlzamanagerproto.StatusObject, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetStorageLocationByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
-	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
+	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeObjectLocation, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
 }
 
 type storageHandlerHandlerServiceClient struct {
@@ -516,7 +516,7 @@ func (c *storageHandlerHandlerServiceClient) GetStorageLocationByObjectInstanceI
 	return out, nil
 }
 
-func (c *storageHandlerHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeAndId, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
+func (c *storageHandlerHandlerServiceClient) GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeObjectLocation, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error) {
 	out := new(dlzamanagerproto.StoragePartition)
 	err := c.cc.Invoke(ctx, StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -545,7 +545,7 @@ type StorageHandlerHandlerServiceServer interface {
 	AlterStatus(context.Context, *dlzamanagerproto.StatusObject) (*dlzamanagerproto.Status, error)
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
-	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error)
+	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error)
 	mustEmbedUnimplementedStorageHandlerHandlerServiceServer()
 }
 
@@ -601,7 +601,7 @@ func (UnimplementedStorageHandlerHandlerServiceServer) GetObjectById(context.Con
 func (UnimplementedStorageHandlerHandlerServiceServer) GetStorageLocationByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationByObjectInstanceId not implemented")
 }
-func (UnimplementedStorageHandlerHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeAndId) (*dlzamanagerproto.StoragePartition, error) {
+func (UnimplementedStorageHandlerHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
 }
 func (UnimplementedStorageHandlerHandlerServiceServer) mustEmbedUnimplementedStorageHandlerHandlerServiceServer() {
@@ -915,7 +915,7 @@ func _StorageHandlerHandlerService_GetStorageLocationByObjectInstanceId_Handler(
 }
 
 func _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(dlzamanagerproto.SizeAndId)
+	in := new(dlzamanagerproto.SizeObjectLocation)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -927,7 +927,7 @@ func _StorageHandlerHandlerService_GetStoragePartitionForLocation_Handler(srv in
 		FullMethod: StorageHandlerHandlerService_GetStoragePartitionForLocation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeAndId))
+		return srv.(StorageHandlerHandlerServiceServer).GetStoragePartitionForLocation(ctx, req.(*dlzamanagerproto.SizeObjectLocation))
 	}
 	return interceptor(ctx, in, info, handler)
 }

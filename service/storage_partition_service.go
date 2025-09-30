@@ -69,27 +69,35 @@ func (s *StoragePartitionService) GetStoragePartitionForLocation(sizeAndLocation
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get GetObjectBySignatureAndStorageLocationGroup for Object and StorageLocation with signature and group: %s/%s ", sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Group)
 	}
-	storageLocations, err := s.StorageLocationRepository.GetStorageLocationsByTenantIdAndGroup()
-	partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(sizeAndLocationId.Location.Id)
 	firstVersionPartition := models.StoragePartition{}
 	if sizeAndLocationId.Object.Head != "v1" && object.Id != "" {
-		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Id)
+		firstVersionPartition, err = s.StoragePartitionRepository.GetStoragePartitionByObjectSignatureAndLocation(sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Group)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not get StoragePartitionByObjectSignatureAndLocation for Object and StorageLocation with signature and group: %s/%s ", sizeAndLocationId.Object.Signature, sizeAndLocationId.Location.Group)
+		}
 	}
-
-	var currentSize int64
+	storageLocations, err := s.StorageLocationRepository.GetStorageLocationsByTenantIdAndGroup(sizeAndLocationId.Location.TenantId, sizeAndLocationId.Location.Group)
 	var partitionOptimal models.StoragePartition
-	for _, partition := range partitions {
-		if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+sizeAndLocationId.Size <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) && (partition.Id != firstVersionPartition.Id) {
-			currentSize = partition.CurrentSize
-			partitionOptimal = partition
+	for _, storageLocation := range storageLocations {
+		partitions, err := s.StoragePartitionRepository.GetStoragePartitionsByLocationId(storageLocation.Id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not get StoragePartitions for StorageLocation with id: %v", storageLocation.Id)
+		}
+		var currentSize int64
+		for _, partition := range partitions {
+			if (partition.CurrentSize >= currentSize) && (partition.CurrentSize+sizeAndLocationId.Size <= partition.MaxSize) && (partition.CurrentObjects < partition.MaxObjects) && (partition.Id != firstVersionPartition.Id) {
+				currentSize = partition.CurrentSize
+				partitionOptimal = partition
+			}
+		}
+		if partitionOptimal.Id != "" {
+			break
 		}
 	}
 	if partitionOptimal.Id == "" {
-		return nil, errors.New("Could not find optimal storagePartition for storageLocation with id: " + sizeAndLocationId.Location.Id)
+		return nil, errors.New("Could not find optimal storagePartition for storageLocation group: " + sizeAndLocationId.Location.Group)
 	}
-
-	return mapper.ConvertToStoragePartitionPb(partitionOptimal), err
-
+	return mapper.ConvertToStoragePartitionPb(partitionOptimal), nil
 }
 
 func (s *StoragePartitionService) UpdateStoragePartition(storagePartitionPb *pb.StoragePartition) (*pb.Status, error) {

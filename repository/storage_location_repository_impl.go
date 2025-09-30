@@ -45,7 +45,7 @@ func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 			" (select sp.storage_location_id, sum(sp.max_size) as total_existing_volume from storage_partition sp group by sp.storage_location_id) c" +
 			" on a.id = c.storage_location_id",
 		DeleteStorageLocationForTenantIdById: "DELETE FROM storage_location WHERE id = $1",
-		SaveStorageLocationForTenant:         "INSERT INTO storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads, group) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)  RETURNING id",
+		SaveStorageLocationForTenant:         `INSERT INTO storage_location(alias, type, vault, connection, quality, price, security_compliency, fill_first, ocfl_type, tenant_id, number_of_threads, "group") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)  RETURNING id`,
 		GetStorageLocationsByObjectId: "select sl.* from object o," +
 			" object_instance oi," +
 			" storage_partition sp," +
@@ -63,7 +63,7 @@ func CreateStorageLocPreparedStatements(ctx context.Context, conn *pgx.Conn) err
 			" where oi.storage_partition_id = sp.id" +
 			" and sp.storage_location_id = sl.id" +
 			" and sl.id = $1",
-		UpdateStorageLocation: "UPDATE STORAGE_LOCATION set alias = $1, type = $2, vault = $3, connection = $4, quality = $5, price = $6, security_compliency = $7, fill_first = $8, ocfl_type = $9, tenant_id = $10, number_of_threads = $12, group = $13 where id =$11",
+		UpdateStorageLocation: `UPDATE STORAGE_LOCATION set alias = $1, type = $2, vault = $3, connection = $4, quality = $5, price = $6, security_compliency = $7, fill_first = $8, ocfl_type = $9, tenant_id = $10, number_of_threads = $12, "group" = $13 where id =$11`,
 	}
 	for name, sqlStm := range preparedStatements {
 		if _, err := conn.Prepare(ctx, name, sqlStm); err != nil {

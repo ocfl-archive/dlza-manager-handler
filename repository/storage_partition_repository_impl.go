@@ -2,15 +2,16 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+
+	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
-	"slices"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -35,9 +36,11 @@ type storagePartitionRepositoryImpl struct {
 func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 
 	preparedStatements := map[string]string{
-		GetStoragePartition:                                    "SELECT * FROM STORAGE_PARTITION WHERE ID = $1",
-		GetStoragePartitionGroupElementByAlias:                 "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM o WHERE alias = $1",
-		GetStoragePartitionByObjectSignatureAndLocation:        `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id WHERE signature = $1 AND storage_location_id = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
+		GetStoragePartition:                    "SELECT * FROM STORAGE_PARTITION WHERE ID = $1",
+		GetStoragePartitionGroupElementByAlias: "SELECT * FROM STORAGE_PARTITION_GROUP_ELEM o WHERE alias = $1",
+		GetStoragePartitionByObjectSignatureAndLocation: `SELECT sp.* FROM object o INNER JOIN object_instance oi ON o.id = oi.object_id INNER JOIN storage_partition sp ON oi.storage_partition_id = sp.id
+            														INNER JOIN storage_location sl ON sp.storage_location_id = sl.id
+            														WHERE signature = $1 AND sl.group = $2 AND (oi.status = 'ok' or oi.status = 'new')`,
 		CreateStoragePartition:                                 "INSERT INTO STORAGE_PARTITION_BASE(alias, \"name\", max_size, max_objects, storage_location_id) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 		UpdateStoragePartition:                                 "UPDATE STORAGE_PARTITION_BASE set name = $1, max_size = $2, max_objects = $3 where id =$4",
 		DeleteStoragePartition:                                 "DELETE FROM STORAGE_PARTITION_BASE  where id =$1",
@@ -56,10 +59,10 @@ func CreateStoragePartitionPreparedStatements(ctx context.Context, conn *pgx.Con
 	return nil
 }
 
-func (s *storagePartitionRepositoryImpl) GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error) {
+func (s *storagePartitionRepositoryImpl) GetStoragePartitionByObjectSignatureAndLocation(signature string, locationGroup string) (models.StoragePartition, error) {
 	storagePartition := models.StoragePartition{}
 	var currentSize zeronull.Int8
-	err := s.Db.QueryRow(context.Background(), GetStoragePartitionByObjectSignatureAndLocation, signature, locationId).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
+	err := s.Db.QueryRow(context.Background(), GetStoragePartitionByObjectSignatureAndLocation, signature, locationGroup).Scan(&storagePartition.Alias, &storagePartition.Name, &storagePartition.MaxSize,
 		&storagePartition.MaxObjects, &currentSize, &storagePartition.CurrentObjects, &storagePartition.Id, &storagePartition.StorageLocationId)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return storagePartition, errors.Wrapf(err, "Could not execute query for method: %v", GetStoragePartitionByObjectSignatureAndLocation)

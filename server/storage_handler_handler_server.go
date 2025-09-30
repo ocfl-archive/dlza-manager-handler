@@ -9,7 +9,9 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
+	dlzaMapper "github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	dlzaService "github.com/ocfl-archive/dlza-manager/service"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"log"
@@ -83,14 +85,13 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx c
 		c.Logger.Error().Msgf("Could not get storageLocations for collection with alias '%s'. err: %v", collectionAlias.CollectionAlias, err)
 		return nil, errors.Wrapf(err, "Could not get storageLocations for collection with alias '%v'", collectionAlias.CollectionAlias)
 	}
-	storageLocations = service.GetCheapestStorageLocationsForQuality(storageLocations, collection.Quality)
-	storageLocationsPb := make([]*pb.StorageLocation, 0)
+	storageLocationsPb := &pb.StorageLocations{}
 	for _, storageLocation := range storageLocations {
-		storageLocationPb := mapper.ConvertToStorageLocationPb(storageLocation)
-		storageLocationsPb = append(storageLocationsPb, storageLocationPb)
+		storageLocationsPb.StorageLocations = append(storageLocationsPb.StorageLocations, dlzaMapper.ConvertToStorageLocationPb(storageLocation))
 	}
+	storageLocationsPb.StorageLocations = dlzaService.GetCheapestStorageLocationsForQuality(storageLocationsPb, collection.Quality)
 
-	return &pb.StorageLocations{StorageLocations: storageLocationsPb}, nil
+	return storageLocationsPb, nil
 }
 
 func (c *StorageHandlerHandlerServer) GetStorageLocationsByObjectId(ctx context.Context, id *pb.Id) (*pb.StorageLocations, error) {
@@ -130,10 +131,10 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }
 
-func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocationId *pb.SizeAndId) (*pb.StoragePartition, error) {
-	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocationId)
+func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocation *pb.SizeObjectLocation) (*pb.StoragePartition, error) {
+	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocation)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation with ID %s. err: %v", sizeAndLocationId.Id, err)
+		c.Logger.Error().Msgf("Could not get storagePartition for storageLocation with Group %s. err: %v", sizeAndLocation.Location.Group, err)
 		return nil, errors.Wrapf(err, "Could not get storagePartition for storageLocation")
 	}
 	return partition, nil

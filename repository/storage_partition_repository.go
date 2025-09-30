@@ -13,7 +13,7 @@ type StoragePartitionRepository interface {
 	UpdateStoragePartitionGroupElement(partition models.StoragePartitionGroup) error
 	GetStoragePartitionsByLocationIdPaginated(pagination models.Pagination) ([]models.StoragePartition, int, error)
 	GetStoragePartitionsByLocationId(locationId string) ([]models.StoragePartition, error)
-	GetStoragePartitionByObjectSignatureAndLocation(signature string, locationId string) (models.StoragePartition, error)
+	GetStoragePartitionByObjectSignatureAndLocation(signature string, locationGroup string) (models.StoragePartition, error)
 	GetStoragePartitionGroupElementById(Id string) (models.StoragePartitionGroup, error)
 	GetStoragePartitionGroupElementsByStoragePartitionId(partitionGroupId string) ([]models.StoragePartitionGroup, error)
 }
