@@ -168,14 +168,13 @@ func main() {
 
 	logger.Info().Msgf("resolver address is %s", conf.ResolverAddr)
 
-	resolverClient, err := resolver.NewMiniresolverClient(conf.ResolverAddr, conf.GRPCClient, miniresolverClientTLSConfig, serverTLSConfig, time.Duration(conf.ResolverTimeout), time.Duration(conf.ResolverNotFoundTimeout), logger)
+	resolverClient, err := resolver.NewMiniresolverClientNet(conf.ResolverAddr, conf.Netname, conf.Addresses, miniresolverClientTLSConfig, serverTLSConfig, time.Duration(conf.ResolverTimeout), time.Duration(conf.ResolverNotFoundTimeout), logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create resolver client: %v", err)
 	}
 	defer resolverClient.Close()
 
-	// create grpc server with resolver for name resolution
-	grpcServer, err := resolverClient.NewServer(conf.LocalAddr, conf.Domains, true)
+	grpcServer, err := resolverClient.NewServerAddresses(conf.LocalAddr, conf.Addresses, conf.Domains, true)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("cannot create server")
 	}

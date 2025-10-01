@@ -1,4 +1,4 @@
-localaddr = ""
+localaddr = ":0"
 domains = ["ubdlza"]
 bearer = "grmbl"
 resolveraddr = "[::1]:7777"
@@ -8,6 +8,11 @@ actiontimeout = "15m"
 resolvernotfoundtimeout = "10s"
 externaladdr = "https://localhost:8765"
 dbconn = "%%DBCONN%%"
+
+netname = "local"
+
+[addresses]
+local = ":0"
 
 #[grpcclient]
 #mediaserverdb = "localhost:7653"
