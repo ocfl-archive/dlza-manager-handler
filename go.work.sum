@@ -3863,8 +3863,8 @@ github.com/ocfl-archive/dlza-manager v0.0.6 h1:rDqLadXd1zi57z/FZaBWYyX5WO6iOU5e9
 github.com/ocfl-archive/dlza-manager v0.0.6/go.mod h1:AiZNezoTzykvrolKinq4LxWAXwfeS8LbMncwHanKCfo=
 github.com/ocfl-archive/dlza-manager v1.0.0-beta10 h1:p5BbPV+x7LwwxA6xmB21oKvoA0Ery9iVDqAAaVqf9r4=
 github.com/ocfl-archive/dlza-manager v1.0.0-beta10/go.mod h1:HNhklzYXMaczGD12XTyEtmFPa5LPyvYfNs14W26x+0Y=
-github.com/ocfl-archive/dlza-manager v1.0.3 h1:mJAd+cNXQGpfJwMk0XGPxj4zvGSPaDEyoAnVAoC7Jlk=
-github.com/ocfl-archive/dlza-manager v1.0.3/go.mod h1:U1bNXfukQg3LSW4m68BcYmi2oJIUUlXFePMVYBZqm4g=
+github.com/ocfl-archive/dlza-manager v1.0.3-beta1 h1:DSxdgcDG6shfCTR1QsPXbtGsf9fNRMQQQuXbN0KY7OA=
+github.com/ocfl-archive/dlza-manager v1.0.3-beta1/go.mod h1:U1bNXfukQg3LSW4m68BcYmi2oJIUUlXFePMVYBZqm4g=
 github.com/oklog/oklog v0.3.2 h1:wVfs8F+in6nTBMkA7CbRw+zZMIB7nNM825cM1wuzoTk=
 github.com/oklog/oklog v0.3.2/go.mod h1:FCV+B7mhrz4o+ueLpx+KqkyXRGMWOYEvfiXtdGtbWGs=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
