@@ -9,14 +9,14 @@ require (
 	github.com/je4/trustutil/v2 v2.0.31
 	github.com/je4/utils/v2 v2.0.60
 	github.com/lib/pq v1.10.9
-	github.com/ocfl-archive/dlza-manager v1.0.3
+	github.com/ocfl-archive/dlza-manager v1.0.5
 	github.com/stretchr/testify v1.11.1
 	gitlab.switch.ch/ub-unibas/go-ublogger/v2 v2.0.1
 	go.ub.unibas.ch/cloud/certloader/v2 v2.0.22
 	go.ub.unibas.ch/cloud/genericproto/v2 v2.0.4
-	go.ub.unibas.ch/cloud/miniresolver/v2 v2.0.51
-	google.golang.org/grpc v1.75.1
-	google.golang.org/protobuf v1.36.10
+	go.ub.unibas.ch/cloud/miniresolver/v2 v2.0.42
+	google.golang.org/grpc v1.74.2
+	google.golang.org/protobuf v1.36.9
 )
 
 require (
