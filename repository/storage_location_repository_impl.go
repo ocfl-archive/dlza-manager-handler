@@ -228,7 +228,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationsByTenantOrCollectionI
 		var totalFilesSize zeronull.Int8
 		err := rows.Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
 			&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId,
-			&storageLocation.Id, &storageLocation.NumberOfThreads,
+			&storageLocation.Id, &storageLocation.NumberOfThreads, &storageLocation.Group,
 			&totalExistingVolume, &totalFilesSize, &totalItems)
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "Could not scan rows for query: %v", query)
@@ -245,7 +245,7 @@ func (s *StorageLocationRepositoryImpl) GetStorageLocationByObjectInstanceId(id 
 	var storageLocation models.StorageLocation
 	var vault zeronull.Text
 	err := s.Db.QueryRow(context.Background(), GetStorageLocationByObjectInstanceId, id).Scan(&storageLocation.Alias, &storageLocation.Type, &vault, &storageLocation.Connection, &storageLocation.Quality,
-		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads)
+		&storageLocation.Price, &storageLocation.SecurityCompliency, &storageLocation.FillFirst, &storageLocation.OcflType, &storageLocation.TenantId, &storageLocation.Id, &storageLocation.NumberOfThreads, &storageLocation.Group)
 	if err != nil {
 		return models.StorageLocation{}, errors.Wrapf(err, "Could not execute query: %v", GetStorageLocationByObjectInstanceId)
 	}
