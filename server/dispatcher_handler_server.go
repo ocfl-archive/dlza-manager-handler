@@ -196,3 +196,12 @@ func (d *DispatcherHandlerServer) CreateObjectInstance(ctx context.Context, obje
 	}
 	return &pb.Id{Id: id}, nil
 }
+
+func (d *DispatcherHandlerServer) GetStorageLocationById(ctx context.Context, id *pb.Id) (*pb.StorageLocation, error) {
+	storageLocation, err := d.StorageLocationRepository.GetStorageLocationById(id.Id)
+	if err != nil {
+		d.Logger.Error().Msgf("Could not get storageLocation for location ID %s. err: %v", id.Id, err)
+		return nil, errors.Wrapf(err, "Could not get storageLocation for location ID %s", id.Id)
+	}
+	return mapper.ConvertToStorageLocationPb(storageLocation), nil
+}

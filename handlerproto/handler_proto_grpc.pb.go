@@ -3043,6 +3043,7 @@ const (
 	DispatcherHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName              = "/handlerproto.DispatcherHandlerService/GetObjectInstanceChecksByObjectInstanceId"
 	DispatcherHandlerService_UpdateStoragePartition_FullMethodName                                 = "/handlerproto.DispatcherHandlerService/UpdateStoragePartition"
 	DispatcherHandlerService_GetStoragePartitionForLocation_FullMethodName                         = "/handlerproto.DispatcherHandlerService/GetStoragePartitionForLocation"
+	DispatcherHandlerService_GetStorageLocationById_FullMethodName                                 = "/handlerproto.DispatcherHandlerService/GetStorageLocationById"
 )
 
 // DispatcherHandlerServiceClient is the client API for DispatcherHandlerService service.
@@ -3063,6 +3064,7 @@ type DispatcherHandlerServiceClient interface {
 	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	UpdateStoragePartition(ctx context.Context, in *dlzamanagerproto.StoragePartition, opts ...grpc.CallOption) (*dlzamanagerproto.Status, error)
 	GetStoragePartitionForLocation(ctx context.Context, in *dlzamanagerproto.SizeObjectLocation, opts ...grpc.CallOption) (*dlzamanagerproto.StoragePartition, error)
+	GetStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error)
 }
 
 type dispatcherHandlerServiceClient struct {
@@ -3199,6 +3201,15 @@ func (c *dispatcherHandlerServiceClient) GetStoragePartitionForLocation(ctx cont
 	return out, nil
 }
 
+func (c *dispatcherHandlerServiceClient) GetStorageLocationById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.StorageLocation, error) {
+	out := new(dlzamanagerproto.StorageLocation)
+	err := c.cc.Invoke(ctx, DispatcherHandlerService_GetStorageLocationById_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DispatcherHandlerServiceServer is the server API for DispatcherHandlerService service.
 // All implementations must embed UnimplementedDispatcherHandlerServiceServer
 // for forward compatibility
@@ -3217,6 +3228,7 @@ type DispatcherHandlerServiceServer interface {
 	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	UpdateStoragePartition(context.Context, *dlzamanagerproto.StoragePartition) (*dlzamanagerproto.Status, error)
 	GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error)
+	GetStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error)
 	mustEmbedUnimplementedDispatcherHandlerServiceServer()
 }
 
@@ -3265,6 +3277,9 @@ func (UnimplementedDispatcherHandlerServiceServer) UpdateStoragePartition(contex
 }
 func (UnimplementedDispatcherHandlerServiceServer) GetStoragePartitionForLocation(context.Context, *dlzamanagerproto.SizeObjectLocation) (*dlzamanagerproto.StoragePartition, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePartitionForLocation not implemented")
+}
+func (UnimplementedDispatcherHandlerServiceServer) GetStorageLocationById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.StorageLocation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageLocationById not implemented")
 }
 func (UnimplementedDispatcherHandlerServiceServer) mustEmbedUnimplementedDispatcherHandlerServiceServer() {
 }
@@ -3532,6 +3547,24 @@ func _DispatcherHandlerService_GetStoragePartitionForLocation_Handler(srv interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DispatcherHandlerService_GetStorageLocationById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(dlzamanagerproto.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DispatcherHandlerService_GetStorageLocationById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DispatcherHandlerServiceServer).GetStorageLocationById(ctx, req.(*dlzamanagerproto.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DispatcherHandlerService_ServiceDesc is the grpc.ServiceDesc for DispatcherHandlerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3594,6 +3627,10 @@ var DispatcherHandlerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStoragePartitionForLocation",
 			Handler:    _DispatcherHandlerService_GetStoragePartitionForLocation_Handler,
+		},
+		{
+			MethodName: "GetStorageLocationById",
+			Handler:    _DispatcherHandlerService_GetStorageLocationById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

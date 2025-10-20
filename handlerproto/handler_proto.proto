@@ -121,4 +121,5 @@ service DispatcherHandlerService {
   rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
   rpc UpdateStoragePartition(dlzamanagerproto.StoragePartition) returns (dlzamanagerproto.Status);
   rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeObjectLocation) returns (dlzamanagerproto.StoragePartition);
+  rpc GetStorageLocationById(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation);
 }
