@@ -79,6 +79,11 @@ func main() {
 	if err := config.LoadHandlerConfig(cfgFS, cfgFile, conf); err != nil {
 		log.Fatalf("cannot load toml from [%v] %s: %v", cfgFS, cfgFile, err)
 	}
+	log.Printf("Netname: %s\n", conf.Netname)
+	log.Printf("ResolverAddr: %s\n", conf.ResolverAddr)
+	for name, address := range conf.Addresses {
+		log.Printf("Name: %s, Address %s", name, address)
+	}
 	// create logger instance
 	hostname, err := os.Hostname()
 	if err != nil {
