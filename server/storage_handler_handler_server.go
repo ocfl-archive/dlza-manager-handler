@@ -2,6 +2,9 @@ package server
 
 import (
 	"context"
+	"io"
+	"log"
+
 	"emperror.dev/errors"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
@@ -13,8 +16,6 @@ import (
 	"github.com/ocfl-archive/dlza-manager/models"
 	dlzaService "github.com/ocfl-archive/dlza-manager/service"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
-	"log"
 )
 
 type StorageHandlerHandlerServer struct {
@@ -70,7 +71,8 @@ func (c *StorageHandlerHandlerServer) SaveAllTableObjectsAfterCopyingStream(stre
 		c.Logger.Error().Msgf("couldn't create refresh mat. views, err: %v", err)
 		log.Printf("couldn't create refresh mat. views, err: %v", err)
 	}
-	return nil
+	return stream.SendAndClose(&pb.Status{Ok: true})
+
 }
 
 func (c *StorageHandlerHandlerServer) GetStorageLocationsByCollectionAlias(ctx context.Context, collectionAlias *pb.CollectionAlias) (*pb.StorageLocations, error) {
