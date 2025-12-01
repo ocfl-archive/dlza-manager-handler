@@ -28,7 +28,7 @@ import (
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	ublogger "gitlab.switch.ch/ub-unibas/go-ublogger/v2"
 	"go.ub.unibas.ch/cloud/certloader/v2/pkg/loader"
-	"go.ub.unibas.ch/cloud/miniresolver/v2/pkg/resolver"
+	"go.ub.unibas.ch/cloud/miniresolverclient/pkg/miniresolverclient"
 )
 
 var configfile = flag.String("config", "", "config file in toml format")
@@ -173,7 +173,7 @@ func main() {
 
 	logger.Info().Msgf("resolver address is %s", conf.ResolverAddr)
 
-	resolverClient, err := resolver.NewMiniresolverClientNet(conf.ResolverAddr, conf.Netname, conf.GRPCClient, miniresolverClientTLSConfig, serverTLSConfig, time.Duration(conf.ResolverTimeout), time.Duration(conf.ResolverNotFoundTimeout), logger)
+	resolverClient, err := miniresolverclient.NewMiniresolverClientNet(conf.ResolverAddr, conf.Netname, conf.GRPCClient, miniresolverClientTLSConfig, serverTLSConfig, time.Duration(conf.ResolverTimeout), time.Duration(conf.ResolverNotFoundTimeout), logger)
 	if err != nil {
 		logger.Fatal().Msgf("cannot create resolver client: %v", err)
 	}
