@@ -62,7 +62,7 @@ func CreateObjectPreparedStatements(ctx context.Context, conn *pgx.Conn) error {
 		GetNeededQualityForObject: "select quality from collection c " +
 			" inner join object o on c.id = o.collection_id" +
 			" where o.id = $1",
-		GetObjectBySignatureAndStorageLocationGroup: `select * from object o
+		GetObjectBySignatureAndStorageLocationGroup: `select o.* from object o
 			inner join object_instance oi on o.id = oi.object_id
 			inner join storage_partition sp on sp.id = oi.storage_partition_id
          	inner join storage_location sl on sl.id = sp.storage_location_id
