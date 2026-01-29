@@ -2,15 +2,16 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/ocfl-archive/dlza-manager/models"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"emperror.dev/errors"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ocfl-archive/dlza-manager/models"
 )
 
 const (
@@ -300,6 +301,40 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstancesByPartitionIdPaginated(
 		objectInstances = append(objectInstances, objectInstance)
 	}
 	return objectInstances, totalItems, nil
+}
+
+func (o *objectInstanceRepositoryImpl) GetObjectInstanceExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.ObjectInstance, error) {
+	firstCondition := ""
+	if len(ids) != 0 {
+		firstCondition = fmt.Sprintf("and oi.id not in ('%s')", strings.Join(ids, "','"))
+	}
+	var objectInstance models.ObjectInstance
+	var created time.Time
+
+	query := fmt.Sprintf(`SELECT oi.* FROM object_instance oi 
+	LEFT JOIN (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
+		FROM object_instance_check) oic
+		WHERE oic.number_of_row = 1) oicf ON oicf.object_instance_id = oi.id
+	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
+	%s
+	AND (oicf.checktime < (now() - INTERVAL %s) OR (oicf.check_type = 'exists' AND oicf.checktime < (now() - INTERVAL %s)) OR oicf.id IS NULL)
+	limit 1`, firstCondition, timeBefore, timeToWaitAvailability)
+
+	rows, err := o.Db.Query(context.Background(), query)
+	if err != nil {
+		return objectInstance, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThanWithChecks")
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return objectInstance, nil
+	}
+	err = rows.Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status,
+		&objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	if err != nil {
+		return objectInstance, errors.Wrapf(err, "cannot get object GetObjectExceptListOlderThanWithChecks")
+	}
+	objectInstance.Created = created.Format(Layout)
+	return objectInstance, nil
 }
 
 func NewObjectInstanceRepository(db *pgxpool.Pool) ObjectInstanceRepository {

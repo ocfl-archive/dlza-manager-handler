@@ -22,12 +22,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CheckerHandlerService_UpdateObjectInstance_FullMethodName                      = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
-	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName                 = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
-	CheckerHandlerService_GetObjectById_FullMethodName                             = "/handlerproto.CheckerHandlerService/GetObjectById"
-	CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName = "/handlerproto.CheckerHandlerService/GetObjectInstanceChecksByObjectInstanceId"
-	CheckerHandlerService_GetObjectsInstancesByObjectId_FullMethodName             = "/handlerproto.CheckerHandlerService/GetObjectsInstancesByObjectId"
-	CheckerHandlerService_GetObjectExceptListOlderThanWithChecks_FullMethodName    = "/handlerproto.CheckerHandlerService/GetObjectExceptListOlderThanWithChecks"
+	CheckerHandlerService_UpdateObjectInstance_FullMethodName                           = "/handlerproto.CheckerHandlerService/UpdateObjectInstance"
+	CheckerHandlerService_CreateObjectInstanceCheck_FullMethodName                      = "/handlerproto.CheckerHandlerService/CreateObjectInstanceCheck"
+	CheckerHandlerService_GetObjectById_FullMethodName                                  = "/handlerproto.CheckerHandlerService/GetObjectById"
+	CheckerHandlerService_GetObjectInstanceChecksByObjectInstanceId_FullMethodName      = "/handlerproto.CheckerHandlerService/GetObjectInstanceChecksByObjectInstanceId"
+	CheckerHandlerService_GetObjectsInstancesByObjectId_FullMethodName                  = "/handlerproto.CheckerHandlerService/GetObjectsInstancesByObjectId"
+	CheckerHandlerService_GetObjectInstanceExceptListOlderThanWithChecks_FullMethodName = "/handlerproto.CheckerHandlerService/GetObjectInstanceExceptListOlderThanWithChecks"
 )
 
 // CheckerHandlerServiceClient is the client API for CheckerHandlerService service.
@@ -39,7 +39,7 @@ type CheckerHandlerServiceClient interface {
 	GetObjectById(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
 	GetObjectInstanceChecksByObjectInstanceId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	GetObjectsInstancesByObjectId(ctx context.Context, in *dlzamanagerproto.Id, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstances, error)
-	GetObjectExceptListOlderThanWithChecks(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error)
+	GetObjectInstanceExceptListOlderThanWithChecks(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstance, error)
 }
 
 type checkerHandlerServiceClient struct {
@@ -95,9 +95,9 @@ func (c *checkerHandlerServiceClient) GetObjectsInstancesByObjectId(ctx context.
 	return out, nil
 }
 
-func (c *checkerHandlerServiceClient) GetObjectExceptListOlderThanWithChecks(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.Object, error) {
-	out := new(dlzamanagerproto.Object)
-	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectExceptListOlderThanWithChecks_FullMethodName, in, out, opts...)
+func (c *checkerHandlerServiceClient) GetObjectInstanceExceptListOlderThanWithChecks(ctx context.Context, in *dlzamanagerproto.IdsWithSQLInterval, opts ...grpc.CallOption) (*dlzamanagerproto.ObjectInstance, error) {
+	out := new(dlzamanagerproto.ObjectInstance)
+	err := c.cc.Invoke(ctx, CheckerHandlerService_GetObjectInstanceExceptListOlderThanWithChecks_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ type CheckerHandlerServiceServer interface {
 	GetObjectById(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.Object, error)
 	GetObjectInstanceChecksByObjectInstanceId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstanceChecks, error)
 	GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error)
-	GetObjectExceptListOlderThanWithChecks(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error)
+	GetObjectInstanceExceptListOlderThanWithChecks(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.ObjectInstance, error)
 	mustEmbedUnimplementedCheckerHandlerServiceServer()
 }
 
@@ -136,8 +136,8 @@ func (UnimplementedCheckerHandlerServiceServer) GetObjectInstanceChecksByObjectI
 func (UnimplementedCheckerHandlerServiceServer) GetObjectsInstancesByObjectId(context.Context, *dlzamanagerproto.Id) (*dlzamanagerproto.ObjectInstances, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectsInstancesByObjectId not implemented")
 }
-func (UnimplementedCheckerHandlerServiceServer) GetObjectExceptListOlderThanWithChecks(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.Object, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetObjectExceptListOlderThanWithChecks not implemented")
+func (UnimplementedCheckerHandlerServiceServer) GetObjectInstanceExceptListOlderThanWithChecks(context.Context, *dlzamanagerproto.IdsWithSQLInterval) (*dlzamanagerproto.ObjectInstance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectInstanceExceptListOlderThanWithChecks not implemented")
 }
 func (UnimplementedCheckerHandlerServiceServer) mustEmbedUnimplementedCheckerHandlerServiceServer() {}
 
@@ -242,20 +242,20 @@ func _CheckerHandlerService_GetObjectsInstancesByObjectId_Handler(srv interface{
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CheckerHandlerService_GetObjectExceptListOlderThanWithChecks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CheckerHandlerService_GetObjectInstanceExceptListOlderThanWithChecks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(dlzamanagerproto.IdsWithSQLInterval)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CheckerHandlerServiceServer).GetObjectExceptListOlderThanWithChecks(ctx, in)
+		return srv.(CheckerHandlerServiceServer).GetObjectInstanceExceptListOlderThanWithChecks(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CheckerHandlerService_GetObjectExceptListOlderThanWithChecks_FullMethodName,
+		FullMethod: CheckerHandlerService_GetObjectInstanceExceptListOlderThanWithChecks_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CheckerHandlerServiceServer).GetObjectExceptListOlderThanWithChecks(ctx, req.(*dlzamanagerproto.IdsWithSQLInterval))
+		return srv.(CheckerHandlerServiceServer).GetObjectInstanceExceptListOlderThanWithChecks(ctx, req.(*dlzamanagerproto.IdsWithSQLInterval))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -288,8 +288,8 @@ var CheckerHandlerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CheckerHandlerService_GetObjectsInstancesByObjectId_Handler,
 		},
 		{
-			MethodName: "GetObjectExceptListOlderThanWithChecks",
-			Handler:    _CheckerHandlerService_GetObjectExceptListOlderThanWithChecks_Handler,
+			MethodName: "GetObjectInstanceExceptListOlderThanWithChecks",
+			Handler:    _CheckerHandlerService_GetObjectInstanceExceptListOlderThanWithChecks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

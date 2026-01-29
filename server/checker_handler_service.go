@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	"emperror.dev/errors"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
@@ -59,13 +60,13 @@ func (c *CheckerHandlerServer) GetObjectById(ctx context.Context, id *pb.Id) (*p
 	return mapper.ConvertToObjectPb(object), nil
 }
 
-func (c *CheckerHandlerServer) GetObjectExceptListOlderThanWithChecks(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.Object, error) {
-	object, err := c.ObjectRepository.GetObjectExceptListOlderThanWithChecks(idsWithInterval.Ids, idsWithInterval.Interval, idsWithInterval.AvailabilityInterval)
+func (c *CheckerHandlerServer) GetObjectInstanceExceptListOlderThanWithChecks(ctx context.Context, idsWithInterval *pb.IdsWithSQLInterval) (*pb.ObjectInstance, error) {
+	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstanceExceptListOlderThanWithChecks(idsWithInterval.Ids, idsWithInterval.Interval, idsWithInterval.AvailabilityInterval)
 	if err != nil {
-		c.Logger.Error().Msgf("Could not GetObjectExceptListOlderThanWithChecks. err: %v", err)
-		return nil, errors.Wrapf(err, "Could not GetObjectExceptListOlderThanWithChecks")
+		c.Logger.Error().Msgf("Could not GetObjectInstanceExceptListOlderThanWithChecks. err: %v", err)
+		return nil, errors.Wrapf(err, "Could not GetObjectInstanceExceptListOlderThanWithChecks")
 	}
-	return mapper.ConvertToObjectPb(object), nil
+	return mapper.ConvertToObjectInstancePb(objectInstance), nil
 }
 
 func (c *CheckerHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {

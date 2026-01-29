@@ -15,4 +15,5 @@ type ObjectInstanceRepository interface {
 	GetAmountOfErrorsByCollectionId(id string) (int, error)
 	GetObjectInstancesByName(name string) ([]models.ObjectInstance, error)
 	GetObjectInstancesBySignatureAndLocationsPathName(signature string, locationsName string) (models.ObjectInstance, error)
+	GetObjectInstanceExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.ObjectInstance, error)
 }

@@ -19,7 +19,7 @@ service CheckerHandlerService {
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetObjectInstanceChecksByObjectInstanceId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstanceChecks){};
   rpc GetObjectsInstancesByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstances);
-  rpc GetObjectExceptListOlderThanWithChecks(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.Object){};
+  rpc GetObjectInstanceExceptListOlderThanWithChecks(dlzamanagerproto.IdsWithSQLInterval) returns (dlzamanagerproto.ObjectInstance){};
 }
 
 service StorageHandlerHandlerService {
