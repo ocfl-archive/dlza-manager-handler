@@ -35,13 +35,20 @@ func (s StorageLocationServiceImpl) GetStorageLocationsStatusForCollectionAlias(
 	for _, storageLocation := range storageLocations {
 		storageLocationsPb.StorageLocations = append(storageLocationsPb.StorageLocations, dlzaMapper.ConvertToStorageLocationPb(storageLocation))
 	}
+
 	storageLocationsPb.StorageLocations = dlzaService.GetCheapestStorageLocationsForQuality(storageLocationsPb, collection.Quality)
+
 	objectPb := &pb.Object{Signature: signature, Head: head}
+
+	firstPartitionId := ""
 	for _, storageLocation := range storageLocationsPb.StorageLocations {
-		_, err := s.StoragePartitionService.GetStoragePartitionForLocation(&pb.SizeObjectLocation{Size: size, Location: storageLocation, Object: objectPb})
+		storagePartition, err := s.StoragePartitionService.GetStoragePartitionForLocation(&pb.SizeObjectLocation{Size: size, Location: storageLocation, Object: objectPb})
 		if err != nil {
 			return "Could not get storagePartition for storageLocation " + storageLocation.Alias, errors.Wrapf(err, "Could not get storagePartition for storageLocation '%s'", storageLocation.Alias)
 		}
+		if storageLocation.FillFirst {
+			firstPartitionId = storagePartition.Id
+		}
 	}
-	return "", nil
+	return firstPartitionId, nil
 }

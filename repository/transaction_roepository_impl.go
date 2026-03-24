@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
+	"time"
+
 	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
-	"time"
 )
 
 type TransactionRepositoryImpl struct {
@@ -38,28 +39,19 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 	//////// CREATE/UPDATE OBJECT
 
 	objectIns := instanceWithPartitionAndObjectWithFiles[0].Object
-	if objectIns.Id == "" {
-		queryObject := "INSERT INTO OBJECT(signature, \"sets\", identifiers, title, alternative_titles, description, keywords, \"references\"," +
-			" ingest_workflow, \"user\", address, \"size\", collection_id, checksum, authors, holding, expiration, head, versions, \"binary\")" +
-			" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id"
-		err = tx.QueryRow(ctx, queryObject, objectIns.Signature, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions, objectIns.Binary).Scan(&objectIns.Id)
-		if err != nil {
-			tx.Rollback(ctx)
-			return errors.Wrapf(err, "Could not exequte query: '%s'  in transaction", queryObject)
-		}
-	} else {
-		queryUpdateObject := "UPDATE OBJECT set sets = $1, identifiers = $2, title = $3," +
-			" alternative_titles = $4, description = $5, keywords = $6, \"references\" = $7, ingest_workflow = $8," +
-			" \"user\" = $9, address = $10, last_changed = $11, size = $12," +
-			" collection_id = $13, checksum = $14, authors = $15, holding = $16, expiration = $17, head = $18, versions = $19" +
-			" where id =$20"
-		_, err = tx.Exec(ctx, queryUpdateObject, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
-			objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, time.Now(), objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions, objectIns.Id)
-		if err != nil {
-			tx.Rollback(ctx)
-			return errors.Wrapf(err, "cannot update object in transaction")
-		}
+
+	queryUpdateObject := "UPDATE OBJECT set sets = $1, identifiers = $2, title = $3," +
+		" alternative_titles = $4, description = $5, keywords = $6, \"references\" = $7, ingest_workflow = $8," +
+		" \"user\" = $9, address = $10, last_changed = $11, size = $12," +
+		" collection_id = $13, checksum = $14, authors = $15, holding = $16, expiration = $17, head = $18, versions = $19" +
+		" where id =$20"
+	_, err = tx.Exec(ctx, queryUpdateObject, objectIns.Sets, objectIns.Identifiers, objectIns.Title, objectIns.AlternativeTitles, objectIns.Description,
+		objectIns.Keywords, objectIns.References, objectIns.IngestWorkflow, objectIns.User, objectIns.Address, time.Now(), objectIns.Size, objectIns.CollectionId, objectIns.Checksum, objectIns.Authors, objectIns.Holding, expirationTime, objectIns.Head, objectIns.Versions, objectIns.Id)
+	if err != nil {
+		tx.Rollback(ctx)
+		return errors.Wrapf(err, "cannot update object in transaction")
+	}
+	if instanceWithPartitionAndObjectWithFiles[0].NewVersion {
 		deleteFilesQuery := "DELETE FROM FILE WHERE object_id = $1"
 		_, err = tx.Exec(ctx, deleteFilesQuery, objectIns.Id)
 		if err != nil {
@@ -94,11 +86,10 @@ func (t TransactionRepositoryImpl) SaveAllTableObjectsAfterCopying(instanceWithP
 		}
 	}
 
-	//////// CREATE OBJECT INSTANCE
-	queryCreateObjectInstance := "INSERT INTO OBJECT_INSTANCE(\"path\", \"size\", status, storage_partition_id, object_id) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	//////// UPDATE OBJECT INSTANCE
+	queryCreateObjectInstance := "UPDATE OBJECT_INSTANCE set status = $1 where id = $2"
 	objectInstance := instanceWithPartitionAndObjectWithFiles[0].ObjectInstance
-	var objectInstanceId string
-	err = tx.QueryRow(ctx, queryCreateObjectInstance, objectInstance.Path, objectInstance.Size, objectInstance.Status, objectInstance.StoragePartitionId, objectIns.Id).Scan(&objectInstanceId)
+	_, err = tx.Exec(ctx, queryCreateObjectInstance, objectInstance.Status, objectInstance.Id)
 	if err != nil {
 		tx.Rollback(ctx)
 		return errors.Wrapf(err, "Could not exequte query: '%s'", queryCreateObjectInstance)
