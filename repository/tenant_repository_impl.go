@@ -2,15 +2,14 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"strconv"
-	"strings"
-
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -108,18 +107,6 @@ func (t *TenantRepositoryImpl) FindTenantByCollectionId(collectionId string) (mo
 	var tenant models.Tenant
 	query := fmt.Sprintf("SELECT t.name, t.alias, t.person, t.email, t.id, t.api_key_id  FROM TENANT t, COLLECTION c"+
 		" where t.id = c.tenant_id and c.id = '%s'", collectionId)
-	countRow := t.Db.QueryRow(context.Background(), query)
-	err := countRow.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
-	if err != nil {
-		return tenant, errors.Wrapf(err, "Could not scan tenant for query: %v", query)
-	}
-	return tenant, nil
-}
-
-func (t *TenantRepositoryImpl) FindTenantByCollectionAlias(collectionAlias string) (models.Tenant, error) {
-	var tenant models.Tenant
-	query := fmt.Sprintf("SELECT t.name, t.alias, t.person, t.email, t.id, t.api_key_id  FROM TENANT t, COLLECTION c"+
-		" where t.id = c.tenant_id and c.alias = '%s'", collectionAlias)
 	countRow := t.Db.QueryRow(context.Background(), query)
 	err := countRow.Scan(&tenant.Name, &tenant.Alias, &tenant.Person, &tenant.Email, &tenant.Id, &tenant.ApiKeyId)
 	if err != nil {

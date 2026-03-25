@@ -25,7 +25,6 @@ service CheckerHandlerService {
 service StorageHandlerHandlerService {
   rpc Ping(google.protobuf.Empty) returns (genericproto.DefaultResponse) {}
   rpc TenantHasAccess(dlzamanagerproto.UploaderAccessObject) returns (dlzamanagerproto.Status) {};
-  rpc FindTenantByCollectionAlias(dlzamanagerproto.Id) returns (dlzamanagerproto.Tenant) {};
   rpc GetAllStorageLocations(google.protobuf.Empty) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByCollectionAlias(dlzamanagerproto.CollectionAlias) returns (dlzamanagerproto.StorageLocations){};
   rpc GetStorageLocationsByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocations){};
@@ -41,8 +40,6 @@ service StorageHandlerHandlerService {
   rpc GetObjectById(dlzamanagerproto.Id) returns (dlzamanagerproto.Object){};
   rpc GetStorageLocationByObjectInstanceId (dlzamanagerproto.Id) returns (dlzamanagerproto.StorageLocation) {};
   rpc GetStoragePartitionForLocation(dlzamanagerproto.SizeObjectLocation) returns (dlzamanagerproto.StoragePartition);
-  rpc FindAllTenants(dlzamanagerproto.NoParam) returns (dlzamanagerproto.Tenants){}
-  rpc GetObjectInstanceByFileNameAndPartitionId(dlzamanagerproto.ObjectAndFile) returns (dlzamanagerproto.ObjectInstance) {};
 }
 
 service ClerkHandlerService {
@@ -107,8 +104,6 @@ service ClerkHandlerService {
   rpc GetAmountOfObjectsAndTotalSizeByTenantId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
   rpc GetSizeForAllObjectInstancesByCollectionId(dlzamanagerproto.Id) returns (dlzamanagerproto.AmountAndSize){}
   rpc GetObjectInstancesBySignatureAndLocationsPathName(dlzamanagerproto.AliasAndLocationsName) returns (dlzamanagerproto.ObjectInstance) {}
-  rpc CreateObjectAndInstance(dlzamanagerproto.ObjectAndFile) returns (dlzamanagerproto.NoParam) {}
-  rpc CheckRawObjectInstanceByObjectId(dlzamanagerproto.Id) returns (dlzamanagerproto.ObjectInstance) {}
 }
 
 service DispatcherHandlerService {

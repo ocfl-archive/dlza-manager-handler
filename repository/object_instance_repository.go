@@ -16,5 +16,4 @@ type ObjectInstanceRepository interface {
 	GetObjectInstancesByName(name string) ([]models.ObjectInstance, error)
 	GetObjectInstancesBySignatureAndLocationsPathName(signature string, locationsName string) (models.ObjectInstance, error)
 	GetObjectInstanceExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.ObjectInstance, error)
-	GetObjectInstanceByFileNameAndPartitionId(fileName string, partitionId string) (models.ObjectInstance, error)
 }

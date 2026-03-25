@@ -2,13 +2,8 @@ package server
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"path"
-	"strings"
-	"time"
-
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/je4/utils/v2/pkg/zLogger"
 	pbHandler "github.com/ocfl-archive/dlza-manager-handler/handlerproto"
 	"github.com/ocfl-archive/dlza-manager-handler/repository"
@@ -16,6 +11,8 @@ import (
 	pb "github.com/ocfl-archive/dlza-manager/dlzamanagerproto"
 	"github.com/ocfl-archive/dlza-manager/mapper"
 	"github.com/ocfl-archive/dlza-manager/models"
+	"strings"
+	"time"
 )
 
 type ClerkHandlerServer struct {
@@ -599,18 +596,6 @@ func (c *ClerkHandlerServer) GetObjectInstancesByName(ctx context.Context, objec
 	return &pb.ObjectInstances{ObjectInstances: objectInstancesPb}, nil
 }
 
-func (c *ClerkHandlerServer) CheckRawObjectInstanceByObjectId(ctx context.Context, objectId *pb.Id) (*pb.ObjectInstance, error) {
-	objectInstances, err := c.ObjectInstanceRepository.GetObjectInstancesByObjectId(objectId.Id)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetObjectInstancesByObjectId with objectId: '%s'. err: %v", objectId.Id, err)
-		return nil, errors.Wrapf(err, "Could not GetObjectInstancesByObjectId with objectId: '%s'", objectId.Id)
-	}
-	if len(objectInstances) == 1 && objectInstances[0].Status == "raw" {
-		return mapper.ConvertToObjectInstancePb(objectInstances[0]), nil
-	}
-	return &pb.ObjectInstance{}, nil
-}
-
 func (c *ClerkHandlerServer) GetObjectsByChecksum(ctx context.Context, checksum *pb.Id) (*pb.Objects, error) {
 	objects, err := c.ObjectRepository.GetObjectsByChecksum(checksum.Id)
 	if err != nil {
@@ -695,47 +680,6 @@ func (c *ClerkHandlerServer) GetSizeForAllObjectInstancesByCollectionId(ctx cont
 	}
 	amountAndSizePb := pb.AmountAndSize{Size: size}
 	return &amountAndSizePb, nil
-}
-
-func (c *ClerkHandlerServer) CreateObjectAndInstance(ctx context.Context, objectPb *pb.ObjectAndFile) (*pb.NoParam, error) {
-
-	object := mapper.ConvertToObject(objectPb.Object)
-
-	partition, err := c.StoragePartitionRepository.GetStoragePartitionById(objectPb.StatusId)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetStoragePartitionById with Id: '%s'. err: %v", objectPb.StatusId, err)
-		return nil, errors.Wrapf(err, "Could not GetStoragePartitionById with Id: '%s'", objectPb.StatusId)
-	}
-	location, err := c.StorageLocationRepository.GetStorageLocationById(partition.StorageLocationId)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetStorageLocationById with Id: '%s'. err: %v", partition.StorageLocationId, err)
-		return nil, errors.Wrapf(err, "Could not GetStorageLocationById with Id: '%s'", partition.StorageLocationId)
-	}
-	connection := models.Connection{}
-	if err = json.Unmarshal([]byte(location.Connection), &connection); err != nil {
-		return nil, errors.Wrapf(err, "error mapping storageLocation json for storageLocation ID: %v", location.Id)
-	}
-	collection, err := c.CollectionRepository.GetCollectionIdByAlias(objectPb.Object.CollectionId)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetStorageLocationById with Id: '%s'. err: %v", partition.StorageLocationId, err)
-		return nil, errors.Wrapf(err, "Could not GetStorageLocationById with Id: '%s'", partition.StorageLocationId)
-	}
-	object.CollectionId = collection
-	object.Versions = fmt.Sprintf("{\"%s\" : {}}", object.Head)
-	pathString := path.Join(connection.Folder, partition.Alias, objectPb.FileName)
-	id, err := c.ObjectRepository.CreateObject(object)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not CreateObject with signature: '%s'. err: %v", object.Signature, err)
-		return nil, errors.Wrapf(err, "Could not CreateObject with signature: '%s'", object.Signature)
-	}
-	objectInstance := models.ObjectInstance{ObjectId: id, Status: "raw", StoragePartitionId: objectPb.StatusId, Size: objectPb.Object.Size, Path: pathString}
-	_, err = c.ObjectInstanceRepository.CreateObjectInstance(objectInstance)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not CreateObjectInstance for object with signature: '%s'. err: %v", object.Signature, err)
-		return nil, errors.Wrapf(err, "Could not  CreateObjectInstance for object with signature: '%s'", object.Signature)
-	}
-
-	return &pb.NoParam{}, nil
 }
 
 func getAliases(storagePartitionPb *pb.StoragePartition, repository repository.StoragePartitionRepository) (string, string, error) {

@@ -22,7 +22,6 @@ type StorageHandlerHandlerServer struct {
 	pbHandler.UnimplementedStorageHandlerHandlerServiceServer
 	UploaderService                    service.UploaderService
 	CollectionRepository               repository.CollectionRepository
-	TenantRepository                   repository.TenantRepository
 	ObjectRepository                   repository.ObjectRepository
 	ObjectInstanceRepository           repository.ObjectInstanceRepository
 	StorageLocationRepository          repository.StorageLocationRepository
@@ -31,7 +30,6 @@ type StorageHandlerHandlerServer struct {
 	StatusRepository                   repository.StatusRepository
 	TransactionRepository              repository.TransactionRepository
 	RefreshMaterializedViewsRepository repository.RefreshMaterializedViewsRepository
-	TenantService                      service.TenantService
 	Logger                             zLogger.ZLogger
 }
 
@@ -135,15 +133,6 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationById(ctx context.Context
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
 }
 
-func (c *StorageHandlerHandlerServer) FindTenantByCollectionAlias(ctx context.Context, id *pb.Id) (*pb.Tenant, error) {
-	tenant, err := c.TenantRepository.FindTenantByCollectionAlias(id.Id)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not get tenant for collection alias %s. err: %v", id.Id, err)
-		return nil, errors.Wrapf(err, "Could not get tenant for collection alias %s", id.Id)
-	}
-	return mapper.ConvertToTenantPb(tenant), nil
-}
-
 func (c *StorageHandlerHandlerServer) GetStoragePartitionForLocation(ctx context.Context, sizeAndLocation *pb.SizeObjectLocation) (*pb.StoragePartition, error) {
 	partition, err := c.StoragePartitionService.GetStoragePartitionForLocation(sizeAndLocation)
 	if err != nil {
@@ -180,16 +169,6 @@ func (c *StorageHandlerHandlerServer) GetObjectsByCollectionAlias(ctx context.Co
 		objectsPb = append(objectsPb, objectPb)
 	}
 	return &pb.Objects{Objects: objectsPb}, nil
-}
-
-func (c *StorageHandlerHandlerServer) GetObjectInstanceByFileNameAndPartitionId(ctx context.Context, fileNameAndPartition *pb.ObjectAndFile) (*pb.ObjectInstance, error) {
-	objectInstance, err := c.ObjectInstanceRepository.GetObjectInstanceByFileNameAndPartitionId(fileNameAndPartition.FileName, fileNameAndPartition.StatusId)
-	if err != nil {
-		c.Logger.Error().Msgf("Could not GetObjectInstanceByFileNameAndPartitionId with fileName %s and partitionId %s. err: %v", fileNameAndPartition.FileName, fileNameAndPartition.StatusId, err)
-		return nil, errors.Wrapf(err, "Could not get GetObjectInstanceByFileNameAndPartitionId with fileName %s and partitionId %s.", fileNameAndPartition.FileName, fileNameAndPartition.StatusId)
-	}
-	objectInstancePb := mapper.ConvertToObjectInstancePb(objectInstance)
-	return objectInstancePb, nil
 }
 
 func (c *StorageHandlerHandlerServer) GetObjectsInstancesByObjectId(ctx context.Context, id *pb.Id) (*pb.ObjectInstances, error) {
@@ -258,19 +237,4 @@ func (c *StorageHandlerHandlerServer) GetStorageLocationByObjectInstanceId(ctx c
 		return nil, errors.Wrapf(err, "Could not get storage location by id object instance id: %s", id.Id)
 	}
 	return mapper.ConvertToStorageLocationPb(storageLocation), nil
-}
-
-func (c *StorageHandlerHandlerServer) FindAllTenants(ctx context.Context, status *pb.NoParam) (*pb.Tenants, error) {
-	tenants, err := c.TenantService.FindAllTenants()
-	if err != nil {
-		c.Logger.Error().Msgf("Could not get all tenants")
-		return nil, errors.Wrapf(err, "Could not get all tenants")
-	}
-	var tenantsPb []*pb.Tenant
-
-	for _, tenant := range tenants {
-		tenantsPb = append(tenantsPb, mapper.ConvertToTenantPb(tenant))
-	}
-
-	return &pb.Tenants{Tenants: tenantsPb}, nil
 }
