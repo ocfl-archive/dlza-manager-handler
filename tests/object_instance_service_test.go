@@ -1,10 +1,11 @@
 package tests
 
 import (
+	"testing"
+
 	"github.com/ocfl-archive/dlza-manager-handler/service"
 	"github.com/ocfl-archive/dlza-manager/models"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 const (
@@ -17,6 +18,16 @@ const (
 
 type ObjectInstanceRepositoryMock struct {
 	mock.Mock
+}
+
+func (o ObjectInstanceRepositoryMock) GetObjectInstanceExceptListOlderThanWithChecks(ids []string, timeBefore string, timeToWaitAvailability string) (models.ObjectInstance, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (o ObjectInstanceRepositoryMock) GetObjectInstanceByFileNameAndPartitionId(fileName string, partitionId string) (models.ObjectInstance, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (o ObjectInstanceRepositoryMock) GetObjectInstancesByObjectIdPositive(id string) ([]models.ObjectInstance, error) {
