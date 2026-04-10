@@ -54,13 +54,24 @@ func CreateObjectInstancePreparedStatements(ctx context.Context, conn *pgx.Conn)
 	return nil
 }
 
+func (o *objectInstanceRepositoryImpl) GetObjectInstanceByFileNameAndPartitionId(fileName string, partitionId string) (models.ObjectInstance, error) {
+	objectInstance := models.ObjectInstance{}
+	var created time.Time
+	err := o.Db.QueryRow(context.Background(), fmt.Sprintf("select * from object_instance where path like '%%%s' and storage_partition_id = '%s'", fileName, partitionId)).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
+	if err != nil {
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: GetObjectInstanceByObjectSignatureAndPartitionId")
+	}
+	objectInstance.Created = created.Format(Layout)
+	return objectInstance, err
+}
+
 func (o *objectInstanceRepositoryImpl) GetObjectInstancesBySignatureAndLocationsPathName(signature string, locationsName string) (models.ObjectInstance, error) {
 	signature = strings.Replace(signature, ":", "_", -1)
 	objectInstance := models.ObjectInstance{}
 	var created time.Time
 	err := o.Db.QueryRow(context.Background(), fmt.Sprintf("select * from object_instance where path like '%%/%s/%%%s%%'", locationsName, signature)).Scan(&objectInstance.Path, &objectInstance.Size, &created, &objectInstance.Status, &objectInstance.Id, &objectInstance.StoragePartitionId, &objectInstance.ObjectId)
 	if err != nil {
-		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: %s", DeleteObjectInstance)
+		return models.ObjectInstance{}, errors.Wrapf(err, "Could not execute query: GetObjectInstancesBySignatureAndLocationsPathName")
 	}
 	objectInstance.Created = created.Format(Layout)
 	return objectInstance, err
@@ -315,7 +326,7 @@ func (o *objectInstanceRepositoryImpl) GetObjectInstanceExceptListOlderThanWithC
 	LEFT JOIN (select * from (SELECT ROW_NUMBER() over(PARTITION BY object_instance_id ORDER BY checktime DESC) AS number_of_row, *
 		FROM object_instance_check) oic
 		WHERE oic.number_of_row = 1) oicf ON oicf.object_instance_id = oi.id
-	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated')
+	WHERE oi.status NOT IN ('to delete', 'error', 'not available', 'deprecated', 'raw')
 	%s
 	AND (oicf.checktime < (now() - INTERVAL %s) OR (oicf.check_type = 'exists' AND oicf.checktime < (now() - INTERVAL %s)) OR oicf.id IS NULL)
 	limit 1`, firstCondition, timeBefore, timeToWaitAvailability)
